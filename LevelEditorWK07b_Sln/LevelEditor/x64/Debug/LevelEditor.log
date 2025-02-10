@@ -1,2 +1,1 @@
-﻿  LevelEditor.cpp
-  LevelEditor.vcxproj -> C:\Users\cdjones1.UNI\Desktop\TDCG\LevelEditorWK07b_Sln\x64\Debug\LevelEditor.exe
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(456,5): error MSB8020: The build tools for Visual Studio 2019 (Platform Toolset = 'v142') cannot be found. To build using the v142 build tools, please install Visual Studio 2019 build tools.  Alternatively, you may upgrade to the current Visual Studio tools by selecting the Project menu or right-click the solution, and then selecting "Retarget solution".
