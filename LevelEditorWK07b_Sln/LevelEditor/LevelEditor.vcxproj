@@ -163,6 +163,8 @@
     <ClCompile Include="InputMgr.cpp" />
     <ClCompile Include="LevelEditor.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="NavPoint.cpp" />
+    <ClCompile Include="NavSet.cpp" />
     <ClCompile Include="Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -185,6 +187,8 @@
     <ClInclude Include="GUIMgr.h" />
     <ClInclude Include="InputMgr.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="NavPoint.h" />
+    <ClInclude Include="NavSet.h" />
     <ClInclude Include="Scene.h" />
   </ItemGroup>
   <ItemGroup>
