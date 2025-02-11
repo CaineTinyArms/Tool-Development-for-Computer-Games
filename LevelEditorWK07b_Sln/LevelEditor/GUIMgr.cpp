@@ -82,9 +82,12 @@ void GUIMgr::drawMenu()
 			if (ImGui::MenuItem("Load Scene", "Ctrl+L")) {
 				scene.load();
 			}
-			if (ImGui::MenuItem("Add Model..", "Ctrl+A"))
+			if (ImGui::MenuItem("Add Model..", "Ctrl+A")){
 				showFileBrowser = true;
-
+			}
+			if (ImGui::MenuItem("Add Nav Point", "Ctrl+N")) {
+				scene.addNavPoint();
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Edit"))

@@ -3,12 +3,44 @@
   "WorkspaceRootPath": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavPoint.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|solutionrelative:LevelEditor\\NavPoint.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\InputMgr.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|solutionrelative:LevelEditor\\InputMgr.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavSet.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|solutionrelative:LevelEditor\\NavSet.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavSet.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|solutionrelative:LevelEditor\\NavSet.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavPoint.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|solutionrelative:LevelEditor\\NavPoint.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavPoint.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|solutionrelative:LevelEditor\\NavPoint.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\Scene.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|solutionrelative:LevelEditor\\Scene.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\Scene.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|solutionrelative:LevelEditor\\Scene.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\LevelEditor.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|solutionrelative:LevelEditor\\LevelEditor.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\GUIMgr.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|solutionrelative:LevelEditor\\GUIMgr.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\GUIMgr.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1025A128-69BC-4743-81BA-B8C1D551E214}|LevelEditor\\LevelEditor.vcxproj|solutionrelative:LevelEditor\\GUIMgr.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -23,15 +55,63 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "NavPoint.h",
-              "DocumentMoniker": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavPoint.h",
-              "RelativeDocumentMoniker": "LevelEditor\\NavPoint.h",
-              "ToolTip": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavPoint.h",
-              "RelativeToolTip": "LevelEditor\\NavPoint.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAASAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-02-10T14:58:15.15Z",
+              "Title": "InputMgr.cpp",
+              "DocumentMoniker": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\InputMgr.cpp",
+              "RelativeDocumentMoniker": "LevelEditor\\InputMgr.cpp",
+              "ToolTip": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\InputMgr.cpp",
+              "RelativeToolTip": "LevelEditor\\InputMgr.cpp",
+              "ViewState": "AgIAAF8AAAAAAAAAAAAAwHgAAABGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-02-11T12:31:29.331Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "GUIMgr.cpp",
+              "DocumentMoniker": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\GUIMgr.cpp",
+              "RelativeDocumentMoniker": "LevelEditor\\GUIMgr.cpp",
+              "ToolTip": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\GUIMgr.cpp",
+              "RelativeToolTip": "LevelEditor\\GUIMgr.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFgAAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-02-11T11:31:14.603Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "GUIMgr.h",
+              "DocumentMoniker": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\GUIMgr.h",
+              "RelativeDocumentMoniker": "LevelEditor\\GUIMgr.h",
+              "ToolTip": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\GUIMgr.h",
+              "RelativeToolTip": "LevelEditor\\GUIMgr.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-02-11T11:31:11.864Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Scene.h",
+              "DocumentMoniker": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\Scene.h",
+              "RelativeDocumentMoniker": "LevelEditor\\Scene.h",
+              "ToolTip": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\Scene.h",
+              "RelativeToolTip": "LevelEditor\\Scene.h",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-02-11T10:12:28.134Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Scene.cpp",
+              "DocumentMoniker": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\Scene.cpp",
+              "RelativeDocumentMoniker": "LevelEditor\\Scene.cpp",
+              "ToolTip": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\Scene.cpp",
+              "RelativeToolTip": "LevelEditor\\Scene.cpp",
+              "ViewState": "AgIAAF4AAAAAAAAAAAAAAGwAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-02-11T09:35:21.501Z"
             },
             {
               "$type": "Document",
@@ -39,12 +119,59 @@
               "Title": "NavSet.h",
               "DocumentMoniker": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavSet.h",
               "RelativeDocumentMoniker": "LevelEditor\\NavSet.h",
-              "ToolTip": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavSet.h*",
-              "RelativeToolTip": "LevelEditor\\NavSet.h*",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavSet.h",
+              "RelativeToolTip": "LevelEditor\\NavSet.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAASAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-02-10T14:57:57.942Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-02-11T09:59:10.688Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "NavSet.cpp",
+              "DocumentMoniker": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavSet.cpp",
+              "RelativeDocumentMoniker": "LevelEditor\\NavSet.cpp",
+              "ToolTip": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavSet.cpp",
+              "RelativeToolTip": "LevelEditor\\NavSet.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-02-11T09:34:49.893Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "NavPoint.h",
+              "DocumentMoniker": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavPoint.h",
+              "RelativeDocumentMoniker": "LevelEditor\\NavPoint.h",
+              "ToolTip": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavPoint.h",
+              "RelativeToolTip": "LevelEditor\\NavPoint.h",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-02-11T09:52:13.111Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "NavPoint.cpp",
+              "DocumentMoniker": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavPoint.cpp",
+              "RelativeDocumentMoniker": "LevelEditor\\NavPoint.cpp",
+              "ToolTip": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\NavPoint.cpp",
+              "RelativeToolTip": "LevelEditor\\NavPoint.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-02-11T11:09:11.082Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "LevelEditor.cpp",
+              "DocumentMoniker": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\LevelEditor.cpp",
+              "RelativeDocumentMoniker": "LevelEditor\\LevelEditor.cpp",
+              "ToolTip": "C:\\Users\\caine\\Desktop\\Tool-Development-for-Computer-Games\\LevelEditorWK07b_Sln\\LevelEditor\\LevelEditor.cpp",
+              "RelativeToolTip": "LevelEditor\\LevelEditor.cpp",
+              "ViewState": "AgIAACQAAAAAAAAAAAAAADIAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-02-11T09:58:53.513Z"
             }
           ]
         }

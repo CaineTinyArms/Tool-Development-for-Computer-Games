@@ -1,1 +1,11 @@
-﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(456,5): error MSB8020: The build tools for Visual Studio 2019 (Platform Toolset = 'v142') cannot be found. To build using the v142 build tools, please install Visual Studio 2019 build tools.  Alternatively, you may upgrade to the current Visual Studio tools by selecting the Project menu or right-click the solution, and then selecting "Retarget solution".
+﻿  InputMgr.cpp
+C:\Users\caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(55,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(56,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(86,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(87,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  LevelEditor.cpp
+  NavSet.cpp
+  Scene.cpp
+  Generating Code...
+C:\Users\caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\Scene.cpp(128,1): warning C4715: 'Scene::selectNodeByID': not all control paths return a value
+  LevelEditor.vcxproj -> C:\Users\caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\x64\Debug\LevelEditor.exe
