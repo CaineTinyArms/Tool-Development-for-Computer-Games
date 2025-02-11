@@ -107,23 +107,30 @@ void InputMgr::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 				double movy = (yoffset / height * 2.0) * camera[(int)currentCam].Zoom;
 
 				if (currentCam == Camera_Type::SIDE)
+				{
 					//in side view (looking along z axis) move x and y position
 					gui->scene.selected_model->pos += glm::vec3(movx, movy, 0.0);
+				}
 				if (currentCam == Camera_Type::PERSPECTIVE)
+				{
 					//we dont move objects in 3d perspective view yet as its too complex
 					//we just move camera instead
 					camera[(int)currentCam].processMouseMovement(xoffset, yoffset, 0.0);
+				}
 				if (currentCam == Camera_Type::TOP)
+				{
 					//in top view (looking down along y axis) move x and z position
 					gui->scene.selected_model->pos += glm::vec3(movx, 0.0, -movy);
+				}
 				if (currentCam == Camera_Type::FRONT)
+				{
 					//in front view (looking along x axis) move z and z position
 					gui->scene.selected_model->pos += glm::vec3(0.0, movy, -movx);
+				}
 			}
 			//Right mouse button down to rotate
 			else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 			{
-
 				if (currentCam == Camera_Type::SIDE)
 					//in side view (looking along z axis) rotate around z
 					gui->scene.selected_model->rot += glm::vec3(0.0, 0.0, xoffset / 1000);
