@@ -1,11 +1,2 @@
-﻿  InputMgr.cpp
-C:\Users\caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(55,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(56,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(86,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(87,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  LevelEditor.cpp
-  NavSet.cpp
-  Scene.cpp
-  Generating Code...
-C:\Users\caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\Scene.cpp(128,1): warning C4715: 'Scene::selectNodeByID': not all control paths return a value
-  LevelEditor.vcxproj -> C:\Users\caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\x64\Debug\LevelEditor.exe
+﻿  LevelEditor.cpp
+  LevelEditor.vcxproj -> C:\Users\cdjones1.UNI\Desktop\TDCG\LevelEditorWK07b_Sln\x64\Debug\LevelEditor.exe

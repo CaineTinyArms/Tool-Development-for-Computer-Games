@@ -95,34 +95,3 @@ void Scene::save()
 	}
 	cout << "Done saving" << endl;
 }
-
-void Scene::addNavPoint()
-{
-	if (navSet.navModel == nullptr)
-	{
-		navSet.init();
-	}
-	string name = "nav" + to_string(255 - currentNavPoint);
-	navSet.navPoints.push_back(*new NavPoint(name));
-	selected_model = nullptr;
-	selected_navPoint = &navSet.navPoints.back();
-	navSet.navPoints.back().ID = currentNavPoint;
-	currentNavPoint -= 1;
-}
-
-bool Scene::selectNodeByID(int currentNodeID)
-{
-	for (int navPoint = 0; navPoint < navSet.navPoints.size(); navPoint++)
-	{
-		if (navSet.navPoints[navPoint].ID == currentNodeID)
-		{
-			selected_navPoint = &navSet.navPoints[navPoint];
-			selected_model = nullptr;
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-}
