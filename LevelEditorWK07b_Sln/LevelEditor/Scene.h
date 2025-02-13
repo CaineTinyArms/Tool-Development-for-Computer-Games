@@ -33,8 +33,6 @@ public:
 	bool selectModelByID(Model* model, int CurrentObjectID);
 	void addNavPoint();
 	bool selectNodeByID(int currentNodeID);
-	void saveNavSet();
-	void loadNavSet();
 	glm::vec3 parseNextVec3(std::string& data);
 };
 

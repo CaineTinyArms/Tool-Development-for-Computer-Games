@@ -70,7 +70,7 @@ void Model::load(string const& path)
 	GLSL_ERROR glsl_error = ShaderLoader::createShaderProgram(
 		string("..\\..\\Resources\\Shaders\\Object_shader.vert"),
 		string("..\\..\\Resources\\Shaders\\Object_shader.frag"), &objectShader);
-	cout << glsl_error << endl;
+	//cout << glsl_error << endl;
 	cout << "normal" << endl;
 	// read file via ASSIMP
 	Assimp::Importer importer;

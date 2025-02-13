@@ -86,11 +86,6 @@ void GUIMgr::drawMenu()
 				showFileBrowser = true;
 			if (ImGui::MenuItem("Add Node", "Ctrl+N"))
 				scene.addNavPoint();
-			if (ImGui::MenuItem("Save Nodes", "Ctrl+I"))
-				scene.saveNavSet();
-			if (ImGui::MenuItem("Load Nodes", "Ctrl+U"))
-				scene.loadNavSet();
-
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Edit"))
@@ -145,6 +140,33 @@ void GUIMgr::drawPropertiesWindow(Model* model)
 {
 	ImGui::Begin("Model Tree");
 	DrawModel(&scene.rootModel);
+
+	// Only create a tree node if we actually have NavPoints
+	if (!scene.NavSet.NavPoints.empty())
+	{
+		if (ImGui::TreeNode("NavPoints"))
+		{
+			// Show the NavPoints
+			for (int i = 0; i < scene.NavSet.NavPoints.size(); i++)
+			{
+				NavPoint& nav = scene.NavSet.NavPoints[i];
+				bool isSelected = (scene.selectedNavPoint == &nav);
+
+				if (ImGui::Selectable(nav.name.c_str(), isSelected))
+				{
+					scene.selectedNavPoint = &nav;
+					scene.selected_model = nullptr;
+				}
+			}
+			ImGui::TreePop();
+		}
+	}
+	else
+	{
+		// Optionally display a label or nothing at all if empty
+		ImGui::Text("NavPoints (none)");
+	}
+
 	ImGui::End();
 	//9.Add a properties window here
 	ImGui::Begin("Properties");
@@ -157,8 +179,18 @@ void GUIMgr::drawPropertiesWindow(Model* model)
 			ImGui::InputFloat3("Rotation", &scene.selected_model->rot[0]);
 			ImGui::InputFloat3("Scale", &scene.selected_model->scale[0]);
 		}
+		else if (scene.selectedNavPoint)
+		{
+			//11.Add text input here
+			ImGui::Text(scene.selectedNavPoint->name.c_str());
+			ImGui::InputFloat3("Position", &scene.selectedNavPoint->pos[0]);
+			ImGui::InputFloat3("Rotation", &scene.selectedNavPoint->rot[0]);
+			ImGui::InputFloat3("Scale", &scene.selectedNavPoint->scale[0]);
+		}
 		else
-			ImGui::Text("No Model selected");
+		{
+			ImGui::Text("No Model or NavPoint selected");
+		}
 	}
 	ImGui::End();
 
