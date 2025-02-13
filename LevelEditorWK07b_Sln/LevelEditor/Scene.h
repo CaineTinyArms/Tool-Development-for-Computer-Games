@@ -35,5 +35,6 @@ public:
 	bool selectNodeByID(int currentNodeID);
 	void saveNavSet();
 	void loadNavSet();
+	glm::vec3 parseNextVec3(std::string& data);
 };
 

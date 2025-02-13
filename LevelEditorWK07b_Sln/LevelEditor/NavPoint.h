@@ -23,6 +23,7 @@ public:
 		pos = glm::vec3(0.0, 0.0, 0.0);
 		rot = glm::vec3(0.0, 0.0, 0.0);
 		scale = glm::vec3(1.0, 1.0, 1.0);
+		name = _name;
 	}
 
 	std::string toXML();
