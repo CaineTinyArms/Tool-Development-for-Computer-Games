@@ -136,6 +136,7 @@ int main()
 
 		glEnable(GL_STENCIL_TEST);
 		drawModelHierarchy(&GUI.scene.rootModel, &I, &viewProjectionMatrix);
+		GUI.scene.NavSet.draw(viewProjectionMatrix);
 		glDisable(GL_STENCIL_TEST);
 
 	//	ground.drawQuad_VBO(I, viewProjectionMatrix);

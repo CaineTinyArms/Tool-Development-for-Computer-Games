@@ -49,12 +49,14 @@ bool Scene::selectModelByID(Model* model, int CurrentObjectID)
 	{
 		selected_model = model;
 		cout << "Selected Model ID = " << selected_model->ID << ", Name = " << selected_model->name<< endl;
+		selectedNavPoint = nullptr;
 		return true;
 	}
 	else
 	{
 		for (int i = 0; i < model->children.size(); i++)
-			if(selectModelByID(&model->children[i], CurrentObjectID))
+			if (selectModelByID(&model->children[i], CurrentObjectID))
+				selectedNavPoint = nullptr;
 				return true;
 	}
 	return false;
@@ -95,3 +97,66 @@ void Scene::save()
 	}
 	cout << "Done saving" << endl;
 }
+
+void Scene::addNavPoint()
+{
+	if (NavSet.navModel == nullptr)
+	{
+		NavSet.init();
+	}
+	string name = "nav " + to_string(255 - CurrentNavPoint);
+	NavSet.NavPoints.push_back(*new NavPoint(name));
+	selected_model = nullptr;
+	selectedNavPoint = &NavSet.NavPoints.back();
+	selectedNavPoint->ID = CurrentNavPoint;
+	CurrentNavPoint--;
+}
+
+bool Scene::selectNodeByID(int currentNodeID)
+{
+	for (NavPoint &NavPoint : NavSet.NavPoints)
+	{
+		if (NavPoint.ID == currentNodeID)
+		{
+			selectedNavPoint = &NavPoint;
+			selected_model = nullptr;
+			return true;
+		}
+	}
+	return false;
+}
+
+void Scene::saveNavSet()
+{
+	// Open "..\..\Resources\Levels\NavSet01.xml" for writing
+	std::ofstream outfile("..\\..\\Resources\\Levels\\NavSet01.xml");
+	if (outfile.is_open())
+	{
+		// Write the <NavSet> start tag
+		outfile << "<NavSet>\n";
+
+		// For each NavPoint
+		for (NavPoint& np : NavSet.NavPoints)
+		{
+			outfile << "    <NavPoint>\n";
+			// Use np.toXML() to write <Name> and <Data>
+			outfile << np.toXML() << "\n";
+			outfile << "    </NavPoint>\n";
+		}
+
+		// Write the </NavSet> end tag
+		outfile << "</NavSet>\n";
+
+		outfile.close();
+		std::cout << "NavSet saved successfully.\n";
+	}
+	else
+	{
+		std::cerr << "Failed to open NavSet01.xml for writing.\n";
+	}
+}
+void Scene::loadNavSet()
+{
+
+}
+;

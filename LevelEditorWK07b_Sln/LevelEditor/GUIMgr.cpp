@@ -84,6 +84,12 @@ void GUIMgr::drawMenu()
 			}
 			if (ImGui::MenuItem("Add Model..", "Ctrl+A"))
 				showFileBrowser = true;
+			if (ImGui::MenuItem("Add Node", "Ctrl+N"))
+				scene.addNavPoint();
+			if (ImGui::MenuItem("Save Nodes", "Ctrl+I"))
+				scene.saveNavSet();
+			if (ImGui::MenuItem("Load Nodes", "Ctrl+U"))
+				scene.loadNavSet();
 
 			ImGui::EndMenu();
 		}
