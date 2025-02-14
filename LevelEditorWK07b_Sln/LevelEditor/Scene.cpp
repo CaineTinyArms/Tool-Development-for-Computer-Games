@@ -242,4 +242,26 @@ void Scene::clearNavSet()
 	NavSet.NavPoints.clear();
 }
 
+void Scene::removeNode()
+{
+	if (selectedNavPoint)
+	{
+		for (int NavPoint = 0; NavPoint < NavSet.NavPoints.size(); NavPoint++)
+		{
+			if (&NavSet.NavPoints[NavPoint] == selectedNavPoint)
+			{
+				NavSet.NavPoints.erase(NavSet.NavPoints.begin() + NavPoint);
+				selectedNavPoint = nullptr;
+				CurrentNavPoint++;
+				break;
+			}
+		}
+
+		for (int i = 0; i < NavSet.NavPoints.size(); i++)
+		{
+			NavSet.NavPoints[i].name = "nav " + std::to_string(i);
+		}
+	}
+}
+
 ;

@@ -35,5 +35,6 @@ public:
 	bool selectNodeByID(int currentNodeID);
 	glm::vec3 parseNextVec3(std::string& data);
 	void clearNavSet();
+	void removeNode();
 };
 

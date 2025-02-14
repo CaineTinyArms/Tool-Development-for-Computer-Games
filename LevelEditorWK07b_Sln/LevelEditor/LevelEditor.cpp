@@ -67,8 +67,8 @@ int main()
 	//remove the console window ans send cout to buffer for imGUI
 //	FreeConsole();
 	std::stringstream buffer;
-	//std::streambuf* oldcout = std::cout.rdbuf(buffer.rdbuf());
-	//std::streambuf* oldcerr = std::cerr.rdbuf(buffer.rdbuf());
+	std::streambuf* oldcout = std::cout.rdbuf(buffer.rdbuf());
+	std::streambuf* oldcerr = std::cerr.rdbuf(buffer.rdbuf());
 
 	// glfw: initialize and configure
 	glfwInit();

@@ -98,6 +98,11 @@ void GUIMgr::drawMenu()
 			if (ImGui::MenuItem("Cut", "CTRL+X")) {}
 			if (ImGui::MenuItem("Copy", "CTRL+C")) {}
 			if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Remove Node", "Delete"))
+			{
+				scene.removeNode();
+			}
 			ImGui::EndMenu();
 		}
 		ImGui::EndMainMenuBar();
@@ -219,7 +224,6 @@ void GUIMgr::drawAll(std::stringstream* buffer)
 {
 	//Create a new imGUI frame
 	createFrame();
-
 	//Add a main menu here
 	drawMenu();
 	//Add a properties window here
