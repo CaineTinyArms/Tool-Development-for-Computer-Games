@@ -38,5 +38,6 @@ public:
 	void removeNode();
 	bool removeModelFromChildren(Model* parent, Model* toRemove);
 	bool removeModel();
+	void clearModels();
 };
 

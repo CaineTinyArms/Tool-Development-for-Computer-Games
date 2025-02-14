@@ -119,6 +119,8 @@ int main()
 
 //	ground.Init();
 
+	cout << "Camera Selected: Front View"<< endl;
+	cout << "Camera Move View Selected" << endl;
 
 	// render loop
 	while (!glfwWindowShouldClose(window))

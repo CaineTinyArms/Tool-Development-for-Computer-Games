@@ -1,10 +1,8 @@
-﻿  GUIMgr.cpp
-  InputMgr.cpp
-C:\Users\Caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(66,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(67,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(97,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(98,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  LevelEditor.cpp
+﻿  InputMgr.cpp
+C:\Users\Caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(120,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(121,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(151,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\LevelEditor\InputMgr.cpp(152,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   Scene.cpp
   Generating Code...
   LevelEditor.vcxproj -> C:\Users\Caine\Desktop\Tool-Development-for-Computer-Games\LevelEditorWK07b_Sln\x64\Debug\LevelEditor.exe

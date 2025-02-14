@@ -86,19 +86,10 @@ void GUIMgr::drawMenu()
 				showFileBrowser = true;
 			if (ImGui::MenuItem("Add Node", "Ctrl+N"))
 				scene.addNavPoint();
-			if (ImGui::MenuItem("Clear Nodes", "Ctrl+0"))
-				scene.clearNavSet();
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Edit"))
 		{
-			if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-			if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-			ImGui::Separator();
-			if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-			if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-			if (ImGui::MenuItem("Paste", "CTRL+V")) {}
-			ImGui::Separator();
 			if (ImGui::MenuItem("Delete Selected Item", "Delete"))
 			{
 				if (scene.selected_model)
@@ -113,6 +104,15 @@ void GUIMgr::drawMenu()
 				{
 					cout << "Nothing Selected, or SceneRoot selected.";
 				}
+			}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Clear Nodes", "Ctrl+0"))
+			{
+				scene.clearNavSet();
+			}
+			if (ImGui::MenuItem("Clear Models", "Ctrl+9"))
+			{
+				scene.clearModels();
 			}
 			ImGui::EndMenu();
 		}

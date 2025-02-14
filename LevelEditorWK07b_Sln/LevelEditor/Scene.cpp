@@ -202,7 +202,7 @@ bool Scene::selectNodeByID(int currentNodeID)
 		{
 			selectedNavPoint = &NavPoint;
 			selected_model = nullptr;
-			cout << "Node " << selectedNavPoint->name << " has been selected.";
+			cout << "Selected Node ID = " << selectedNavPoint->ID << ", Name = " << selectedNavPoint->name << endl;
 			return true;
 		}
 	}
@@ -301,10 +301,18 @@ bool Scene::removeModel()
 
 	if (removed)
 	{
+		cout << "Removing Selected Model" << endl;
 		selected_model = nullptr;
 	}
 
 	return removed;
+}
+
+void Scene::clearModels()
+{
+	rootModel.children.clear();
+	selected_model = nullptr;
+	CurrentObject = 3;
 }
 
 ;

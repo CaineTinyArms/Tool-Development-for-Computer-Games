@@ -20,32 +20,86 @@ void InputMgr::key_callback(GLFWwindow* window, int key, int scancode, int actio
 	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
 	{
 		if (MOVEMODE == MoveCam)
+		{
 			MOVEMODE = MoveObj;
+			cout << "Move Object Mode Selected" << endl;
+		}
 		else
+		{
 			MOVEMODE = MoveCam;
+			cout << "Move Camera Mode Selected" << endl;
+		}
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
+	{
 		currentCam = Camera_Type::SIDE;
+		cout << "Camera Selected: Side View" << endl;
+	}
 	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+	{
 		currentCam = Camera_Type::PERSPECTIVE;
+		cout << "Camera Selected: Perspective View" << endl;
+	}
 	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+	{
 		currentCam = Camera_Type::TOP;
+		cout << "Camera Selected: Top View" << endl;
+	}
 	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+	{
 		currentCam = Camera_Type::FRONT;
+		cout << "Camera Selected: Front View" << endl;
+	}
 
 	if (glfwGetKey(window, GLFW_KEY_DELETE) == GLFW_PRESS)
 	{
 		if (gui->scene.selectedNavPoint)
 		{
+			cout << "Removing Selected Nav Point" << endl;
 			gui->scene.removeNode();
 		}
 		else if (gui->scene.selected_model)
 		{
 			gui->scene.removeModel();
 		}
+	}
+
+	if (key == GLFW_KEY_S && action == GLFW_PRESS && (mods & GLFW_MOD_CONTROL))
+	{
+		cout << "Saving scene..." << endl;
+		gui->scene.save();
+	}
+
+	if (key == GLFW_KEY_L && action == GLFW_PRESS && (mods & GLFW_MOD_CONTROL))
+	{
+		cout << "Loading scene..." << endl;
+		gui->scene.load();
+	}
+
+	if (key == GLFW_KEY_A && action == GLFW_PRESS && (mods & GLFW_MOD_CONTROL))
+	{
+		gui->showFileBrowser = true;
+	}
+
+	if (key == GLFW_KEY_N && action == GLFW_PRESS && (mods & GLFW_MOD_CONTROL))
+	{
+		cout << "Adding Nav Point" << endl;
+		gui->scene.addNavPoint();
+	}
+
+	if (key == GLFW_KEY_9 && action == GLFW_PRESS && (mods & GLFW_MOD_CONTROL))
+	{
+		cout << "Clearing Models..." << endl;
+		gui->scene.clearModels();
+	}
+
+	if (key == GLFW_KEY_0 && action == GLFW_PRESS && (mods & GLFW_MOD_CONTROL))
+	{
+		cout << "Clearing NavPoints..." << endl;
+		gui->scene.clearNavSet();
 	}
 
 }
