@@ -215,7 +215,15 @@ void InputMgr::scroll_callback(GLFWwindow* window, double xoffset, double yoffse
 	if (MOVEMODE == MoveObj && !(currentCam == Camera_Type::PERSPECTIVE))
 	{
 		if (gui->scene.selected_model)
+		{
 			gui->scene.selected_model->scale += 0.1 * yoffset;
+		}
+
+		else if (gui->scene.selectedNavPoint)
+		{
+			gui->scene.selectedNavPoint->scale += 0.1 * yoffset;
+		}
+		
 	}
 	else
 		camera[(int)currentCam].processMouseScroll(yoffset);
