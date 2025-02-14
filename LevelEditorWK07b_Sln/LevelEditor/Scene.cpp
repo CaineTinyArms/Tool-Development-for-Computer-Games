@@ -235,4 +235,11 @@ glm::vec3 Scene::parseNextVec3(std::string& data)
 	return result;
 }
 
+void Scene::clearNavSet()
+{
+	selectedNavPoint = nullptr;
+	CurrentNavPoint = 255;
+	NavSet.NavPoints.clear();
+}
+
 ;

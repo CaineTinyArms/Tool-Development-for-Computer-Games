@@ -127,7 +127,7 @@ int main()
 		inputMgr.processInput(window);
 
 		// Clear the screen
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClearColor(0.141f, 0.227f, 0.522f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, camera_settings.screenWidth, camera_settings.screenHeight);//viewport fills window
 		glm::mat4 viewProjectionMatrix = camera[(int)inputMgr.currentCam].getProjectionMatrix() * camera[(int)inputMgr.currentCam].getViewMatrix();

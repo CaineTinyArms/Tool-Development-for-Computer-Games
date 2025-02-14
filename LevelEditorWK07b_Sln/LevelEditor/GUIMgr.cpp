@@ -86,6 +86,8 @@ void GUIMgr::drawMenu()
 				showFileBrowser = true;
 			if (ImGui::MenuItem("Add Node", "Ctrl+N"))
 				scene.addNavPoint();
+			if (ImGui::MenuItem("Clear Nodes", "Ctrl+0"))
+				scene.clearNavSet();
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Edit"))
@@ -139,6 +141,12 @@ void GUIMgr::drawMenu()
 void GUIMgr::drawPropertiesWindow(Model* model)
 {
 	ImGui::Begin("Model Tree");
+	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_None) && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
+	{
+		scene.selected_model = nullptr;
+		scene.selectedNavPoint = nullptr;
+	}
+
 	DrawModel(&scene.rootModel);
 
 	// Only create a tree node if we actually have NavPoints
@@ -171,6 +179,12 @@ void GUIMgr::drawPropertiesWindow(Model* model)
 	//9.Add a properties window here
 	ImGui::Begin("Properties");
 	{
+		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_None) && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
+		{
+			scene.selected_model = nullptr;
+			scene.selectedNavPoint = nullptr;
+		}
+
 		if (scene.selected_model)
 		{
 			//11.Add text input here
@@ -205,9 +219,7 @@ void GUIMgr::drawAll(std::stringstream* buffer)
 {
 	//Create a new imGUI frame
 	createFrame();
-	//Show the ImGUI Demo
-	bool show = true;
-	ImGui::ShowDemoWindow(&show);
+
 	//Add a main menu here
 	drawMenu();
 	//Add a properties window here

@@ -17,7 +17,6 @@ void InputMgr::processInput(GLFWwindow * window)
 
 void InputMgr::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-
 	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
 	{
 		if (MOVEMODE == MoveCam)
