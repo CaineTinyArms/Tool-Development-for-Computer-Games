@@ -156,18 +156,41 @@ void InputMgr::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 			{
 
 				if (currentCam == Camera_Type::SIDE)
-					//in side view (looking along z axis) rotate around z
-					gui->scene.selected_model->rot += glm::vec3(0.0, 0.0, xoffset / 1000);
+					if (gui->scene.selected_model)
+					{
+						gui->scene.selected_model->rot += glm::vec3(0.0, 0.0, xoffset / 1000);
+					}
+					else
+					{
+						gui->scene.selectedNavPoint->rot += glm::vec3(0.0, 0.0, xoffset / 1000);
+					}
+
 				if (currentCam == Camera_Type::PERSPECTIVE)
 					//we dont move objects in 3d perspective view yet as its too complex
 					//we just move camera instead
 					camera[(int)currentCam].processMouseMovement(xoffset, yoffset, 0.0);
+
 				if (currentCam == Camera_Type::TOP)
 					//in side view (looking along y axis) rotate around y
-					gui->scene.selected_model->rot += glm::vec3(0.0, xoffset / 1000, 0.0);
+					if (gui->scene.selected_model)
+					{
+						gui->scene.selected_model->rot += glm::vec3(0.0, xoffset / 1000, 0.0);
+					}
+					else
+					{
+						gui->scene.selectedNavPoint->rot += glm::vec3(0.0, xoffset / 1000, 0.0);
+					}
+
 				if (currentCam == Camera_Type::FRONT)
 					//in side view (looking along x axis) rotate around x
-					gui->scene.selected_model->rot += glm::vec3(xoffset / 1000, 0.0, 0.0);
+					if (gui->scene.selected_model)
+					{
+						gui->scene.selected_model->rot += glm::vec3(xoffset / 1000, 0.0, 0.0);
+					}
+					else
+					{
+						gui->scene.selectedNavPoint->rot += glm::vec3(xoffset / 1000, 0.0, 0.0);
+					}
 			}
 		}
 	}
