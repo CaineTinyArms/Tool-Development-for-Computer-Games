@@ -1,4 +1,9 @@
 <Scene>
-  <NavSet>
+<Model><PathName>../../Resources/Models/AirShip\SteampunkShip.obj</PathName><Data>vec3(0.000000, 0.000000, 0.000000)vec3(0.000000, 0.000000, 0.000000)vec3(1.000000, 1.000000, 1.000000)</Data>
+</Model>  <NavSet>
+    <NavPoint>
+        <Name>nav 0</Name>
+        <Data>vec3(0.000000, 0.000000, 0.000000)vec3(0.000000, 0.000000, 0.000000)vec3(1.000000, 1.000000, 1.000000)</Data>
+    </NavPoint>
   </NavSet>
 </Scene>
