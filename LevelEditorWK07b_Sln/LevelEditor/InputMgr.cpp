@@ -36,6 +36,18 @@ void InputMgr::key_callback(GLFWwindow* window, int key, int scancode, int actio
 	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
 		currentCam = Camera_Type::FRONT;
 
+	if (glfwGetKey(window, GLFW_KEY_DELETE) == GLFW_PRESS)
+	{
+		if (gui->scene.selectedNavPoint)
+		{
+			gui->scene.removeNode();
+		}
+		else if (gui->scene.selected_model)
+		{
+			gui->scene.removeModel();
+		}
+	}
+
 }
 
 //glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -59,7 +71,6 @@ void InputMgr::mouse_button_callback(GLFWwindow* window, int button, int action,
 
 		GLubyte  stencil;
 		glReadPixels((GLint)xpos, (GLint)(height - ypos), 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, &stencil);
-		cout << "Stencil = " << (int)stencil << endl;
 		if (stencil > 2 && stencil < 128)
 		{
 			if (!gui->scene.selectModelByID(&gui->scene.rootModel, (int)stencil))

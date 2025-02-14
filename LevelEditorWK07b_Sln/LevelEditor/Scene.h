@@ -21,7 +21,7 @@ class Scene
 {
 public:
 	NavSet NavSet;
-	int CurrentObject=0;
+	int CurrentObject=3;
 	int CurrentNavPoint = 255;
 	Model* selected_model = nullptr;
 	NavPoint* selectedNavPoint = nullptr;
@@ -36,5 +36,7 @@ public:
 	glm::vec3 parseNextVec3(std::string& data);
 	void clearNavSet();
 	void removeNode();
+	bool removeModelFromChildren(Model* parent, Model* toRemove);
+	bool removeModel();
 };
 

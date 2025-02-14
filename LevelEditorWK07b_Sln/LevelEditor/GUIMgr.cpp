@@ -99,9 +99,20 @@ void GUIMgr::drawMenu()
 			if (ImGui::MenuItem("Copy", "CTRL+C")) {}
 			if (ImGui::MenuItem("Paste", "CTRL+V")) {}
 			ImGui::Separator();
-			if (ImGui::MenuItem("Remove Node", "Delete"))
+			if (ImGui::MenuItem("Delete Selected Item", "Delete"))
 			{
-				scene.removeNode();
+				if (scene.selected_model)
+				{
+					scene.removeModel();
+				}
+				else if (scene.selectedNavPoint)
+				{
+					scene.removeNode();
+				}
+				else
+				{
+					cout << "Nothing Selected, or SceneRoot selected.";
+				}
 			}
 			ImGui::EndMenu();
 		}

@@ -28,7 +28,7 @@ void Scene::load()
 	{
 		std::cerr << "No <Scene> element found in Scene01.xml\n";
 		return;
-	}
+	} 
 
 	// 1) Load Models
 	// Find first <Model> child of <Scene> (if any)
@@ -65,8 +65,8 @@ void Scene::load()
 					newNavPoint.rot = parseNextVec3(dataStr);
 					newNavPoint.scale = parseNextVec3(dataStr);
 
-					newNavPoint.ID = CurrentObject;
-					CurrentObject++; // Or CurrentNavPoint--, your choice
+					newNavPoint.ID = CurrentNavPoint;
+					CurrentNavPoint--; 
 					NavSet.NavPoints.push_back(newNavPoint);
 				}
 				else
@@ -202,6 +202,7 @@ bool Scene::selectNodeByID(int currentNodeID)
 		{
 			selectedNavPoint = &NavPoint;
 			selected_model = nullptr;
+			cout << "Node " << selectedNavPoint->name << " has been selected.";
 			return true;
 		}
 	}
@@ -262,6 +263,48 @@ void Scene::removeNode()
 			NavSet.NavPoints[i].name = "nav " + std::to_string(i);
 		}
 	}
+}
+
+bool Scene::removeModelFromChildren(Model* parent, Model* toRemove)
+{
+	for (int i = 0; i < parent->children.size(); i++)
+	{
+		if (&parent->children[i] == toRemove)
+		{
+			parent->children.erase(parent->children.begin() + i);
+			return true;
+		}
+
+		else
+		{
+			if (removeModelFromChildren(&parent->children[i], toRemove))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool Scene::removeModel()
+{
+	if (!selected_model) 
+	{
+		return false;
+	}
+	if (selected_model->name == "SceneRoot")
+	{
+		return false;
+	}
+
+	bool removed = removeModelFromChildren(&rootModel, selected_model);
+
+	if (removed)
+	{
+		selected_model = nullptr;
+	}
+
+	return removed;
 }
 
 ;
