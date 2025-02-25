@@ -1,0 +1,61 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build NES project (make)",
+            "type": "shell", //shell
+            "command": "./compile.bat", //make
+            "presentation": {"echo": true, "reveal": "always", "focus": false, "panel": "shared", "showReuseMessage": false, "clear": true},
+            "problemMatcher": [
+                {
+		    "owner": "nesdev",
+                    "pattern": [
+                        {
+                            "regexp": "^([^:]*):([0-9]+): ?([^:]*): ?(.*)$",
+                            "file": 1,
+                            "location": 2,
+                            "severity": 3,
+                            "message": 4
+                        }
+                    ]
+                },
+                {
+		    "owner": "nesdev",
+                    "pattern": [
+                        {
+                            "regexp": "^([^:]*)\\(([0-9]+)\\): ?([^:]*): ?(.*)$",
+                            "file": 1,
+                            "location": 2,
+                            "severity": 3,
+                            "message": 4
+                        }
+                    ]
+                }
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Run in Mesen",
+            "type": "shell",
+            "command": "${workspaceFolder}/../MesenX/mesen.exe",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "args": ["${workspaceFolder}/BUILD/blank.nes"],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ]
+}
