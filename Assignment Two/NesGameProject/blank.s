@@ -12,13 +12,19 @@
 	.macpack	longbranch
 	.forceimport	__STARTUP__
 	.import		_pal_bg
+	.import		_ppu_wait_nmi
 	.import		_ppu_off
 	.import		_ppu_on_all
+	.import		_pad_poll
 	.import		_vram_adr
 	.import		_vram_put
+	.import		_vram_fill
 	.export		_i
+	.export		_pad1
 	.export		_text
 	.export		_palette
+	.export		_setSubPalette0
+	.export		_setSubPalette1
 	.export		_main
 
 .segment	"RODATA"
@@ -26,14 +32,14 @@
 _text:
 	.byte	$53,$69,$67,$6D,$61,$20,$42,$6F,$79,$00
 _palette:
-	.byte	$0F
+	.byte	$27
 	.byte	$00
 	.byte	$10
 	.byte	$30
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
+	.byte	$0A
+	.byte	$0E
+	.byte	$15
+	.byte	$1A
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -48,6 +54,78 @@ _palette:
 .segment	"ZEROPAGE"
 _i:
 	.res	1,$00
+_pad1:
+	.res	1,$00
+
+; ---------------------------------------------------------------
+; void __near__ setSubPalette0 (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_setSubPalette0: near
+
+.segment	"CODE"
+
+;
+; ppu_off();
+;
+	jsr     _ppu_off
+;
+; vram_adr(NTADR_A(0,0) + 0x03C0);
+;
+	ldx     #$23
+	lda     #$C0
+	jsr     _vram_adr
+;
+; vram_fill(0x00, 64);
+;
+	lda     #$00
+	jsr     pusha
+	tax
+	lda     #$40
+	jsr     _vram_fill
+;
+; ppu_on_all();
+;
+	jmp     _ppu_on_all
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ setSubPalette1 (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_setSubPalette1: near
+
+.segment	"CODE"
+
+;
+; ppu_off();
+;
+	jsr     _ppu_off
+;
+; vram_adr(NTADR_A(0,0) + 0x03C0);
+;
+	ldx     #$23
+	lda     #$C0
+	jsr     _vram_adr
+;
+; vram_fill(0x55, 64);
+;
+	lda     #$55
+	jsr     pusha
+	ldx     #$00
+	lda     #$40
+	jsr     _vram_fill
+;
+; ppu_on_all();
+;
+	jmp     _ppu_on_all
+
+.endproc
 
 ; ---------------------------------------------------------------
 ; void __near__ main (void)
@@ -105,9 +183,38 @@ L0004:	ldy     _i
 ;
 	jsr     _ppu_on_all
 ;
+; ppu_wait_nmi();
+;
+L0007:	jsr     _ppu_wait_nmi
+;
+; pad1 = pad_poll(0);  // read the first controller
+;
+	lda     #$00
+	jsr     _pad_poll
+	sta     _pad1
+;
+; if (pad1 & PAD_A) {
+;
+	and     #$80
+	beq     L000C
+;
+; setSubPalette1();
+;
+	jsr     _setSubPalette1
+;
+; if (pad1 & PAD_B) {
+;
+L000C:	lda     _pad1
+	and     #$40
+	beq     L0007
+;
+; setSubPalette0();
+;
+	jsr     _setSubPalette0
+;
 ; while (1){
 ;
-L000A:	jmp     L000A
+	jmp     L0007
 
 .endproc
 
