@@ -11,14 +11,21 @@
 #include "LIB/neslib.h"
 #include "LIB/nesdoug.h" 
 
-#define BLACK 0x27
+#define BLACK 0x0F
 #define DK_GY 0x00
 #define LT_GY 0x10
 #define WHITE 0x30
-// there's some oddities in the palette code, black must be 0x0f, white must be 0x30
- 
- 
- 
+#define ORANGE 0x27
+#define YELLOW 0x28
+#define GREEN 0x2A
+#define TEAL 0x2C
+#define BROWN 0x18
+#define RED 0x16
+#define PURPLE 0x14
+#define BLUE 0x12
+#define DK_GREEN 0x09
+#define DK_BLUE 0x0B
+
 #pragma bss-name(push, "ZEROPAGE")
 
 // GLOBAL VARIABLES
@@ -26,38 +33,32 @@
 // zeropage global is even faster
 
 unsigned char i;
-unsigned char pad1;
+unsigned char pad1; // Variable for controller 1
 
 
 const unsigned char text[]="Sigma Boy"; // zero terminated c string
 
 const unsigned char palette[]={
-BLACK, DK_GY, LT_GY, WHITE,
-0x0A,0x0E,0x15,0x1A,
-0,0,0,0,
-0,0,0,0
+BLACK, DK_GY, LT_GY, WHITE, // Palette 0 
+ORANGE,BLUE,PURPLE,YELLOW, // Sub-Palette 1
+0,0,0,0, // Sub-Palette 2
+0,0,0,0 // Sub-Palette 3
 }; 
 
 
 void setSubPalette0(void) {
-    ppu_off();
-    // Go to the first nametable's attribute table
-    vram_adr(NTADR_A(0,0) + 0x03C0);
-    // Fill 64 bytes with 0x00 
-    //   -> sub-palette #0 for each 2x2 tile region
-    vram_fill(0x00, 64);
-    ppu_on_all();
+    ppu_off(); // Turns the screen off.
+    vram_adr(NTADR_A(0,0) + 0x03C0); // Goes to the VRAM address for the first name table. The +0x03C0 jumps to the attribute table of the name table.
+    vram_fill(0x00, 64); // Changes all 64 bytes of the attribute table, telling it to use sub-palette zero. The 0x00 sets all 2-bit pairs to 00, meaning to use sub-palette zero.
+    ppu_on_all(); // Turns the screen on.
 }
 
 
 void setSubPalette1(void) {
-    ppu_off();
-    // Go to the first nametable's attribute table
-    vram_adr(NTADR_A(0,0) + 0x03C0);
-    // Fill 64 bytes with 0x55 
-    //   -> sub-palette #1 for each 2x2 tile region
-    vram_fill(0x55, 64);
-    ppu_on_all();
+    ppu_off(); // Turns the screen off.
+    vram_adr(NTADR_A(0,0) + 0x03C0); // Goes to the VRAM address for the first name table. The +0x03C0 jumps to the attribute table of the name table.
+    vram_fill(0x55, 64); // Changes all 64 bytes of the attribute table, telling it to use sub-palette one. The 0x55 sets all 2-bit pairs to 01, meaning to use sub-palette one.
+    ppu_on_all(); // Turns the screen on.
 }
 
 

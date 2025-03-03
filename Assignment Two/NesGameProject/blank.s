@@ -32,14 +32,14 @@
 _text:
 	.byte	$53,$69,$67,$6D,$61,$20,$42,$6F,$79,$00
 _palette:
-	.byte	$27
+	.byte	$0F
 	.byte	$00
 	.byte	$10
 	.byte	$30
-	.byte	$0A
-	.byte	$0E
-	.byte	$15
-	.byte	$1A
+	.byte	$27
+	.byte	$12
+	.byte	$14
+	.byte	$28
 	.byte	$00
 	.byte	$00
 	.byte	$00
