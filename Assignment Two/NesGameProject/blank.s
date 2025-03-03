@@ -12,26 +12,34 @@
 	.macpack	longbranch
 	.forceimport	__STARTUP__
 	.import		_pal_bg
+	.import		_pal_spr
 	.import		_ppu_wait_nmi
 	.import		_ppu_off
 	.import		_ppu_on_all
+	.import		_oam_clear
+	.import		_oam_meta_spr
 	.import		_pad_poll
+	.import		_bank_spr
 	.import		_vram_adr
 	.import		_vram_put
 	.import		_vram_fill
 	.export		_i
 	.export		_pad1
 	.export		_text
-	.export		_palette
+	.export		_paletteBackground
+	.export		_paletteSprite
+	.export		_testSprite
 	.export		_setSubPalette0
 	.export		_setSubPalette1
+	.export		_drawSprite
 	.export		_main
 
 .segment	"RODATA"
 
 _text:
-	.byte	$53,$69,$67,$6D,$61,$20,$42,$6F,$79,$00
-_palette:
+	.byte	$43,$41,$49,$4E,$45,$27,$53,$20,$54,$45,$53,$54,$20,$50,$52,$4F
+	.byte	$4A,$45,$43,$54,$00
+_paletteBackground:
 	.byte	$0F
 	.byte	$00
 	.byte	$10
@@ -48,6 +56,41 @@ _palette:
 	.byte	$00
 	.byte	$00
 	.byte	$00
+_paletteSprite:
+	.byte	$0F
+	.byte	$27
+	.byte	$28
+	.byte	$12
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+_testSprite:
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$08
+	.byte	$10
+	.byte	$00
+	.byte	$08
+	.byte	$00
+	.byte	$00
+	.byte	$40
+	.byte	$08
+	.byte	$08
+	.byte	$10
+	.byte	$40
+	.byte	$80
 
 .segment	"BSS"
 
@@ -68,17 +111,17 @@ _pad1:
 .segment	"CODE"
 
 ;
-; ppu_off();
+; ppu_off(); // Turns the screen off.
 ;
 	jsr     _ppu_off
 ;
-; vram_adr(NTADR_A(0,0) + 0x03C0);
+; vram_adr(NTADR_A(0,0) + 0x03C0); // Goes to the VRAM address for the first name table. The +0x03C0 jumps to the attribute table of the name table.
 ;
 	ldx     #$23
 	lda     #$C0
 	jsr     _vram_adr
 ;
-; vram_fill(0x00, 64);
+; vram_fill(0x00, 64); // Changes all 64 bytes of the attribute table, telling it to use sub-palette zero. The 0x00 sets all 2-bit pairs to 00, meaning to use sub-palette zero.
 ;
 	lda     #$00
 	jsr     pusha
@@ -86,7 +129,7 @@ _pad1:
 	lda     #$40
 	jsr     _vram_fill
 ;
-; ppu_on_all();
+; ppu_on_all(); // Turns the screen on.
 ;
 	jmp     _ppu_on_all
 
@@ -103,17 +146,17 @@ _pad1:
 .segment	"CODE"
 
 ;
-; ppu_off();
+; ppu_off(); // Turns the screen off.
 ;
 	jsr     _ppu_off
 ;
-; vram_adr(NTADR_A(0,0) + 0x03C0);
+; vram_adr(NTADR_A(0,0) + 0x03C0); // Goes to the VRAM address for the first name table. The +0x03C0 jumps to the attribute table of the name table.
 ;
 	ldx     #$23
 	lda     #$C0
 	jsr     _vram_adr
 ;
-; vram_fill(0x55, 64);
+; vram_fill(0x55, 64); // Changes all 64 bytes of the attribute table, telling it to use sub-palette one. The 0x55 sets all 2-bit pairs to 01, meaning to use sub-palette one.
 ;
 	lda     #$55
 	jsr     pusha
@@ -121,9 +164,39 @@ _pad1:
 	lda     #$40
 	jsr     _vram_fill
 ;
-; ppu_on_all();
+; ppu_on_all(); // Turns the screen on.
 ;
 	jmp     _ppu_on_all
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ drawSprite (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_drawSprite: near
+
+.segment	"CODE"
+
+;
+; oam_clear(); // Clears all sprites from the sprite buffer.
+;
+	jsr     _oam_clear
+;
+; oam_meta_spr(16, 18, testSprite); // Draws the metasprite at x pos 16, y pos 18 and using the testSprite data.
+;
+	jsr     decsp2
+	lda     #$10
+	ldy     #$01
+	sta     (sp),y
+	lda     #$12
+	dey
+	sta     (sp),y
+	lda     #<(_testSprite)
+	ldx     #>(_testSprite)
+	jmp     _oam_meta_spr
 
 .endproc
 
@@ -138,48 +211,59 @@ _pad1:
 .segment	"CODE"
 
 ;
-; ppu_off(); // screen off
+; ppu_off(); // Turns the screen off.
 ;
 	jsr     _ppu_off
 ;
-; pal_bg(palette); // load the BG palette
+; pal_bg(paletteBackground); // Sets the Background Palette.
 ;
-	lda     #<(_palette)
-	ldx     #>(_palette)
+	lda     #<(_paletteBackground)
+	ldx     #>(_paletteBackground)
 	jsr     _pal_bg
 ;
-; vram_adr(NTADR_A(2,14)); // screen is 32 x 30 tiles
+; pal_spr(paletteSprite); // Sets the Sprite Palette.
 ;
-	ldx     #$21
-	lda     #$C2
+	lda     #<(_paletteSprite)
+	ldx     #>(_paletteSprite)
+	jsr     _pal_spr
+;
+; bank_spr(1); // Tells the program to use the second batch of tiles from the bank for the sprite. Both background and sprite uses 0 by default, however Alpha3 has the sprite tiles on 2.
+;
+	lda     #$01
+	jsr     _bank_spr
+;
+; vram_adr(NTADR_A(0,0)); // Sets starting point for the text to 0, 0.
+;
+	ldx     #$20
+	lda     #$00
 	jsr     _vram_adr
 ;
-; i = 0;
+; i = 0; // Sets [i] to 0, so the text displays from the beginning.
 ;
 	lda     #$00
 	sta     _i
 ;
-; while(text[i]){
+; while(text[i]){ // Runs while there is still chars in the text string.
 ;
 	jmp     L0004
 ;
-; vram_put(text[i]); // this pushes 1 char to the screen
+; vram_put(text[i]); // Pushes the [i] char from the text string to the screen.
 ;
 L0002:	ldy     _i
 	lda     _text,y
 	jsr     _vram_put
 ;
-; ++i;
+; ++i; // Increments [i]
 ;
 	inc     _i
 ;
-; while(text[i]){
+; while(text[i]){ // Runs while there is still chars in the text string.
 ;
 L0004:	ldy     _i
 	lda     _text,y
 	bne     L0002
 ;
-; ppu_on_all(); // turn on screen
+; ppu_on_all(); // Turns on the Screen.
 ;
 	jsr     _ppu_on_all
 ;
@@ -206,11 +290,15 @@ L0007:	jsr     _ppu_wait_nmi
 ;
 L000C:	lda     _pad1
 	and     #$40
-	beq     L0007
+	beq     L000B
 ;
 ; setSubPalette0();
 ;
 	jsr     _setSubPalette0
+;
+; drawSprite();
+;
+L000B:	jsr     _drawSprite
 ;
 ; while (1){
 ;

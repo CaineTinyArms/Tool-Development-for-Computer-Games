@@ -1,13 +1,3 @@
-/*	simple template, for cc65, for NES
- *  writing to the screen with rendering disabled
- *	using nesdoug
- *	Doug Fraker 2018
- *  and NESDoug's version of neslib
- *  Modded by Dr Mike Reddy 2024
- */	
- 
- 
- 
 #include "LIB/neslib.h"
 #include "LIB/nesdoug.h" 
 
@@ -28,65 +18,60 @@
 
 #pragma bss-name(push, "ZEROPAGE")
 
-// GLOBAL VARIABLES
-// all variables should be global for speed
-// zeropage global is even faster
-
 unsigned char i;
 unsigned char pad1; // Variable for controller 1
 
+const unsigned char text[]="CAINE'S TEST PROJECT"; // zero terminated c string
 
-const unsigned char text[]="Sigma Boy"; // zero terminated c string
-
-const unsigned char palette[]={
+const unsigned char paletteBackground[]=
+{
 BLACK, DK_GY, LT_GY, WHITE, // Palette 0 
 ORANGE,BLUE,PURPLE,YELLOW, // Sub-Palette 1
 0,0,0,0, // Sub-Palette 2
 0,0,0,0 // Sub-Palette 3
 }; 
 
+const unsigned char paletteSprite[] = 
+{
+BLACK, ORANGE, YELLOW, BLUE,
+0,0,0,0,
+0,0,0,0,
+0,0,0,0
+};
 
-void setSubPalette0(void) {
-    ppu_off(); // Turns the screen off.
-    vram_adr(NTADR_A(0,0) + 0x03C0); // Goes to the VRAM address for the first name table. The +0x03C0 jumps to the attribute table of the name table.
-    vram_fill(0x00, 64); // Changes all 64 bytes of the attribute table, telling it to use sub-palette zero. The 0x00 sets all 2-bit pairs to 00, meaning to use sub-palette zero.
-    ppu_on_all(); // Turns the screen on.
-}
+const unsigned char testSprite[] = 
+{
+    0, 0, 0x00, 0,
+    0, 8, 0x10, 0,
+    8, 0, 0x00, 0|OAM_FLIP_H,
+    8, 8, 0x10, 0|OAM_FLIP_H,
+    128
+};
 
 
-void setSubPalette1(void) {
-    ppu_off(); // Turns the screen off.
-    vram_adr(NTADR_A(0,0) + 0x03C0); // Goes to the VRAM address for the first name table. The +0x03C0 jumps to the attribute table of the name table.
-    vram_fill(0x55, 64); // Changes all 64 bytes of the attribute table, telling it to use sub-palette one. The 0x55 sets all 2-bit pairs to 01, meaning to use sub-palette one.
-    ppu_on_all(); // Turns the screen on.
-}
+void setSubPalette0(void); // Prototype for changing palette to 0 function.
+void setSubPalette1(void); // Prototype for changing palette to 1 function.
+void drawSprite(void); // Prototype for drawing sprite function.
 
-
-	
 
 void main (void) {
 	
-	ppu_off(); // screen off
+	ppu_off(); // Turns the screen off.
 
-	pal_bg(palette); //	load the BG palette
-		
-	// set a starting point on the screen
-	// vram_adr(NTADR_A(x,y));
-	vram_adr(NTADR_A(2,14)); // screen is 32 x 30 tiles
+	pal_bg(paletteBackground); //	Sets the Background Palette.
+    pal_spr(paletteSprite); // Sets the Sprite Palette.
+	
+    bank_spr(1); // Tells the program to use the second batch of tiles from the bank for the sprite. Both background and sprite uses 0 by default, however Alpha3 has the sprite tiles on 2.
 
-	i = 0;
-	while(text[i]){
-		vram_put(text[i]); // this pushes 1 char to the screen
-		++i;
+	vram_adr(NTADR_A(0,0)); // Sets starting point for the text to 0, 0.
+
+	i = 0; // Sets [i] to 0, so the text displays from the beginning.
+	while(text[i]){ // Runs while there is still chars in the text string.
+		vram_put(text[i]); // Pushes the [i] char from the text string to the screen.
+		++i; // Increments [i]
 	}	
 	
-	// vram_adr and vram_put only work with screen off
-	// NOTE, you could replace everything between i = 0; and here with...
-	// vram_write(text,sizeof(text));
-	// does the same thing
-	
-
-	ppu_on_all(); //	turn on screen
+	ppu_on_all(); // Turns on the Screen.
 	
 	
 	while (1){
@@ -104,7 +89,29 @@ void main (void) {
             setSubPalette0();
         }
         
+        drawSprite();
 	}
 }
 	
-	
+
+void setSubPalette0(void) {
+    ppu_off(); // Turns the screen off.
+    vram_adr(NTADR_A(0,0) + 0x03C0); // Goes to the VRAM address for the first name table. The +0x03C0 jumps to the attribute table of the name table.
+    vram_fill(0x00, 64); // Changes all 64 bytes of the attribute table, telling it to use sub-palette zero. The 0x00 sets all 2-bit pairs to 00, meaning to use sub-palette zero.
+    ppu_on_all(); // Turns the screen on.
+}
+
+
+void setSubPalette1(void) {
+    ppu_off(); // Turns the screen off.
+    vram_adr(NTADR_A(0,0) + 0x03C0); // Goes to the VRAM address for the first name table. The +0x03C0 jumps to the attribute table of the name table.
+    vram_fill(0x55, 64); // Changes all 64 bytes of the attribute table, telling it to use sub-palette one. The 0x55 sets all 2-bit pairs to 01, meaning to use sub-palette one.
+    ppu_on_all(); // Turns the screen on.
+}
+
+void drawSprite(void)
+{
+    oam_clear(); // Clears all sprites from the sprite buffer.
+
+    oam_meta_spr(16, 18, testSprite); // Draws the metasprite at x pos 16, y pos 18 and using the testSprite data. Nes Screen is 256 x 240 in pixels, so max range for sprite drawing is 255, 239.
+}
