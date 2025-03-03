@@ -185,7 +185,7 @@ _pad1:
 ;
 	jsr     _oam_clear
 ;
-; oam_meta_spr(16, 18, testSprite); // Draws the metasprite at x pos 16, y pos 18 and using the testSprite data.
+; oam_meta_spr(16, 18, testSprite); // Draws the metasprite at x pos 16, y pos 18 and using the testSprite data. Nes Screen is 256 x 240 in pixels, so max range for sprite drawing is 255, 239.
 ;
 	jsr     decsp2
 	lda     #$10
