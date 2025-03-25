@@ -20,6 +20,9 @@ signed char aimDirectionY = 0;
 signed char bulletDirectionX = 0;
 signed char bulletDirectionY = 0;
 
+signed char playerVelocity = 0;
+#define GRAVITY 1
+#define MAX_FALL_SPEED 4
 
 
 // Function Prototypes.
@@ -37,6 +40,8 @@ void spawnBlueBullet(void);
 void updateBullet(void);
 void drawBullet(void);
 
+unsigned char onGround(void);
+void applyGravity(void);
 
 void main (void) {
 	
@@ -70,6 +75,8 @@ void main (void) {
 		{
 			shootMode();
 		}
+
+		applyGravity();
 
 		updateBullet(); // Moves Bullet.
         portalPlayerCollision(); // Handle Portal Collision with the Player. 
@@ -237,9 +244,14 @@ void updateBullet(void)
 				tileX--; // Put the portal one tile to the left.
 			}
 
-			else if (bulletDirectionY < 0 && tileX < 31) // If the bullet is moving to the left.
+			else if (bulletDirectionX < 0 && tileX < 31) // If the bullet is moving to the left.
 			{
 				tileX++; // PLace the portal one tile to the right.
+			}
+			
+			if (bulletDirectionY > 0 && tileY > 0)
+			{
+				tileY--;
 			}
 
             if (orangePortalActive) // If there is an orange portal active.
@@ -354,4 +366,45 @@ void shootMode(void)
 			spawnBlueBullet(); // Shoot a blue bullet.
 		}
 	}
+}
+
+unsigned char onGround(void)
+{
+	 unsigned char footY = (testSpriteData.Y + testSpriteData.height + 1) >> 3;
+	 unsigned char footXLeft = testSpriteData.X >> 3;
+	 unsigned char footXRight = (testSpriteData.X + testSpriteData.width) >> 3;
+
+	 if (wallDetection(footXLeft, footY) || wallDetection(footXRight, footY))
+	 {
+		return 1;
+	 }
+
+	 return 0;
+}
+
+void applyGravity(void)
+{
+	if (!onGround()) // If the player is not touching the ground.
+	{
+        playerVelocity += GRAVITY; // Add gravity to the players velocity.
+        if (playerVelocity > MAX_FALL_SPEED) // If the players max velocity is more than the max fall speed.
+		{ 
+            playerVelocity = MAX_FALL_SPEED; // Sets the velocity to the max fall speed.
+        }
+    }
+
+	else // If the player is touching the ground.
+	{
+		if (playerVelocity > 0) // If the player still has velocity.
+		{
+			playerVelocity = 0; // Set the velocity to 0.
+		}
+	}
+
+	if (playerVelocity != 0) // If the player has any velocity.
+	{
+		testSpriteData.Y += playerVelocity; // Move the player down the screen at the speed of the velocity.
+	}
+	
+	playerVelocity = 0;
 }

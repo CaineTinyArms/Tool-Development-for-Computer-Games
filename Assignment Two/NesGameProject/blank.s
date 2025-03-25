@@ -53,6 +53,7 @@
 	.export		_aimDirectionY
 	.export		_bulletDirectionX
 	.export		_bulletDirectionY
+	.export		_playerVelocity
 	.export		_modeToggle
 	.export		_walkMode
 	.export		_shootMode
@@ -63,6 +64,8 @@
 	.export		_spawnBlueBullet
 	.export		_updateBullet
 	.export		_drawBullet
+	.export		_onGround
+	.export		_applyGravity
 	.export		_main
 
 .segment	"DATA"
@@ -109,6 +112,8 @@ _aimDirectionY:
 _bulletDirectionX:
 	.byte	$00
 _bulletDirectionY:
+	.byte	$00
+_playerVelocity:
 	.byte	$00
 
 .segment	"RODATA"
@@ -2545,7 +2550,7 @@ L0017:	lda     _pad1
 L001A:	ldy     #$01
 	sta     (sp),y
 ;
-; if (newDirectionX != 0 || newDirectionY != 0)
+; if (newDirectionX != 0 || newDirectionY != 0) // If the aiming has been changed. 
 ;
 L0007:	ldy     #$01
 	lda     (sp),y
@@ -2554,13 +2559,13 @@ L0007:	ldy     #$01
 	lda     (sp),y
 	beq     L0008
 ;
-; aimDirectionX = newDirectionX;
+; aimDirectionX = newDirectionX; // Set the aiming direction X to the new direction.
 ;
 	iny
 L001B:	lda     (sp),y
 	sta     _aimDirectionX
 ;
-; aimDirectionY = newDirectionY;
+; aimDirectionY = newDirectionY; // Set the aiming direction Y to the new direction.
 ;
 	dey
 	lda     (sp),y
@@ -3029,7 +3034,7 @@ L0008:	lda     #$FF
 ;
 ; return; // Do nothing.
 ;
-	bne     L0056
+	bne     L0060
 ;
 ; }
 ;
@@ -3037,8 +3042,8 @@ L0008:	lda     #$FF
 ;
 ; if (bulletActive == 1) // If there is an orange bullet on the screen.
 ;
-L0056:	cmp     #$01
-	jne     L0044
+L0060:	cmp     #$01
+	jne     L004A
 ;
 ; orangeBulletSpriteData.X += bulletDirectionX; // Move the bullet across the screen.
 ;
@@ -3075,7 +3080,7 @@ L0006:	lda     #<(_orangeBulletSpriteData)
 	ldx     #>(_orangeBulletSpriteData)
 	jsr     _playerWallCollision
 	tax
-	bne     L0057
+	bne     L0061
 ;
 ; }
 ;
@@ -3083,7 +3088,7 @@ L0006:	lda     #<(_orangeBulletSpriteData)
 ;
 ; unsigned char tileX = (orangeBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
 ;
-L0057:	ldx     #$00
+L0061:	ldx     #$00
 	lda     _orangeBulletSpriteData
 	clc
 	adc     #$04
@@ -3110,10 +3115,10 @@ L0009:	jsr     asrax3
 	sbc     #$01
 	bvs     L000C
 	eor     #$80
-L000C:	bpl     L003E
+L000C:	bpl     L0044
 	ldy     #$01
 	lda     (sp),y
-	beq     L003E
+	beq     L0044
 ;
 ; tileX--;
 ;
@@ -3122,8 +3127,8 @@ L000C:	bpl     L003E
 ;
 ; else if (bulletDirectionY < 0 && tileX < 31)
 ;
-	jmp     L0034
-L003E:	lda     _bulletDirectionY
+	jmp     L003A
+L0044:	lda     _bulletDirectionY
 	asl     a
 	bcc     L0011
 	ldy     #$01
@@ -3135,7 +3140,7 @@ L003E:	lda     _bulletDirectionY
 ;
 	tya
 	adc     (sp),y
-L0034:	sta     (sp),y
+L003A:	sta     (sp),y
 ;
 ; if (bluePortalActive) // If there is a blue portal active.
 ;
@@ -3209,10 +3214,10 @@ L0016:	ldy     #$01
 ;
 ; else if (bulletActive == 2) // If the bullet is a blue bullet.
 ;
-	jmp     L0055
-L0044:	lda     _bulletActive
+	jmp     L005F
+L004A:	lda     _bulletActive
 	cmp     #$02
-	beq     L0058
+	beq     L0062
 ;
 ; }
 ;
@@ -3220,7 +3225,7 @@ L0044:	lda     _bulletActive
 ;
 ; blueBulletSpriteData.X += bulletDirectionX; // Move the blue bullet sprite across the screen, in the direction of the X aiming variable, I.E, -1 to go left, +1 to go right.
 ;
-L0058:	lda     _bulletDirectionX
+L0062:	lda     _bulletDirectionX
 	clc
 	adc     _blueBulletSpriteData
 	sta     _blueBulletSpriteData
@@ -3253,7 +3258,7 @@ L001F:	lda     #<(_blueBulletSpriteData)
 	ldx     #>(_blueBulletSpriteData)
 	jsr     _playerWallCollision
 	tax
-	bne     L0059
+	bne     L0063
 ;
 ; }
 ;
@@ -3261,7 +3266,7 @@ L001F:	lda     #<(_blueBulletSpriteData)
 ;
 ; unsigned char tileX = (blueBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
 ;
-L0059:	ldx     #$00
+L0063:	ldx     #$00
 	lda     _blueBulletSpriteData
 	clc
 	adc     #$04
@@ -3281,44 +3286,62 @@ L0021:	jsr     asrax3
 L0022:	jsr     asrax3
 	jsr     pusha
 ;
-; if (bulletDirectionX > 0 && tileX > 0)
+; if (bulletDirectionX > 0 && tileX > 0) // If the bullet is moving to the right.
 ;
 	lda     _bulletDirectionX
 	sec
 	sbc     #$01
 	bvs     L0025
 	eor     #$80
-L0025:	bpl     L004C
+L0025:	bpl     L0052
 	ldy     #$01
 	lda     (sp),y
-	beq     L004C
+	beq     L0052
 ;
-; tileX--;
+; tileX--; // Put the portal one tile to the left.
 ;
 	sec
 	sbc     #$01
 ;
-; else if (bulletDirectionY < 0 && tileX < 31)
+; else if (bulletDirectionX < 0 && tileX < 31) // If the bullet is moving to the left.
 ;
-	jmp     L0036
-L004C:	lda     _bulletDirectionY
+	jmp     L003C
+L0052:	lda     _bulletDirectionX
 	asl     a
-	bcc     L002A
+	bcc     L0056
 	ldy     #$01
 	lda     (sp),y
 	cmp     #$1F
-	bcs     L002A
+	bcs     L0056
 ;
-; tileX++;
+; tileX++; // PLace the portal one tile to the right.
 ;
 	tya
 	adc     (sp),y
-L0036:	sta     (sp),y
+L003C:	sta     (sp),y
+;
+; if (bulletDirectionY > 0 && tileY > 0)
+;
+L0056:	lda     _bulletDirectionY
+	sec
+	sbc     #$01
+	bvs     L0031
+	eor     #$80
+L0031:	bpl     L002F
+	ldy     #$00
+	lda     (sp),y
+	beq     L002F
+;
+; tileY--;
+;
+	sec
+	sbc     #$01
+	sta     (sp),y
 ;
 ; if (orangePortalActive) // If there is an orange portal active.
 ;
-L002A:	lda     _orangePortalActive
-	beq     L002F
+L002F:	lda     _orangePortalActive
+	beq     L0035
 ;
 ; unsigned char pTileX = orangePortalSpriteData.X >> 3; // Get the X tile from the Orange Portal.
 ;
@@ -3342,12 +3365,12 @@ L002A:	lda     _orangePortalActive
 	lda     (sp),y
 	ldy     #$03
 	cmp     (sp),y
-	bne     L0030
+	bne     L0036
 	ldy     #$00
 	lda     (sp),y
 	ldy     #$02
 	cmp     (sp),y
-	bne     L0030
+	bne     L0036
 ;
 ; bulletActive = 0; // Remove the bullet and do nothing.
 ;
@@ -3360,11 +3383,11 @@ L002A:	lda     _orangePortalActive
 ;
 ; }
 ;
-L0030:	jsr     incsp2
+L0036:	jsr     incsp2
 ;
 ; bluePortalSpriteData.X = tileX << 3; // Sets the blue portal X data to Tile X, if there is no portal there already.
 ;
-L002F:	ldy     #$01
+L0035:	ldy     #$01
 	lda     (sp),y
 	asl     a
 	asl     a
@@ -3387,7 +3410,7 @@ L002F:	ldy     #$01
 ;
 ; bulletActive = 0; // Removes the bullet, allowing for more shots.
 ;
-L0055:	sty     _bulletActive
+L005F:	sty     _bulletActive
 ;
 ; }
 ;
@@ -3447,6 +3470,154 @@ L0006:	lda     _bulletActive
 ; }
 ;
 L0004:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; unsigned char __near__ onGround (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_onGround: near
+
+.segment	"CODE"
+
+;
+; unsigned char footY = (testSpriteData.Y + testSpriteData.height + 1) >> 3;
+;
+	ldx     #$00
+	lda     _testSpriteData+1
+	clc
+	adc     _testSpriteData+2
+	bcc     L0008
+	inx
+	clc
+L0008:	adc     #$01
+	bcc     L0002
+	inx
+L0002:	jsr     asrax3
+	jsr     pusha
+;
+; unsigned char footXLeft = testSpriteData.X >> 3;
+;
+	lda     _testSpriteData
+	lsr     a
+	lsr     a
+	lsr     a
+	jsr     pusha
+;
+; unsigned char footXRight = (testSpriteData.X + testSpriteData.width) >> 3;
+;
+	ldx     #$00
+	lda     _testSpriteData
+	clc
+	adc     _testSpriteData+3
+	bcc     L0007
+	inx
+L0007:	jsr     asrax3
+	jsr     pusha
+;
+; if (wallDetection(footXLeft, footY) || wallDetection(footXRight, footY))
+;
+	ldy     #$01
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$03
+	lda     (sp),y
+	jsr     _wallDetection
+	tax
+	bne     L0004
+	lda     (sp,x)
+	jsr     pusha
+	ldy     #$03
+	lda     (sp),y
+	jsr     _wallDetection
+	tax
+	beq     L0001
+;
+; return 1;
+;
+L0004:	ldx     #$00
+	lda     #$01
+;
+; }
+;
+L0001:	jmp     incsp3
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ applyGravity (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_applyGravity: near
+
+.segment	"CODE"
+
+;
+; if (!onGround()) // If the player is not touching the ground.
+;
+	jsr     _onGround
+	tax
+	bne     L0002
+;
+; playerVelocity += GRAVITY; // Add gravity to the players velocity.
+;
+	inc     _playerVelocity
+;
+; if (playerVelocity > MAX_FALL_SPEED) // If the players max velocity is more than the max fall speed.
+;
+	lda     _playerVelocity
+	sec
+	sbc     #$05
+	bvs     L0006
+	eor     #$80
+L0006:	bpl     L0010
+;
+; playerVelocity = MAX_FALL_SPEED; // Sets the velocity to the max fall speed.
+;
+	lda     #$04
+;
+; else // If the player is touching the ground.
+;
+	jmp     L000E
+;
+; if (playerVelocity > 0) // If the player still has velocity.
+;
+L0002:	lda     _playerVelocity
+	sec
+	sbc     #$01
+	bvs     L000A
+	eor     #$80
+L000A:	bpl     L0010
+;
+; playerVelocity = 0; // Set the velocity to 0.
+;
+	lda     #$00
+L000E:	sta     _playerVelocity
+;
+; if (playerVelocity != 0) // If the player has any velocity.
+;
+L0010:	lda     _playerVelocity
+	beq     L0013
+;
+; testSpriteData.Y += playerVelocity; // Move the player down the screen at the speed of the velocity.
+;
+	clc
+	adc     _testSpriteData+1
+	sta     _testSpriteData+1
+;
+; playerVelocity = 0;
+;
+	lda     #$00
+L0013:	sta     _playerVelocity
+;
+; }
+;
+	rts
 
 .endproc
 
@@ -3541,9 +3712,13 @@ L0008:	lda     _mode
 ;
 	jsr     _shootMode
 ;
+; applyGravity();
+;
+L0007:	jsr     _applyGravity
+;
 ; updateBullet(); // Moves Bullet.
 ;
-L0007:	jsr     _updateBullet
+	jsr     _updateBullet
 ;
 ; portalPlayerCollision(); // Handle Portal Collision with the Player. 
 ;
