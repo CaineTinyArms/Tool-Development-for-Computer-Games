@@ -13,7 +13,6 @@
 	.forceimport	__STARTUP__
 	.import		_pal_bg
 	.import		_pal_spr
-	.import		_pal_col
 	.import		_ppu_wait_nmi
 	.import		_ppu_off
 	.import		_ppu_on_all
@@ -31,7 +30,6 @@
 	.export		_portal1SpriteData
 	.export		_portal2SpriteData
 	.export		_drawSprite
-	.export		_movement
 	.export		_paletteBackground
 	.export		_paletteSprite
 	.export		_i
@@ -39,6 +37,8 @@
 	.export		_portal1Collision
 	.export		_portal2Collision
 	.export		_text
+	.export		_movement
+	.export		_portalPlayerCollision
 	.export		_testFunc
 	.export		_main
 
@@ -217,7 +217,7 @@ _portal2Collision:
 .segment	"CODE"
 
 ;
-; if(pad1 & PAD_LEFT){
+; if(pad1 & PAD_LEFT){ // If Left on the DPAD is pressed, remove one from the player's X data.
 ;
 	lda     _pad1
 	and     #$02
@@ -227,7 +227,7 @@ _portal2Collision:
 ;
 	dec     _testSpriteData
 ;
-; else if (pad1 & PAD_RIGHT){
+; else if (pad1 & PAD_RIGHT){ // If Right on the DPAD is pressed, add one to the player's X data.
 ;
 	rts
 L0006:	lda     _pad1
@@ -245,6 +245,62 @@ L0004:	rts
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ portalPlayerCollision (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_portalPlayerCollision: near
+
+.segment	"CODE"
+
+;
+; portal1Collision = check_collision(&testSpriteData, &portal1SpriteData); // Checks if the player is colliding with the data for the first portal.
+;
+	lda     #<(_testSpriteData)
+	ldx     #>(_testSpriteData)
+	jsr     pushax
+	lda     #<(_portal1SpriteData)
+	ldx     #>(_portal1SpriteData)
+	jsr     _check_collision
+	sta     _portal1Collision
+;
+; portal2Collision = check_collision(&testSpriteData, &portal2SpriteData); // Checks if the player is colliding with the data for the second portal.
+;
+	lda     #<(_testSpriteData)
+	ldx     #>(_testSpriteData)
+	jsr     pushax
+	lda     #<(_portal2SpriteData)
+	ldx     #>(_portal2SpriteData)
+	jsr     _check_collision
+	sta     _portal2Collision
+;
+; if (portal1Collision) // If the player is colliding with the first portal.
+;
+	lda     _portal1Collision
+	beq     L0002
+;
+; testSpriteData.X = portal2SpriteData.X; // Sets the player X data to the X location of the second portal.
+;
+	lda     _portal2SpriteData
+	sta     _testSpriteData
+;
+; testSpriteData.Y = portal2SpriteData.Y; // Sets the player Y data to the Y location of the second portal.
+;
+	lda     _portal2SpriteData+1
+	sta     _testSpriteData+1
+;
+; else if (portal2Collision) // If the player is colliding with the second portal.
+;
+	rts
+;
+; }
+;
+L0002:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ testFunc (void)
 ; ---------------------------------------------------------------
 
@@ -255,59 +311,9 @@ L0004:	rts
 .segment	"CODE"
 
 ;
-; portal1Collision = check_collision(&testSpriteData, &portal1SpriteData);
-;
-	lda     #<(_testSpriteData)
-	ldx     #>(_testSpriteData)
-	jsr     pushax
-	lda     #<(_portal1SpriteData)
-	ldx     #>(_portal1SpriteData)
-	jsr     _check_collision
-	sta     _portal1Collision
-;
-; portal2Collision = check_collision(&testSpriteData, &portal2SpriteData);
-;
-	lda     #<(_testSpriteData)
-	ldx     #>(_testSpriteData)
-	jsr     pushax
-	lda     #<(_portal2SpriteData)
-	ldx     #>(_portal2SpriteData)
-	jsr     _check_collision
-	sta     _portal2Collision
-;
-; if (portal1Collision)
-;
-	lda     _portal1Collision
-	beq     L0002
-;
-; testSpriteData.X = portal2SpriteData.X;
-;
-	lda     _portal2SpriteData
-	sta     _testSpriteData
-;
-; testSpriteData.Y = portal2SpriteData.Y;
-;
-	lda     _portal2SpriteData+1
-	sta     _testSpriteData+1
-;
-; else if (portal2Collision)
-;
-	rts
-L0002:	lda     _portal2Collision
-;
-; else
-;
-	bne     L0005
-;
-; pal_col(0, BLACK);
-;
-	jsr     pusha
-	lda     #$0F
-	jmp     _pal_col
-;
 ; }
 ;
-L0005:	rts
+	rts
 
 .endproc
 
@@ -388,17 +394,17 @@ L0007:	jsr     _ppu_wait_nmi
 	jsr     _pad_poll
 	sta     _pad1
 ;
-; drawSprite();
+; drawSprite(); // Draw all sprites.
 ;
 	jsr     _drawSprite
 ;
-; movement();
+; movement(); // Handle Player Movement.
 ;
 	jsr     _movement
 ;
-; testFunc();
+; portalPlayerCollision(); // Handle Portal Collision with the Player.
 ;
-	jsr     _testFunc
+	jsr     _portalPlayerCollision
 ;
 ; while (1){
 ;

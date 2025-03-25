@@ -9,19 +9,19 @@ const unsigned char testSprite[] =
 
 const unsigned char testPortal1[] =
 {
-    0, 0, 0x01, 1,
-    0, 8, 0x01, 1|OAM_FLIP_V,
-    128
+    0, 0, 0x01, 1, // Relative X, Relative Y, Tile Index, Tells it to use Pallete 1.
+    0, 8, 0x01, 1|OAM_FLIP_V, // Exact same tile as above, just flipped vertically to make the illusion of a portal.
+    128 // Ends the sprite.
 };
 
 const unsigned char testPortal2[] = 
 {
-    0, 0, 0x01, 2,
+    0, 0, 0x01, 2, // Exact same as the first portal, however tells it to use palette 2 instead.
     0, 8, 0x01, 2|OAM_FLIP_V,
-    128
+    128 // Ends the sprite.
 };
 
-struct spriteData 
+struct spriteData // Struct to hold the Sprite Format that every sprite will follow.
 {
     unsigned char X;
     unsigned char Y;
@@ -29,15 +29,14 @@ struct spriteData
     unsigned char width;
 };
 
-struct spriteData testSpriteData = {64, 80, 15, 14};
+struct spriteData testSpriteData = {64, 80, 15, 14}; // Sprite Data For the Player Sprite
 
-struct spriteData portal1SpriteData = {200, 80, 7, 2};
+struct spriteData portal1SpriteData = {200, 80, 7, 2}; // Sprite Data for the First Portal Sprite.
 
-struct spriteData portal2SpriteData = {100, 80, 7, 2};
+struct spriteData portal2SpriteData = {100, 80, 7, 2}; // Sprite Data for the Second Portal Sprite.
 
 // FUNCTION PROTOTYPES
 void drawSprite(void); // Prototype for drawing sprite function.
-void movement(void);
 
 void drawSprite(void)
 {

@@ -12,7 +12,10 @@ unsigned char portal2Collision;
 
 const unsigned char text[]="CAINE'S TEST PROJECT"; // zero terminated c string
 
+void movement(void);
+void portalPlayerCollision(void);
 void testFunc(void);
+
 
 void main (void) {
 	
@@ -39,39 +42,40 @@ void main (void) {
 	   // Wait for NMI and read controller
         ppu_wait_nmi();
         pad1 = pad_poll(0);  // read the first controller
-        drawSprite();
-        movement();
-        testFunc();
+        drawSprite(); // Draw all sprites.
+        movement(); // Handle Player Movement.
+        portalPlayerCollision(); // Handle Portal Collision with the Player.
 	}
 }
 	
 void movement(void)
 {
-    if(pad1 & PAD_LEFT){
+    if(pad1 & PAD_LEFT){ // If Left on the DPAD is pressed, remove one from the player's X data.
 		testSpriteData.X -= 1;
 	}
-	else if (pad1 & PAD_RIGHT){
+	else if (pad1 & PAD_RIGHT){ // If Right on the DPAD is pressed, add one to the player's X data.
 		testSpriteData.X += 1;
+	}
+}
+
+void portalPlayerCollision(void)
+{
+	portal1Collision = check_collision(&testSpriteData, &portal1SpriteData); // Checks if the player is colliding with the data for the first portal.
+	portal2Collision = check_collision(&testSpriteData, &portal2SpriteData); // Checks if the player is colliding with the data for the second portal.
+
+	if (portal1Collision) // If the player is colliding with the first portal.
+	{ 
+		testSpriteData.X = portal2SpriteData.X; // Sets the player X data to the X location of the second portal.
+		testSpriteData.Y = portal2SpriteData.Y; // Sets the player Y data to the Y location of the second portal.
+	}
+	else if (portal2Collision) // If the player is colliding with the second portal.
+	{
+		//testSpriteData.X = portal1SpriteData.X; // Sets the player X data to the X location of the first portal. 
+		//testSpriteData.Y = portal1SpriteData.Y; // Sets the player Y data to the Y location of the first portal.
 	}
 }
 
 void testFunc(void)
 {
-	portal1Collision = check_collision(&testSpriteData, &portal1SpriteData);
-	portal2Collision = check_collision(&testSpriteData, &portal2SpriteData);
 
-	if (portal1Collision)
-	{
-		testSpriteData.X = portal2SpriteData.X;
-		testSpriteData.Y = portal2SpriteData.Y;
-	}
-	else if (portal2Collision)
-	{
-		//testSpriteData.X = portal1SpriteData.X;
-		//testSpriteData.Y = portal1SpriteData.Y;
-	}
-	else
-	{
-		pal_col(0, BLACK);
-	}
 }
