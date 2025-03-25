@@ -39,6 +39,7 @@
 	.export		_pad1
 	.export		_portal1Collision
 	.export		_portal2Collision
+	.export		_lastPortalUsed
 	.export		_movement
 	.export		_portalPlayerCollision
 	.export		_wallDetection
@@ -54,14 +55,16 @@ _testSpriteData:
 	.byte	$0E
 _portal1SpriteData:
 	.byte	$C8
-	.byte	$50
+	.byte	$C8
 	.byte	$07
 	.byte	$02
 _portal2SpriteData:
 	.byte	$64
-	.byte	$50
+	.byte	$C8
 	.byte	$07
 	.byte	$02
+_lastPortalUsed:
+	.byte	$00
 
 .segment	"RODATA"
 
@@ -2267,54 +2270,54 @@ _portal2Collision:
 .segment	"CODE"
 
 ;
-; unsigned char oldX = testSpriteData.X;
-;
-	lda     _testSpriteData
-	jsr     pusha
-;
-; unsigned char oldY = testSpriteData.Y;
-;
-	lda     _testSpriteData+1
-	jsr     pusha
-;
-; if(pad1 & PAD_LEFT){ // If Left on the DPAD is pressed, remove one from the player's X data.
+; if(pad1 & PAD_LEFT){ // If Left on the DPAD is pressed.
 ;
 	lda     _pad1
 	and     #$02
 	beq     L0008
 ;
-; testSpriteData.X -= 1;
+; testSpriteData.X -= 1; // Moves the sprite to the left.
 ;
 	dec     _testSpriteData
 ;
-; else if (pad1 & PAD_RIGHT){ // If Right on the DPAD is pressed, add one to the player's X data.
+; if (playerWallCollision(&testSpriteData)) // If the new position is colliding with a wall.
 ;
-	jmp     L000F
-L0008:	lda     _pad1
-	and     #$01
-	beq     L0006
-;
-; testSpriteData.X += 1;
-;
-	inc     _testSpriteData
-;
-; if (playerWallCollision(&testSpriteData))
-;
-L000F:	lda     #<(_testSpriteData)
+	lda     #<(_testSpriteData)
 	ldx     #>(_testSpriteData)
 	jsr     _playerWallCollision
 	tax
 	beq     L0006
 ;
-; testSpriteData.X = oldX;
+; testSpriteData.X +=1; // Re-moves the sprite to the right.
 ;
-	ldy     #$01
-	lda     (sp),y
-	sta     _testSpriteData
+	inc     _testSpriteData
+;
+; else if (pad1 & PAD_RIGHT){ // If Right on the DPAD is pressed.
+;
+	rts
+L0008:	lda     _pad1
+	and     #$01
+	beq     L0006
+;
+; testSpriteData.X += 1; // Moves the sprite to the right.
+;
+	inc     _testSpriteData
+;
+; if (playerWallCollision(&testSpriteData)) // If the new position is colliding with a wall.
+;
+	lda     #<(_testSpriteData)
+	ldx     #>(_testSpriteData)
+	jsr     _playerWallCollision
+	tax
+	beq     L0006
+;
+; testSpriteData.X -=1; // Removes the sprite to the left.
+;
+	dec     _testSpriteData
 ;
 ; }
 ;
-L0006:	jmp     incsp2
+L0006:	rts
 
 .endproc
 
@@ -2349,9 +2352,12 @@ L0006:	jmp     incsp2
 	jsr     _check_collision
 	sta     _portal2Collision
 ;
-; if (portal1Collision) // If the player is colliding with the first portal.
+; if (portal1Collision && lastPortalUsed != 1) // If the player is colliding with the first portal.
 ;
 	lda     _portal1Collision
+	beq     L0002
+	lda     _lastPortalUsed
+	cmp     #$01
 	beq     L0002
 ;
 ; testSpriteData.X = portal2SpriteData.X; // Sets the player X data to the X location of the second portal.
@@ -2364,13 +2370,52 @@ L0006:	jmp     incsp2
 	lda     _portal2SpriteData+1
 	sta     _testSpriteData+1
 ;
-; else if (portal2Collision) // If the player is colliding with the second portal.
+; lastPortalUsed = 2;
 ;
-	rts
+	lda     #$02
+;
+; else if (portal2Collision && lastPortalUsed != 2) // If the player is colliding with the second portal.
+;
+	jmp     L0010
+L0002:	lda     _portal2Collision
+	beq     L0007
+	lda     _lastPortalUsed
+	cmp     #$02
+	beq     L0007
+;
+; testSpriteData.X = portal1SpriteData.X; // Sets the player X data to the X location of the first portal. 
+;
+	lda     _portal1SpriteData
+	sta     _testSpriteData
+;
+; testSpriteData.Y = portal1SpriteData.Y; // Sets the player Y data to the Y location of the first portal.
+;
+	lda     _portal1SpriteData+1
+	sta     _testSpriteData+1
+;
+; lastPortalUsed = 1;
+;
+	lda     #$01
+;
+; else
+;
+	jmp     L0010
+;
+; if (!portal1Collision && !portal2Collision)
+;
+L0007:	lda     _portal1Collision
+	bne     L0015
+	lda     _portal2Collision
+	beq     L0010
+L0015:	rts
+;
+; lastPortalUsed = 0;
+;
+L0010:	sta     _lastPortalUsed
 ;
 ; }
 ;
-L0002:	rts
+	rts
 
 .endproc
 
@@ -2389,7 +2434,7 @@ L0002:	rts
 ;
 	jsr     pusha
 ;
-; if (x >= 32 || y >= 30)
+; if (x >= 32 || y >= 30) // Checks if the player is out of the screen area somehow.
 ;
 	ldy     #$01
 	lda     (sp),y
@@ -2402,13 +2447,13 @@ L0002:	rts
 	ldx     #$00
 	jmp     L0008
 ;
-; return 1;
+; return 1; // Returns a 1 to represent collision.
 ;
 L0006:	ldx     #$00
 	lda     #$01
 	jmp     incsp2
 ;
-; return testlevelcollision[y * 32 + x];
+; return testlevelcollision[y * 32 + x]; // Returns the appropriate tile from the testlevelcollision.h array, where 1 represents collision and 0 represents no collision.
 ;
 L0008:	lda     (sp),y
 	jsr     shlax4
@@ -2453,7 +2498,7 @@ L0005:	sta     ptr1
 ;
 	jsr     pushax
 ;
-; unsigned char leftTile   = spr->X >> 3;
+; unsigned char leftTile   = spr->X >> 3; // Converts the pixel location of the left side of the player into a tile location, which makes overlapping easier to detect.
 ;
 	ldy     #$01
 	lda     (sp),y
@@ -2467,7 +2512,7 @@ L0005:	sta     ptr1
 	lsr     a
 	jsr     pusha
 ;
-; unsigned char rightTile  = (spr->X + spr->width) >> 3;
+; unsigned char rightTile  = (spr->X + spr->width) >> 3; // Converts the pixel location of right side of the player into a tile location, which makes overlapping easier to detect.
 ;
 	ldy     #$02
 	lda     (sp),y
@@ -2493,7 +2538,7 @@ L0005:	sta     ptr1
 	lsr     a
 	jsr     pusha
 ;
-; unsigned char topTile    = spr->Y >> 3;
+; unsigned char topTile    = spr->Y >> 3; // Converts the pixel location of the top half of the player into a tile location, which makes overlapping easier to detect.
 ;
 	ldy     #$03
 	lda     (sp),y
@@ -2508,7 +2553,7 @@ L0005:	sta     ptr1
 	lsr     a
 	jsr     pusha
 ;
-; unsigned char bottomTile = (spr->Y + spr->height) >> 3;
+; unsigned char bottomTile = (spr->Y + spr->height) >> 3; // Converts the pixel location of the bottom half of the player into a tile location, which makes overlapping easier to detect.
 ;
 	ldy     #$04
 	lda     (sp),y
@@ -2534,7 +2579,7 @@ L0005:	sta     ptr1
 	lsr     a
 	jsr     pusha
 ;
-; if (wallDetection(leftTile, topTile)  ||
+; if (wallDetection(leftTile, topTile)  || wallDetection(rightTile, topTile) || wallDetection(leftTile, bottomTile) || wallDetection(rightTile, bottomTile)) // This checks if any of the tiles are a wall.
 ;
 	ldy     #$03
 	lda     (sp),y
@@ -2544,9 +2589,6 @@ L0005:	sta     ptr1
 	jsr     _wallDetection
 	tax
 	bne     L0003
-;
-; wallDetection(rightTile, topTile) ||
-;
 	ldy     #$02
 	lda     (sp),y
 	jsr     pusha
@@ -2555,9 +2597,6 @@ L0005:	sta     ptr1
 	jsr     _wallDetection
 	tax
 	bne     L0003
-;
-; wallDetection(leftTile, bottomTile) ||
-;
 	ldy     #$03
 	lda     (sp),y
 	jsr     pusha
@@ -2566,9 +2605,6 @@ L0005:	sta     ptr1
 	jsr     _wallDetection
 	tax
 	bne     L0003
-;
-; wallDetection(rightTile, bottomTile))
-;
 	ldy     #$02
 	lda     (sp),y
 	jsr     pusha
@@ -2578,7 +2614,7 @@ L0005:	sta     ptr1
 	tax
 	beq     L0005
 ;
-; return 1; // collision
+; return 1; // Returns a 1 to represent collision.
 ;
 L0003:	ldx     #$00
 	lda     #$01

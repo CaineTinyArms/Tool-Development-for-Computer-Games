@@ -31,9 +31,9 @@ struct spriteData // Struct to hold the Sprite Format that every sprite will fol
 
 struct spriteData testSpriteData = {16, 200, 15, 14}; // Sprite Data For the Player Sprite
 
-struct spriteData portal1SpriteData = {200, 80, 7, 2}; // Sprite Data for the First Portal Sprite.
+struct spriteData portal1SpriteData = {200, 200, 7, 2}; // Sprite Data for the First Portal Sprite.
 
-struct spriteData portal2SpriteData = {100, 80, 7, 2}; // Sprite Data for the Second Portal Sprite.
+struct spriteData portal2SpriteData = {100, 200, 7, 2}; // Sprite Data for the Second Portal Sprite.
 
 // FUNCTION PROTOTYPES
 void drawSprite(void); // Prototype for drawing sprite function.

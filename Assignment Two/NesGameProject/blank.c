@@ -11,6 +11,7 @@ unsigned char i;
 unsigned char pad1; 
 unsigned char portal1Collision;
 unsigned char portal2Collision;
+unsigned char lastPortalUsed = 0;
 
 void movement(void);
 void portalPlayerCollision(void);
@@ -47,21 +48,18 @@ void main (void) {
 	
 void movement(void)
 {
-	unsigned char oldX = testSpriteData.X; // Stores the starting X location, in case collision is detected.
-	unsigned char oldY = testSpriteData.Y; // Stores the starting Y location, in case collision is detected.
-
     if(pad1 & PAD_LEFT){ // If Left on the DPAD is pressed.
 		testSpriteData.X -= 1; // Moves the sprite to the left.
-		if (playerWallCollision(&testSpriteData))
+		if (playerWallCollision(&testSpriteData)) // If the new position is colliding with a wall.
 		{
-			testSpriteData.X = oldX;
+			testSpriteData.X +=1; // Re-moves the sprite to the right.
 		}
 	}
-	else if (pad1 & PAD_RIGHT){ // If Right on the DPAD is pressed, add one to the player's X data.
-		testSpriteData.X += 1;
-		if (playerWallCollision(&testSpriteData))
+	else if (pad1 & PAD_RIGHT){ // If Right on the DPAD is pressed.
+		testSpriteData.X += 1; // Moves the sprite to the right.
+		if (playerWallCollision(&testSpriteData)) // If the new position is colliding with a wall.
 		{
-			testSpriteData.X = oldX;
+			testSpriteData.X -=1; // Removes the sprite to the left.
 		}
 	}
 }
@@ -71,15 +69,24 @@ void portalPlayerCollision(void)
 	portal1Collision = check_collision(&testSpriteData, &portal1SpriteData); // Checks if the player is colliding with the data for the first portal.
 	portal2Collision = check_collision(&testSpriteData, &portal2SpriteData); // Checks if the player is colliding with the data for the second portal.
 
-	if (portal1Collision) // If the player is colliding with the first portal.
+	if (portal1Collision && lastPortalUsed != 1) // If the player is colliding with the first portal.
 	{ 
 		testSpriteData.X = portal2SpriteData.X; // Sets the player X data to the X location of the second portal.
 		testSpriteData.Y = portal2SpriteData.Y; // Sets the player Y data to the Y location of the second portal.
+		lastPortalUsed = 2;
 	}
-	else if (portal2Collision) // If the player is colliding with the second portal.
+	else if (portal2Collision && lastPortalUsed != 2) // If the player is colliding with the second portal.
 	{
-		//testSpriteData.X = portal1SpriteData.X; // Sets the player X data to the X location of the first portal. 
-		//testSpriteData.Y = portal1SpriteData.Y; // Sets the player Y data to the Y location of the first portal.
+		testSpriteData.X = portal1SpriteData.X; // Sets the player X data to the X location of the first portal. 
+		testSpriteData.Y = portal1SpriteData.Y; // Sets the player Y data to the Y location of the first portal.
+		lastPortalUsed = 1;
+	}
+	else
+	{
+		if (!portal1Collision && !portal2Collision)
+		{
+			lastPortalUsed = 0;
+		}
 	}
 }
 
