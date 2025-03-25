@@ -48,7 +48,14 @@
 	.export		_bluePortalCollision
 	.export		_lastPortalUsed
 	.export		_bulletActive
-	.export		_movement
+	.export		_mode
+	.export		_aimDirectionX
+	.export		_aimDirectionY
+	.export		_bulletDirectionX
+	.export		_bulletDirectionY
+	.export		_modeToggle
+	.export		_walkMode
+	.export		_shootMode
 	.export		_portalPlayerCollision
 	.export		_wallDetection
 	.export		_playerWallCollision
@@ -92,6 +99,16 @@ _orangePortalActive:
 _lastPortalUsed:
 	.byte	$00
 _bulletActive:
+	.byte	$00
+_mode:
+	.byte	$00
+_aimDirectionX:
+	.byte	$00
+_aimDirectionY:
+	.byte	$00
+_bulletDirectionX:
+	.byte	$00
+_bulletDirectionY:
 	.byte	$00
 
 .segment	"RODATA"
@@ -2354,27 +2371,74 @@ L0002:	rts
 .endproc
 
 ; ---------------------------------------------------------------
-; void __near__ movement (void)
+; void __near__ modeToggle (void)
 ; ---------------------------------------------------------------
 
 .segment	"CODE"
 
-.proc	_movement: near
+.proc	_modeToggle: near
 
 .segment	"CODE"
 
 ;
-; if(pad1 & PAD_LEFT){ // If Left on the DPAD is pressed.
+; unsigned char newSelect = (pad1 & PAD_SELECT); // Sets the new select value to if the button is pressed.
+;
+	lda     _pad1
+	and     #$20
+	jsr     pusha
+;
+; if (newSelect && !oldSelect) // If the value is different, AKA, the button has been pressed.
+;
+	ldy     #$00
+	lda     (sp),y
+	beq     L000A
+	lda     M0001
+	bne     L000A
+;
+; mode = !mode; // Flip the mode value.
+;
+	lda     _mode
+	jsr     bnega
+	sta     _mode
+;
+; oldSelect = newSelect; // Set the oldSelect to the newSelect, as it is now the old select state.
+;
+L000A:	lda     (sp),y
+	sta     M0001
+;
+; }
+;
+	jmp     incsp1
+
+.segment	"DATA"
+
+M0001:
+	.byte	$00
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ walkMode (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_walkMode: near
+
+.segment	"CODE"
+
+;
+; if (pad1 & PAD_LEFT) // If Left on the DPAD is pressed.
 ;
 	lda     _pad1
 	and     #$02
-	beq     L0008
+	beq     L0007
 ;
-; testSpriteData.X -= 1; // Moves the sprite to the left.
+; testSpriteData.X--; // Decrement the X data of the Player Sprite. 
 ;
 	dec     _testSpriteData
 ;
-; if (playerWallCollision(&testSpriteData)) // If the new position is colliding with a wall.
+; if (playerWallCollision(&testSpriteData)) // If the new location of the Player Sprite is colliding with a wall.
 ;
 	lda     #<(_testSpriteData)
 	ldx     #>(_testSpriteData)
@@ -2382,22 +2446,22 @@ L0002:	rts
 	tax
 	beq     L0006
 ;
-; testSpriteData.X +=1; // Re-moves the sprite to the right.
+; testSpriteData.X++; // Increment the X data to move it out of the wall.
 ;
 	inc     _testSpriteData
 ;
-; else if (pad1 & PAD_RIGHT){ // If Right on the DPAD is pressed.
+; else if (pad1 & PAD_RIGHT) // If Right on the DPAD is pressed.
 ;
 	rts
-L0008:	lda     _pad1
+L0007:	lda     _pad1
 	and     #$01
 	beq     L0006
 ;
-; testSpriteData.X += 1; // Moves the sprite to the right.
+; testSpriteData.X++; // Increment the X data of the Player Sprite.
 ;
 	inc     _testSpriteData
 ;
-; if (playerWallCollision(&testSpriteData)) // If the new position is colliding with a wall.
+; if (playerWallCollision(&testSpriteData)) // If the new location of the Player Sprite is colliding with a wall.
 ;
 	lda     #<(_testSpriteData)
 	ldx     #>(_testSpriteData)
@@ -2405,13 +2469,132 @@ L0008:	lda     _pad1
 	tax
 	beq     L0006
 ;
-; testSpriteData.X -=1; // Removes the sprite to the left.
+; testSpriteData.X--; // Decrement the X data to move it out of the wall.
 ;
 	dec     _testSpriteData
 ;
 ; }
 ;
 L0006:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ shootMode (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_shootMode: near
+
+.segment	"CODE"
+
+;
+; signed char newDirectionX = 0; // Resets the X aiming direction.
+;
+	lda     #$00
+	jsr     pusha
+;
+; signed char newDirectionY = 0; // Resets the Y aiming direction.
+;
+	jsr     pusha
+;
+; if (pad1 & PAD_UP) // If up is pressed on the DPAD.
+;
+	lda     _pad1
+	and     #$08
+	beq     L0015
+;
+; newDirectionY = -1; // Set the aiming direction for Y to -1.
+;
+	lda     #$FF
+;
+; else if (pad1 & PAD_DOWN) // If down is pressed on the DPAD.
+;
+	jmp     L0019
+L0015:	lda     _pad1
+	and     #$04
+	beq     L0016
+;
+; newDirectionY = 1; // Set the aiming direction for Y to 1.
+;
+	lda     #$01
+L0019:	ldy     #$00
+	sta     (sp),y
+;
+; if (pad1 & PAD_LEFT) // If left is pressed on the DPAD.
+;
+L0016:	lda     _pad1
+	and     #$02
+	beq     L0017
+;
+; newDirectionX = -1; // Set the aiming direction for X to -1.
+;
+	lda     #$FF
+;
+; else if (pad1 & PAD_RIGHT) // If right is pressed on the DPAD.
+;
+	jmp     L001A
+L0017:	lda     _pad1
+	and     #$01
+	beq     L0007
+;
+; newDirectionX = 1; // Set the aiming direction for X to 1.
+;
+	lda     #$01
+L001A:	ldy     #$01
+	sta     (sp),y
+;
+; if (newDirectionX != 0 || newDirectionY != 0)
+;
+L0007:	ldy     #$01
+	lda     (sp),y
+	bne     L001B
+	dey
+	lda     (sp),y
+	beq     L0008
+;
+; aimDirectionX = newDirectionX;
+;
+	iny
+L001B:	lda     (sp),y
+	sta     _aimDirectionX
+;
+; aimDirectionY = newDirectionY;
+;
+	dey
+	lda     (sp),y
+	sta     _aimDirectionY
+;
+; if (!bulletActive) // If there is no bullet on the screen currently.
+;
+L0008:	lda     _bulletActive
+	bne     L0012
+;
+; if (pad1 & PAD_A) // If the A button is pressed.
+;
+	lda     _pad1
+	and     #$80
+	beq     L0018
+;
+; spawnOrangeBullet(); // Shoot an orange bullet.
+;
+	jsr     _spawnOrangeBullet
+;
+; else if (pad1 & PAD_B) // If the B button is pressed.
+;
+	jmp     incsp2
+L0018:	lda     _pad1
+	and     #$40
+	beq     L0012
+;
+; spawnBlueBullet(); // Shoot a blue bullet.
+;
+	jsr     _spawnBlueBullet
+;
+; }
+;
+L0012:	jmp     incsp2
 
 .endproc
 
@@ -2745,6 +2928,29 @@ L0005:	jmp     incsp6
 	lda     #$01
 	sta     _bulletActive
 ;
+; bulletDirectionX = aimDirectionX; // Takes the X bullet direction from the X aiming direction.
+;
+	lda     _aimDirectionX
+	sta     _bulletDirectionX
+;
+; bulletDirectionY = aimDirectionY; // Takes the Y bullet direction from the Y aiming direction.
+;
+	lda     _aimDirectionY
+	sta     _bulletDirectionY
+;
+; if (bulletDirectionX == 0 && bulletDirectionY == 0) // If the user hasn't pressed any aiming buttons.
+;
+	lda     _bulletDirectionX
+	bne     L0006
+	lda     _bulletDirectionY
+	beq     L0008
+L0006:	rts
+;
+; bulletDirectionY = -1; // Default to shooting up.
+;
+L0008:	lda     #$FF
+	sta     _bulletDirectionY
+;
 ; }
 ;
 	rts
@@ -2777,6 +2983,29 @@ L0005:	jmp     incsp6
 	lda     #$02
 	sta     _bulletActive
 ;
+; bulletDirectionX = aimDirectionX; // Takes the X bullet direction from the X aiming direction.
+;
+	lda     _aimDirectionX
+	sta     _bulletDirectionX
+;
+; bulletDirectionY = aimDirectionY; // Takes the Y bullet direction from the Y aiming direction.
+;
+	lda     _aimDirectionY
+	sta     _bulletDirectionY
+;
+; if (bulletDirectionX == 0 && bulletDirectionY == 0) // If the user hasn't pressed any aiming buttons.
+;
+	lda     _bulletDirectionX
+	bne     L0006
+	lda     _bulletDirectionY
+	beq     L0008
+L0006:	rts
+;
+; bulletDirectionY = -1; // Default to shooting up.
+;
+L0008:	lda     #$FF
+	sta     _bulletDirectionY
+;
 ; }
 ;
 	rts
@@ -2794,91 +3023,126 @@ L0005:	jmp     incsp6
 .segment	"CODE"
 
 ;
-; if (bulletActive == 0)
+; if (bulletActive == 0) // If there is no bullet on the screen.
 ;
 	lda     _bulletActive
 ;
-; return; // no bullet
+; return; // Do nothing.
 ;
-	bne     L0026
+	bne     L0056
 ;
 ; }
 ;
 	rts
 ;
-; if (bulletActive == 1)
+; if (bulletActive == 1) // If there is an orange bullet on the screen.
 ;
-L0026:	cmp     #$01
-	jne     L001F
+L0056:	cmp     #$01
+	jne     L0044
 ;
-; orangeBulletSpriteData.X++;
+; orangeBulletSpriteData.X += bulletDirectionX; // Move the bullet across the screen.
 ;
-	inc     _orangeBulletSpriteData
+	lda     _bulletDirectionX
+	clc
+	adc     _orangeBulletSpriteData
+	sta     _orangeBulletSpriteData
 ;
-; if (orangeBulletSpriteData.X > 250)
+; orangeBulletSpriteData.Y += bulletDirectionY;
+;
+	lda     _bulletDirectionY
+	clc
+	adc     _orangeBulletSpriteData+1
+	sta     _orangeBulletSpriteData+1
+;
+; if (orangeBulletSpriteData.X > 250) // IF the bullet goes too far off the screen.
 ;
 	lda     _orangeBulletSpriteData
 	cmp     #$FB
-	bcc     L0004
+	bcc     L0006
 ;
-; bulletActive = 0;
+; bulletActive = 0; // Remove the bullet from being active.
 ;
 	lda     #$00
 	sta     _bulletActive
 ;
-; return;
+; return; 
 ;
 	rts
 ;
-; if (playerWallCollision(&orangeBulletSpriteData))
+; if (playerWallCollision(&orangeBulletSpriteData)) // If the orange bullet hits a wall.
 ;
-L0004:	lda     #<(_orangeBulletSpriteData)
+L0006:	lda     #<(_orangeBulletSpriteData)
 	ldx     #>(_orangeBulletSpriteData)
 	jsr     _playerWallCollision
 	tax
-	bne     L0027
+	bne     L0057
 ;
 ; }
 ;
 	rts
 ;
-; unsigned char tileX = (orangeBulletSpriteData.X + 4) >> 3;
+; unsigned char tileX = (orangeBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
 ;
-L0027:	ldx     #$00
+L0057:	ldx     #$00
 	lda     _orangeBulletSpriteData
 	clc
 	adc     #$04
-	bcc     L0006
+	bcc     L0008
 	inx
-L0006:	jsr     asrax3
+L0008:	jsr     asrax3
 	jsr     pusha
 ;
-; unsigned char tileY = (orangeBulletSpriteData.Y + 4) >> 3;
+; unsigned char tileY = (orangeBulletSpriteData.Y + 4) >> 3; // Get the Y tile from the centre of the billet.
 ;
 	ldx     #$00
 	lda     _orangeBulletSpriteData+1
 	clc
 	adc     #$04
-	bcc     L0007
+	bcc     L0009
 	inx
-L0007:	jsr     asrax3
+L0009:	jsr     asrax3
 	jsr     pusha
 ;
-; if (tileX > 0) { tileX--; } // shift left if needed
+; if (bulletDirectionX > 0 && tileX > 0)
 ;
-	ldy     #$01
-	lda     (sp),y
-	beq     L0008
+	lda     _bulletDirectionX
 	sec
 	sbc     #$01
-	sta     (sp),y
+	bvs     L000C
+	eor     #$80
+L000C:	bpl     L003E
+	ldy     #$01
+	lda     (sp),y
+	beq     L003E
 ;
-; if (bluePortalActive)
+; tileX--;
 ;
-L0008:	lda     _bluePortalActive
-	beq     L001E
+	sec
+	sbc     #$01
 ;
-; unsigned char pTileX = bluePortalSpriteData.X >> 3; 
+; else if (bulletDirectionY < 0 && tileX < 31)
+;
+	jmp     L0034
+L003E:	lda     _bulletDirectionY
+	asl     a
+	bcc     L0011
+	ldy     #$01
+	lda     (sp),y
+	cmp     #$1F
+	bcs     L0011
+;
+; tileX++;
+;
+	tya
+	adc     (sp),y
+L0034:	sta     (sp),y
+;
+; if (bluePortalActive) // If there is a blue portal active.
+;
+L0011:	lda     _bluePortalActive
+	beq     L0016
+;
+; unsigned char pTileX = bluePortalSpriteData.X >> 3; // Get the X tile from the blue portal.
 ;
 	lda     _bluePortalSpriteData
 	lsr     a
@@ -2886,7 +3150,7 @@ L0008:	lda     _bluePortalActive
 	lsr     a
 	jsr     pusha
 ;
-; unsigned char pTileY = bluePortalSpriteData.Y >> 3;
+; unsigned char pTileY = bluePortalSpriteData.Y >> 3; // Get the Y tile from the blue portal.
 ;
 	lda     _bluePortalSpriteData+1
 	lsr     a
@@ -2894,42 +3158,42 @@ L0008:	lda     _bluePortalActive
 	lsr     a
 	jsr     pusha
 ;
-; if (pTileX == tileX && pTileY == tileY)
+; if (pTileX == tileX && pTileY == tileY) // If the tiles are the same for both portals.
 ;
 	ldy     #$01
 	lda     (sp),y
 	ldy     #$03
 	cmp     (sp),y
-	bne     L000A
+	bne     L0017
 	ldy     #$00
 	lda     (sp),y
 	ldy     #$02
 	cmp     (sp),y
-	bne     L000A
+	bne     L0017
 ;
-; bulletActive = 0;
+; bulletActive = 0; // Remove the bullet and do nothing.
 ;
 	lda     #$00
 	sta     _bulletActive
 ;
-; return; // do nothing
+; return;
 ;
 	jmp     incsp4
 ;
 ; }
 ;
-L000A:	jsr     incsp2
+L0017:	jsr     incsp2
 ;
-; orangePortalSpriteData.X = tileX << 3;
+; orangePortalSpriteData.X = tileX << 3; // Sets the orange portal X data to Tile X, if there is no portal there already.
 ;
-	ldy     #$01
-L001E:	lda     (sp),y
+L0016:	ldy     #$01
+	lda     (sp),y
 	asl     a
 	asl     a
 	asl     a
 	sta     _orangePortalSpriteData
 ;
-; orangePortalSpriteData.Y = tileY << 3;
+; orangePortalSpriteData.Y = tileY << 3; // Sets the orange portal Y data to Tile Y, if there is no portal there already.
 ;
 	dey
 	lda     (sp),y
@@ -2938,33 +3202,43 @@ L001E:	lda     (sp),y
 	asl     a
 	sta     _orangePortalSpriteData+1
 ;
-; orangePortalActive = 1;
+; orangePortalActive = 1; // Sets the orange portal as active.
 ;
 	lda     #$01
 	sta     _orangePortalActive
 ;
-; else if (bulletActive == 2)
+; else if (bulletActive == 2) // If the bullet is a blue bullet.
 ;
-	jmp     L0025
-L001F:	lda     _bulletActive
+	jmp     L0055
+L0044:	lda     _bulletActive
 	cmp     #$02
-	beq     L0028
+	beq     L0058
 ;
 ; }
 ;
 	rts
 ;
-; blueBulletSpriteData.X++;
+; blueBulletSpriteData.X += bulletDirectionX; // Move the blue bullet sprite across the screen, in the direction of the X aiming variable, I.E, -1 to go left, +1 to go right.
 ;
-L0028:	inc     _blueBulletSpriteData
+L0058:	lda     _bulletDirectionX
+	clc
+	adc     _blueBulletSpriteData
+	sta     _blueBulletSpriteData
 ;
-; if (blueBulletSpriteData.X > 240)
+; blueBulletSpriteData.Y += bulletDirectionY; // Move the blue bullet sprite across the screen, in the direction of the Y aiming variable, I.E, -1 to go up, +1 to go down.
+;
+	lda     _bulletDirectionY
+	clc
+	adc     _blueBulletSpriteData+1
+	sta     _blueBulletSpriteData+1
+;
+; if (blueBulletSpriteData.X > 240) // If the bullet goes too far off the screen.
 ;
 	lda     _blueBulletSpriteData
 	cmp     #$F1
-	bcc     L0010
+	bcc     L001F
 ;
-; bulletActive = 0;
+; bulletActive = 0; // Remove the bullet.
 ;
 	lda     #$00
 	sta     _bulletActive
@@ -2973,55 +3247,80 @@ L0028:	inc     _blueBulletSpriteData
 ;
 	rts
 ;
-; if (playerWallCollision(&blueBulletSpriteData))
+; if (playerWallCollision(&blueBulletSpriteData)) // If the blue bullet hits a wall.
 ;
-L0010:	lda     #<(_blueBulletSpriteData)
+L001F:	lda     #<(_blueBulletSpriteData)
 	ldx     #>(_blueBulletSpriteData)
 	jsr     _playerWallCollision
 	tax
-	bne     L0029
+	bne     L0059
 ;
 ; }
 ;
 	rts
 ;
-; unsigned char tileX = (blueBulletSpriteData.X + 4) >> 3;
+; unsigned char tileX = (blueBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
 ;
-L0029:	ldx     #$00
+L0059:	ldx     #$00
 	lda     _blueBulletSpriteData
 	clc
 	adc     #$04
-	bcc     L0012
+	bcc     L0021
 	inx
-L0012:	jsr     asrax3
+L0021:	jsr     asrax3
 	jsr     pusha
 ;
-; unsigned char tileY = (blueBulletSpriteData.Y + 4) >> 3;
+; unsigned char tileY = (blueBulletSpriteData.Y + 4) >> 3; // Get the Y tile from the centre of the bullet.
 ;
 	ldx     #$00
 	lda     _blueBulletSpriteData+1
 	clc
 	adc     #$04
-	bcc     L0013
+	bcc     L0022
 	inx
-L0013:	jsr     asrax3
+L0022:	jsr     asrax3
 	jsr     pusha
 ;
-; if (tileX > 0) { tileX--; }
+; if (bulletDirectionX > 0 && tileX > 0)
 ;
-	ldy     #$01
-	lda     (sp),y
-	beq     L0014
+	lda     _bulletDirectionX
 	sec
 	sbc     #$01
-	sta     (sp),y
+	bvs     L0025
+	eor     #$80
+L0025:	bpl     L004C
+	ldy     #$01
+	lda     (sp),y
+	beq     L004C
 ;
-; if (orangePortalActive)
+; tileX--;
 ;
-L0014:	lda     _orangePortalActive
-	beq     L0023
+	sec
+	sbc     #$01
 ;
-; unsigned char pTileX = orangePortalSpriteData.X >> 3;
+; else if (bulletDirectionY < 0 && tileX < 31)
+;
+	jmp     L0036
+L004C:	lda     _bulletDirectionY
+	asl     a
+	bcc     L002A
+	ldy     #$01
+	lda     (sp),y
+	cmp     #$1F
+	bcs     L002A
+;
+; tileX++;
+;
+	tya
+	adc     (sp),y
+L0036:	sta     (sp),y
+;
+; if (orangePortalActive) // If there is an orange portal active.
+;
+L002A:	lda     _orangePortalActive
+	beq     L002F
+;
+; unsigned char pTileX = orangePortalSpriteData.X >> 3; // Get the X tile from the Orange Portal.
 ;
 	lda     _orangePortalSpriteData
 	lsr     a
@@ -3029,7 +3328,7 @@ L0014:	lda     _orangePortalActive
 	lsr     a
 	jsr     pusha
 ;
-; unsigned char pTileY = orangePortalSpriteData.Y >> 3;
+; unsigned char pTileY = orangePortalSpriteData.Y >> 3; // Get the Y tile from the Orange Portal.
 ;
 	lda     _orangePortalSpriteData+1
 	lsr     a
@@ -3037,20 +3336,20 @@ L0014:	lda     _orangePortalActive
 	lsr     a
 	jsr     pusha
 ;
-; if (pTileX == tileX && pTileY == tileY)
+; if (pTileX == tileX && pTileY == tileY) // IF the tiles are the same for both portals.
 ;
 	ldy     #$01
 	lda     (sp),y
 	ldy     #$03
 	cmp     (sp),y
-	bne     L0016
+	bne     L0030
 	ldy     #$00
 	lda     (sp),y
 	ldy     #$02
 	cmp     (sp),y
-	bne     L0016
+	bne     L0030
 ;
-; bulletActive = 0;
+; bulletActive = 0; // Remove the bullet and do nothing.
 ;
 	lda     #$00
 	sta     _bulletActive
@@ -3061,18 +3360,18 @@ L0014:	lda     _orangePortalActive
 ;
 ; }
 ;
-L0016:	jsr     incsp2
+L0030:	jsr     incsp2
 ;
-; bluePortalSpriteData.X = tileX << 3;
+; bluePortalSpriteData.X = tileX << 3; // Sets the blue portal X data to Tile X, if there is no portal there already.
 ;
-	ldy     #$01
-L0023:	lda     (sp),y
+L002F:	ldy     #$01
+	lda     (sp),y
 	asl     a
 	asl     a
 	asl     a
 	sta     _bluePortalSpriteData
 ;
-; bluePortalSpriteData.Y = tileY << 3;
+; bluePortalSpriteData.Y = tileY << 3; // Sets the blue portal Y data to Tile Y, if there is no portal there already.
 ;
 	dey
 	lda     (sp),y
@@ -3081,14 +3380,14 @@ L0023:	lda     (sp),y
 	asl     a
 	sta     _bluePortalSpriteData+1
 ;
-; bluePortalActive = 1;
+; bluePortalActive = 1; // Sets the blue portal to active. 
 ;
 	lda     #$01
 	sta     _bluePortalActive
 ;
-; bulletActive = 0;
+; bulletActive = 0; // Removes the bullet, allowing for more shots.
 ;
-L0025:	sty     _bulletActive
+L0055:	sty     _bulletActive
 ;
 ; }
 ;
@@ -3218,44 +3517,35 @@ L0002:	jsr     _ppu_wait_nmi
 	jsr     _pad_poll
 	sta     _pad1
 ;
-; if (pad1 & PAD_A) // If the A button is pressed.
+; modeToggle();
 ;
-	and     #$80
-	beq     L0009
+	jsr     _modeToggle
 ;
-; if(!bulletActive) // If there is no bullets on the screen.
+; if (mode == 0)
 ;
-	lda     _bulletActive
-	bne     L0009
-;
-; spawnOrangeBullet(); // Spawn the orange bullet.
-;
-	jsr     _spawnOrangeBullet
-;
-; if (pad1 & PAD_B) // If the B button is pressed.
-;
-L0009:	lda     _pad1
-	and     #$40
-	beq     L0008
-;
-; if(!bulletActive) // If there is no bullets on the screen.
-;
-	lda     _bulletActive
+	lda     _mode
 	bne     L0008
 ;
-; spawnBlueBullet(); // Spawn the blue bullet.
+; walkMode();
 ;
-	jsr     _spawnBlueBullet
+	jsr     _walkMode
 ;
-; movement(); // Handle Player Movement.
+; else if (mode == 1)
 ;
-L0008:	jsr     _movement
+	jmp     L0007
+L0008:	lda     _mode
+	cmp     #$01
+	bne     L0007
+;
+; shootMode();
+;
+	jsr     _shootMode
 ;
 ; updateBullet(); // Moves Bullet.
 ;
-	jsr     _updateBullet
+L0007:	jsr     _updateBullet
 ;
-; portalPlayerCollision(); // Handle Portal Collision with the Player.
+; portalPlayerCollision(); // Handle Portal Collision with the Player. 
 ;
 	jsr     _portalPlayerCollision
 ;

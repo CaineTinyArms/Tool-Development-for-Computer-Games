@@ -14,15 +14,24 @@ unsigned char orangePortalCollision;
 unsigned char bluePortalCollision;
 unsigned char lastPortalUsed = 0; // 0 for none, 1 for orange, 2 for blue.
 unsigned char bulletActive = 0; // 0 for none, 1 for orange, 2 for blue.
+unsigned char mode = 0; // 0 for walk mode, 1 for shoot mode.
+signed char aimDirectionX = 0;
+signed char aimDirectionY = 0;
+signed char bulletDirectionX = 0;
+signed char bulletDirectionY = 0;
 
 
 
 // Function Prototypes.
 // -================================-
-void movement(void);
+void modeToggle(void);
+void walkMode(void);
+void shootMode(void);
+
 void portalPlayerCollision(void);
 unsigned char wallDetection(unsigned char x, unsigned char y);
 unsigned char playerWallCollision(struct spriteData *spr);
+
 void spawnOrangeBullet(void);
 void spawnBlueBullet(void);
 void updateBullet(void);
@@ -50,24 +59,21 @@ void main (void) {
 
         ppu_wait_nmi();
         pad1 = pad_poll(0);  // read the first controller
-		if (pad1 & PAD_A) // If the A button is pressed.
+
+		modeToggle();
+
+		if (mode == 0)
 		{
-			if(!bulletActive) // If there is no bullets on the screen.
-			{
-				spawnOrangeBullet(); // Spawn the orange bullet.
-			} 
+			walkMode();
 		}
-		if (pad1 & PAD_B) // If the B button is pressed.
+		else if (mode == 1)
 		{
-			if(!bulletActive) // If there is no bullets on the screen.
-			{
-				spawnBlueBullet(); // Spawn the blue bullet.
-			}
+			shootMode();
 		}
-        
-        movement(); // Handle Player Movement.
+
 		updateBullet(); // Moves Bullet.
-        portalPlayerCollision(); // Handle Portal Collision with the Player.
+        portalPlayerCollision(); // Handle Portal Collision with the Player. 
+
 		oam_clear(); // Clears the OAM buffer.
 		drawSprite(); // Draws the player sprite. 
 		drawBullet(); // Draws the bullet sprites.
@@ -76,23 +82,6 @@ void main (void) {
 	}
 }
 	
-void movement(void)
-{
-    if(pad1 & PAD_LEFT){ // If Left on the DPAD is pressed.
-		testSpriteData.X -= 1; // Moves the sprite to the left.
-		if (playerWallCollision(&testSpriteData)) // If the new position is colliding with a wall.
-		{
-			testSpriteData.X +=1; // Re-moves the sprite to the right.
-		}
-	}
-	else if (pad1 & PAD_RIGHT){ // If Right on the DPAD is pressed.
-		testSpriteData.X += 1; // Moves the sprite to the right.
-		if (playerWallCollision(&testSpriteData)) // If the new position is colliding with a wall.
-		{
-			testSpriteData.X -=1; // Removes the sprite to the left.
-		}
-	}
-}
 
 void portalPlayerCollision(void)
 {
@@ -151,6 +140,14 @@ void spawnOrangeBullet(void)
 	orangeBulletSpriteData.X = testSpriteData.X; // Sets the orange bullet X data to the Players X data.
 	orangeBulletSpriteData.Y = testSpriteData.Y; // Sets the orange bullet Y data to the Players Y data.
 	bulletActive = 1; // Sets the bullet active to 1, to indicate it is a orange bullet.
+
+	bulletDirectionX = aimDirectionX; // Takes the X bullet direction from the X aiming direction.
+	bulletDirectionY = aimDirectionY; // Takes the Y bullet direction from the Y aiming direction.
+	if (bulletDirectionX == 0 && bulletDirectionY == 0) // If the user hasn't pressed any aiming buttons.
+	{
+		bulletDirectionY = -1; // Default to shooting up.
+	}
+
 }
 
 void spawnBlueBullet(void)
@@ -158,6 +155,13 @@ void spawnBlueBullet(void)
 	blueBulletSpriteData.X = testSpriteData.X; // Sets the blue bullet X data to the Players X data.
 	blueBulletSpriteData.Y = testSpriteData.Y; // Sets the blue bullet Y data to the Players Y data.
 	bulletActive = 2; // Sets the bullet active to 2, to indicate it's a blue bullet.
+
+	bulletDirectionX = aimDirectionX; // Takes the X bullet direction from the X aiming direction.
+	bulletDirectionY = aimDirectionY; // Takes the Y bullet direction from the Y aiming direction.
+	if (bulletDirectionX == 0 && bulletDirectionY == 0) // If the user hasn't pressed any aiming buttons.
+	{
+		bulletDirectionY = -1; // Default to shooting up.
+	}
 }
 
 void updateBullet(void)
@@ -167,7 +171,8 @@ void updateBullet(void)
 
     if (bulletActive == 1) // If there is an orange bullet on the screen.
     {
-        orangeBulletSpriteData.X++; // Move the bullet across the screen.
+        orangeBulletSpriteData.X += bulletDirectionX; // Move the bullet across the screen.
+		orangeBulletSpriteData.Y += bulletDirectionY;
 
         if (orangeBulletSpriteData.X > 250) // IF the bullet goes too far off the screen.
         {
@@ -181,10 +186,15 @@ void updateBullet(void)
             unsigned char tileX = (orangeBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
             unsigned char tileY = (orangeBulletSpriteData.Y + 4) >> 3; // Get the Y tile from the centre of the billet.
 
-            if (tileX > 0) 
-			{ 
-				tileX--; // Moves the tile one to the left, to account for the portal being 16 x 16.
-			} 
+			if (bulletDirectionX > 0 && tileX > 0)
+			{
+				tileX--;
+			}
+
+			else if (bulletDirectionY < 0 && tileX < 31)
+			{
+				tileX++;
+			}
 
             if (bluePortalActive) // If there is a blue portal active.
             {
@@ -208,7 +218,8 @@ void updateBullet(void)
 
     else if (bulletActive == 2) // If the bullet is a blue bullet.
     {
-        blueBulletSpriteData.X++; // Move the blue bullet sprite across the screen.
+        blueBulletSpriteData.X += bulletDirectionX; // Move the blue bullet sprite across the screen, in the direction of the X aiming variable, I.E, -1 to go left, +1 to go right.
+		blueBulletSpriteData.Y += bulletDirectionY; // Move the blue bullet sprite across the screen, in the direction of the Y aiming variable, I.E, -1 to go up, +1 to go down.
 
         if (blueBulletSpriteData.X > 240) // If the bullet goes too far off the screen.
         { 
@@ -220,9 +231,15 @@ void updateBullet(void)
         {
             unsigned char tileX = (blueBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
             unsigned char tileY = (blueBulletSpriteData.Y + 4) >> 3; // Get the Y tile from the centre of the bullet.
-            if (tileX > 0)
+
+            if (bulletDirectionX > 0 && tileX > 0) // If the bullet is moving to the right.
 			{
-				tileX --; // Moves the tile one to the left, to account for the portal being 16 x 16.
+				tileX--; // Put the portal one tile to the left.
+			}
+
+			else if (bulletDirectionY < 0 && tileX < 31) // If the bullet is moving to the left.
+			{
+				tileX++; // PLace the portal one tile to the right.
 			}
 
             if (orangePortalActive) // If there is an orange portal active.
@@ -257,5 +274,84 @@ void drawBullet(void)
 	else if (bulletActive == 2) // If the bullet active is blue.
 	{
 		oam_meta_spr(blueBulletSpriteData.X, blueBulletSpriteData.Y, blueBulletSprite); // Draw the blue sprite.
+	}
+}
+
+void modeToggle(void)
+{
+	static unsigned char oldSelect = 0; // Stores the old select value.
+
+	unsigned char newSelect = (pad1 & PAD_SELECT); // Sets the new select value to if the button is pressed.
+
+	if (newSelect && !oldSelect) // If the value is different, AKA, the button has been pressed.
+	{
+		mode = !mode; // Flip the mode value.
+	}
+
+	oldSelect = newSelect; // Set the oldSelect to the newSelect, as it is now the old select state.
+}
+
+void walkMode(void)
+{
+	if (pad1 & PAD_LEFT) // If Left on the DPAD is pressed.
+	{
+		testSpriteData.X--; // Decrement the X data of the Player Sprite. 
+		if (playerWallCollision(&testSpriteData)) // If the new location of the Player Sprite is colliding with a wall.
+		{
+			testSpriteData.X++; // Increment the X data to move it out of the wall.
+		}
+	}
+
+	else if (pad1 & PAD_RIGHT) // If Right on the DPAD is pressed.
+	{
+		testSpriteData.X++; // Increment the X data of the Player Sprite.
+		if (playerWallCollision(&testSpriteData)) // If the new location of the Player Sprite is colliding with a wall.
+		{
+			testSpriteData.X--; // Decrement the X data to move it out of the wall.
+		}
+	}
+}
+
+void shootMode(void)
+{
+	signed char newDirectionX = 0; // Resets the X aiming direction.
+	signed char newDirectionY = 0; // Resets the Y aiming direction.
+
+	if (pad1 & PAD_UP) // If up is pressed on the DPAD.
+	{ 
+		newDirectionY = -1; // Set the aiming direction for Y to -1.
+	}
+
+	else if (pad1 & PAD_DOWN) // If down is pressed on the DPAD.
+	{
+		newDirectionY = 1; // Set the aiming direction for Y to 1.
+	}
+
+	if (pad1 & PAD_LEFT) // If left is pressed on the DPAD.
+	{
+		newDirectionX = -1; // Set the aiming direction for X to -1.
+	}
+
+	else if (pad1 & PAD_RIGHT) // If right is pressed on the DPAD.
+	{
+		newDirectionX = 1; // Set the aiming direction for X to 1.
+	}
+
+	if (newDirectionX != 0 || newDirectionY != 0) // If the aiming has been changed. 
+	{
+		aimDirectionX = newDirectionX; // Set the aiming direction X to the new direction.
+		aimDirectionY = newDirectionY; // Set the aiming direction Y to the new direction.
+	}
+
+	if (!bulletActive) // If there is no bullet on the screen currently.
+	{
+		if (pad1 & PAD_A) // If the A button is pressed.
+		{
+			spawnOrangeBullet(); // Shoot an orange bullet.
+		}
+		else if (pad1 & PAD_B) // If the B button is pressed.
+		{
+			spawnBlueBullet(); // Shoot a blue bullet.
+		}
 	}
 }
