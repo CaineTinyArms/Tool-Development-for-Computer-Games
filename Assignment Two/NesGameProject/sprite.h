@@ -31,9 +31,9 @@ struct spriteData
 
 struct spriteData testSpriteData = {64, 80, 15, 14};
 
-struct spriteData portal1SpriteData = {200, 100, 15, 14};
+struct spriteData portal1SpriteData = {200, 80, 7, 2};
 
-struct spriteData portal2SpriteData = {100, 100, 15, 14};
+struct spriteData portal2SpriteData = {100, 80, 7, 2};
 
 // FUNCTION PROTOTYPES
 void drawSprite(void); // Prototype for drawing sprite function.

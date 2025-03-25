@@ -11,7 +11,7 @@
 #define PURPLE 0x14
 #define BLUE 0x12
 #define DK_GREEN 0x09
-#define DK_BLUE 0x0B
+#define DK_BLUE 0x01
 
 const unsigned char paletteBackground[]=
 {
@@ -24,7 +24,7 @@ ORANGE,BLUE,PURPLE,YELLOW, // Sub-Palette 1
 const char paletteSprite[] = 
 {
 BLACK, DK_GY, LT_GY, WHITE,
-BLACK, DK_GY, ORANGE, WHITE,
-BLACK, DK_GY, ORANGE, WHITE,
+BLACK, DK_GY, LT_GY, ORANGE,
+BLACK, DK_GY, LT_GY, DK_BLUE,
 0,0,0,0
 };

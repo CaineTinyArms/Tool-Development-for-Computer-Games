@@ -7,6 +7,8 @@
 
 unsigned char i;
 unsigned char pad1; // Variable for controller 1
+unsigned char portal1Collision;
+unsigned char portal2Collision;
 
 const unsigned char text[]="CAINE'S TEST PROJECT"; // zero terminated c string
 
@@ -55,8 +57,21 @@ void movement(void)
 
 void testFunc(void)
 {
-    if(pad1 & PAD_UP)
-    {
-        testSpriteData.X += 40;
-    }
+	portal1Collision = check_collision(&testSpriteData, &portal1SpriteData);
+	portal2Collision = check_collision(&testSpriteData, &portal2SpriteData);
+
+	if (portal1Collision)
+	{
+		testSpriteData.X = portal2SpriteData.X;
+		testSpriteData.Y = portal2SpriteData.Y;
+	}
+	else if (portal2Collision)
+	{
+		//testSpriteData.X = portal1SpriteData.X;
+		//testSpriteData.Y = portal1SpriteData.Y;
+	}
+	else
+	{
+		pal_col(0, BLACK);
+	}
 }

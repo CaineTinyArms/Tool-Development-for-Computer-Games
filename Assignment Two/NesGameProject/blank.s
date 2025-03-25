@@ -13,6 +13,7 @@
 	.forceimport	__STARTUP__
 	.import		_pal_bg
 	.import		_pal_spr
+	.import		_pal_col
 	.import		_ppu_wait_nmi
 	.import		_ppu_off
 	.import		_ppu_on_all
@@ -22,6 +23,7 @@
 	.import		_bank_spr
 	.import		_vram_adr
 	.import		_vram_put
+	.import		_check_collision
 	.export		_testSprite
 	.export		_testPortal1
 	.export		_testPortal2
@@ -34,6 +36,8 @@
 	.export		_paletteSprite
 	.export		_i
 	.export		_pad1
+	.export		_portal1Collision
+	.export		_portal2Collision
 	.export		_text
 	.export		_testFunc
 	.export		_main
@@ -47,14 +51,14 @@ _testSpriteData:
 	.byte	$0E
 _portal1SpriteData:
 	.byte	$C8
-	.byte	$64
-	.byte	$0F
-	.byte	$0E
+	.byte	$50
+	.byte	$07
+	.byte	$02
 _portal2SpriteData:
 	.byte	$64
-	.byte	$64
-	.byte	$0F
-	.byte	$0E
+	.byte	$50
+	.byte	$07
+	.byte	$02
 
 .segment	"RODATA"
 
@@ -120,12 +124,12 @@ _paletteSprite:
 	.byte	$30
 	.byte	$0F
 	.byte	$00
+	.byte	$10
 	.byte	$27
-	.byte	$30
 	.byte	$0F
 	.byte	$00
-	.byte	$27
-	.byte	$30
+	.byte	$10
+	.byte	$01
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -140,6 +144,10 @@ _text:
 _i:
 	.res	1,$00
 _pad1:
+	.res	1,$00
+_portal1Collision:
+	.res	1,$00
+_portal2Collision:
 	.res	1,$00
 
 ; ---------------------------------------------------------------
@@ -247,22 +255,59 @@ L0004:	rts
 .segment	"CODE"
 
 ;
-; if(pad1 & PAD_UP)
+; portal1Collision = check_collision(&testSpriteData, &portal1SpriteData);
 ;
-	lda     _pad1
-	and     #$08
+	lda     #<(_testSpriteData)
+	ldx     #>(_testSpriteData)
+	jsr     pushax
+	lda     #<(_portal1SpriteData)
+	ldx     #>(_portal1SpriteData)
+	jsr     _check_collision
+	sta     _portal1Collision
+;
+; portal2Collision = check_collision(&testSpriteData, &portal2SpriteData);
+;
+	lda     #<(_testSpriteData)
+	ldx     #>(_testSpriteData)
+	jsr     pushax
+	lda     #<(_portal2SpriteData)
+	ldx     #>(_portal2SpriteData)
+	jsr     _check_collision
+	sta     _portal2Collision
+;
+; if (portal1Collision)
+;
+	lda     _portal1Collision
 	beq     L0002
 ;
-; testSpriteData.X += 40;
+; testSpriteData.X = portal2SpriteData.X;
 ;
-	lda     #$28
-	clc
-	adc     _testSpriteData
+	lda     _portal2SpriteData
 	sta     _testSpriteData
+;
+; testSpriteData.Y = portal2SpriteData.Y;
+;
+	lda     _portal2SpriteData+1
+	sta     _testSpriteData+1
+;
+; else if (portal2Collision)
+;
+	rts
+L0002:	lda     _portal2Collision
+;
+; else
+;
+	bne     L0005
+;
+; pal_col(0, BLACK);
+;
+	jsr     pusha
+	lda     #$0F
+	jmp     _pal_col
 ;
 ; }
 ;
-L0002:	rts
+L0005:	rts
 
 .endproc
 
