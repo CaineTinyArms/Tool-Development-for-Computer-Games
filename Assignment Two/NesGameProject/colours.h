@@ -23,8 +23,8 @@ ORANGE,BLUE,PURPLE,YELLOW, // Sub-Palette 1
 
 const char paletteSprite[] = 
 {
-BLACK, ORANGE, YELLOW, BLUE,
-0,0,0,0,
-0,0,0,0,
+BLACK, DK_GY, LT_GY, WHITE,
+BLACK, DK_GY, ORANGE, WHITE,
+BLACK, DK_GY, ORANGE, WHITE,
 0,0,0,0
 };

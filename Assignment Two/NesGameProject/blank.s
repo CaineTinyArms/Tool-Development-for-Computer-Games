@@ -23,7 +23,11 @@
 	.import		_vram_adr
 	.import		_vram_put
 	.export		_testSprite
+	.export		_testPortal1
+	.export		_testPortal2
 	.export		_testSpriteData
+	.export		_portal1SpriteData
+	.export		_portal2SpriteData
 	.export		_drawSprite
 	.export		_movement
 	.export		_paletteBackground
@@ -39,6 +43,16 @@
 _testSpriteData:
 	.byte	$40
 	.byte	$50
+	.byte	$0F
+	.byte	$0E
+_portal1SpriteData:
+	.byte	$C8
+	.byte	$64
+	.byte	$0F
+	.byte	$0E
+_portal2SpriteData:
+	.byte	$64
+	.byte	$64
 	.byte	$0F
 	.byte	$0E
 
@@ -62,6 +76,26 @@ _testSprite:
 	.byte	$10
 	.byte	$40
 	.byte	$80
+_testPortal1:
+	.byte	$00
+	.byte	$00
+	.byte	$01
+	.byte	$01
+	.byte	$00
+	.byte	$08
+	.byte	$01
+	.byte	$81
+	.byte	$80
+_testPortal2:
+	.byte	$00
+	.byte	$00
+	.byte	$01
+	.byte	$02
+	.byte	$00
+	.byte	$08
+	.byte	$01
+	.byte	$82
+	.byte	$80
 _paletteBackground:
 	.byte	$0F
 	.byte	$00
@@ -81,17 +115,17 @@ _paletteBackground:
 	.byte	$00
 _paletteSprite:
 	.byte	$0F
+	.byte	$00
+	.byte	$10
+	.byte	$30
+	.byte	$0F
+	.byte	$00
 	.byte	$27
-	.byte	$28
-	.byte	$12
+	.byte	$30
+	.byte	$0F
 	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
+	.byte	$27
+	.byte	$30
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -123,7 +157,7 @@ _pad1:
 ;
 	jsr     _oam_clear
 ;
-; oam_meta_spr(testSpriteData.X, testSpriteData.Y, testSprite); // Draws the metasprite at x pos 16, y pos 18 and using the testSprite data. Nes Screen is 256 x 240 in pixels, so max range for sprite drawing is 255, 239.
+; oam_meta_spr(testSpriteData.X, testSpriteData.Y, testSprite); // Draws the metasprite at x pos 64, y pos 80 and using the testSprite data. Nes Screen is 256 x 240 in pixels, so max range for sprite drawing is 255, 239.
 ;
 	jsr     decsp2
 	lda     _testSpriteData
@@ -134,6 +168,32 @@ _pad1:
 	sta     (sp),y
 	lda     #<(_testSprite)
 	ldx     #>(_testSprite)
+	jsr     _oam_meta_spr
+;
+; oam_meta_spr(portal1SpriteData.X, portal1SpriteData.Y, testPortal1);
+;
+	jsr     decsp2
+	lda     _portal1SpriteData
+	ldy     #$01
+	sta     (sp),y
+	lda     _portal1SpriteData+1
+	dey
+	sta     (sp),y
+	lda     #<(_testPortal1)
+	ldx     #>(_testPortal1)
+	jsr     _oam_meta_spr
+;
+; oam_meta_spr(portal2SpriteData.X, portal2SpriteData.Y, testPortal2);
+;
+	jsr     decsp2
+	lda     _portal2SpriteData
+	ldy     #$01
+	sta     (sp),y
+	lda     _portal2SpriteData+1
+	dey
+	sta     (sp),y
+	lda     #<(_testPortal2)
+	ldx     #>(_testPortal2)
 	jmp     _oam_meta_spr
 
 .endproc

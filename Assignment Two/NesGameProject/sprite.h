@@ -7,6 +7,20 @@ const unsigned char testSprite[] =
     128 // This basically means "this is the end please stop reading sprite data".
 };
 
+const unsigned char testPortal1[] =
+{
+    0, 0, 0x01, 1,
+    0, 8, 0x01, 1|OAM_FLIP_V,
+    128
+};
+
+const unsigned char testPortal2[] = 
+{
+    0, 0, 0x01, 2,
+    0, 8, 0x01, 2|OAM_FLIP_V,
+    128
+};
+
 struct spriteData 
 {
     unsigned char X;
@@ -17,6 +31,10 @@ struct spriteData
 
 struct spriteData testSpriteData = {64, 80, 15, 14};
 
+struct spriteData portal1SpriteData = {200, 100, 15, 14};
+
+struct spriteData portal2SpriteData = {100, 100, 15, 14};
+
 // FUNCTION PROTOTYPES
 void drawSprite(void); // Prototype for drawing sprite function.
 void movement(void);
@@ -25,6 +43,8 @@ void drawSprite(void)
 {
     oam_clear(); // Clears all sprites from the sprite buffer.
 
-    oam_meta_spr(testSpriteData.X, testSpriteData.Y, testSprite); // Draws the metasprite at x pos 16, y pos 18 and using the testSprite data. Nes Screen is 256 x 240 in pixels, so max range for sprite drawing is 255, 239.
+    oam_meta_spr(testSpriteData.X, testSpriteData.Y, testSprite); // Draws the metasprite at x pos 64, y pos 80 and using the testSprite data. Nes Screen is 256 x 240 in pixels, so max range for sprite drawing is 255, 239.
+    oam_meta_spr(portal1SpriteData.X, portal1SpriteData.Y, testPortal1);
+    oam_meta_spr(portal2SpriteData.X, portal2SpriteData.Y, testPortal2);
 }
 
