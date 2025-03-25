@@ -25,6 +25,16 @@ signed char playerVelocity = 0;
 #define MAX_FALL_SPEED 4
 
 
+extern const unsigned char playerSprite[];       
+extern const unsigned char playerShootUpSprite[];
+extern const unsigned char playerShootRightSprite[];
+extern const unsigned char playerShootLeftSprite[];
+extern const unsigned char playerShootDownSprite[];
+extern const unsigned char playerShootTopLeftSprite[];
+extern const unsigned char playerShootTopRightSprite[];
+extern const unsigned char playerShootBottomLeftSprite[];
+extern const unsigned char playerShootBottomRightSprite[];
+
 // Function Prototypes.
 // -================================-
 void modeToggle(void);
@@ -42,6 +52,9 @@ void drawBullet(void);
 
 unsigned char onGround(void);
 void applyGravity(void);
+
+const unsigned char* getPlayerSprite(void);
+void drawSprite(void); // Prototype for drawing sprite function.
 
 void main (void) {
 	
@@ -92,19 +105,19 @@ void main (void) {
 
 void portalPlayerCollision(void)
 {
-	orangePortalCollision = check_collision(&testSpriteData, &orangePortalSpriteData); // Checks if the player is colliding with the data for the first portal.
-	bluePortalCollision = check_collision(&testSpriteData, &bluePortalSpriteData); // Checks if the player is colliding with the data for the second portal.
+	orangePortalCollision = check_collision(&playerSpriteData, &orangePortalSpriteData); // Checks if the player is colliding with the data for the first portal.
+	bluePortalCollision = check_collision(&playerSpriteData, &bluePortalSpriteData); // Checks if the player is colliding with the data for the second portal.
 
 	if (orangePortalCollision && lastPortalUsed != 1) // If the player is colliding with the first portal, and the previously used portal isn't the first one.
 	{ 
-		testSpriteData.X = bluePortalSpriteData.X; // Sets the player X data to the X location of the second portal.
-		testSpriteData.Y = bluePortalSpriteData.Y; // Sets the player Y data to the Y location of the second portal.
+		playerSpriteData.X = bluePortalSpriteData.X; // Sets the player X data to the X location of the second portal.
+		playerSpriteData.Y = bluePortalSpriteData.Y; // Sets the player Y data to the Y location of the second portal.
 		lastPortalUsed = 2; // Sets the last used portal as the first portal, or arrived at portal two.
 	}
 	else if (bluePortalCollision && lastPortalUsed != 2) // If the player is colliding with the second portal, and the previously used portal isn't the second one.
 	{
-		testSpriteData.X = orangePortalSpriteData.X; // Sets the player X data to the X location of the first portal. 
-		testSpriteData.Y = orangePortalSpriteData.Y; // Sets the player Y data to the Y location of the first portal.
+		playerSpriteData.X = orangePortalSpriteData.X; // Sets the player X data to the X location of the first portal. 
+		playerSpriteData.Y = orangePortalSpriteData.Y; // Sets the player Y data to the Y location of the first portal.
 		lastPortalUsed = 1; // Sets the last used portal as the second portal, or arrived at portal one.
 	}
 	else
@@ -144,8 +157,8 @@ unsigned char playerWallCollision(struct spriteData *spr)
 
 void spawnOrangeBullet(void)
 {
-	orangeBulletSpriteData.X = testSpriteData.X; // Sets the orange bullet X data to the Players X data.
-	orangeBulletSpriteData.Y = testSpriteData.Y; // Sets the orange bullet Y data to the Players Y data.
+	orangeBulletSpriteData.X = playerSpriteData.X; // Sets the orange bullet X data to the Players X data.
+	orangeBulletSpriteData.Y = playerSpriteData.Y; // Sets the orange bullet Y data to the Players Y data.
 	bulletActive = 1; // Sets the bullet active to 1, to indicate it is a orange bullet.
 
 	bulletDirectionX = aimDirectionX; // Takes the X bullet direction from the X aiming direction.
@@ -159,8 +172,8 @@ void spawnOrangeBullet(void)
 
 void spawnBlueBullet(void)
 {
-	blueBulletSpriteData.X = testSpriteData.X; // Sets the blue bullet X data to the Players X data.
-	blueBulletSpriteData.Y = testSpriteData.Y; // Sets the blue bullet Y data to the Players Y data.
+	blueBulletSpriteData.X = playerSpriteData.X; // Sets the blue bullet X data to the Players X data.
+	blueBulletSpriteData.Y = playerSpriteData.Y; // Sets the blue bullet Y data to the Players Y data.
 	bulletActive = 2; // Sets the bullet active to 2, to indicate it's a blue bullet.
 
 	bulletDirectionX = aimDirectionX; // Takes the X bullet direction from the X aiming direction.
@@ -203,6 +216,11 @@ void updateBullet(void)
 				tileX++;
 			}
 
+			if (bulletDirectionY > 0 && tileY > 0)
+			{
+				tileY--;
+			}
+
             if (bluePortalActive) // If there is a blue portal active.
             {
                 unsigned char pTileX = bluePortalSpriteData.X >> 3; // Get the X tile from the blue portal.
@@ -239,16 +257,16 @@ void updateBullet(void)
             unsigned char tileX = (blueBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
             unsigned char tileY = (blueBulletSpriteData.Y + 4) >> 3; // Get the Y tile from the centre of the bullet.
 
-            if (bulletDirectionX > 0 && tileX > 0) // If the bullet is moving to the right.
+            if (bulletDirectionX > 0 && tileX > 0)
 			{
-				tileX--; // Put the portal one tile to the left.
+				tileX--;
 			}
 
-			else if (bulletDirectionX < 0 && tileX < 31) // If the bullet is moving to the left.
+			else if (bulletDirectionY < 0 && tileX < 31)
 			{
-				tileX++; // PLace the portal one tile to the right.
+				tileX++;
 			}
-			
+
 			if (bulletDirectionY > 0 && tileY > 0)
 			{
 				tileY--;
@@ -307,19 +325,19 @@ void walkMode(void)
 {
 	if (pad1 & PAD_LEFT) // If Left on the DPAD is pressed.
 	{
-		testSpriteData.X--; // Decrement the X data of the Player Sprite. 
-		if (playerWallCollision(&testSpriteData)) // If the new location of the Player Sprite is colliding with a wall.
+		playerSpriteData.X--; // Decrement the X data of the Player Sprite. 
+		if (playerWallCollision(&playerSpriteData)) // If the new location of the Player Sprite is colliding with a wall.
 		{
-			testSpriteData.X++; // Increment the X data to move it out of the wall.
+			playerSpriteData.X++; // Increment the X data to move it out of the wall.
 		}
 	}
 
 	else if (pad1 & PAD_RIGHT) // If Right on the DPAD is pressed.
 	{
-		testSpriteData.X++; // Increment the X data of the Player Sprite.
-		if (playerWallCollision(&testSpriteData)) // If the new location of the Player Sprite is colliding with a wall.
+		playerSpriteData.X++; // Increment the X data of the Player Sprite.
+		if (playerWallCollision(&playerSpriteData)) // If the new location of the Player Sprite is colliding with a wall.
 		{
-			testSpriteData.X--; // Decrement the X data to move it out of the wall.
+			playerSpriteData.X--; // Decrement the X data to move it out of the wall.
 		}
 	}
 }
@@ -370,9 +388,9 @@ void shootMode(void)
 
 unsigned char onGround(void)
 {
-	 unsigned char footY = (testSpriteData.Y + testSpriteData.height + 1) >> 3;
-	 unsigned char footXLeft = testSpriteData.X >> 3;
-	 unsigned char footXRight = (testSpriteData.X + testSpriteData.width) >> 3;
+	 unsigned char footY = (playerSpriteData.Y + playerSpriteData.height + 1) >> 3;
+	 unsigned char footXLeft = playerSpriteData.X >> 3;
+	 unsigned char footXRight = (playerSpriteData.X + playerSpriteData.width) >> 3;
 
 	 if (wallDetection(footXLeft, footY) || wallDetection(footXRight, footY))
 	 {
@@ -403,8 +421,67 @@ void applyGravity(void)
 
 	if (playerVelocity != 0) // If the player has any velocity.
 	{
-		testSpriteData.Y += playerVelocity; // Move the player down the screen at the speed of the velocity.
+		playerSpriteData.Y += playerVelocity; // Move the player down the screen at the speed of the velocity.
 	}
 	
 	playerVelocity = 0;
+}
+
+
+
+void drawSprite(void)
+{
+	const unsigned char* currentSprite = getPlayerSprite();
+    oam_meta_spr(playerSpriteData.X, playerSpriteData.Y, currentSprite); // Draws the metasprite at x pos 64, y pos 80 and using the playerSprite data. Nes Screen is 256 x 240 in pixels, so max range for sprite drawing is 255, 239.
+}
+
+const unsigned char* getPlayerSprite(void)
+{
+	if (mode == 0)
+	{
+		return playerSprite;
+	}
+
+	if (aimDirectionX == 0 && aimDirectionY == -1)
+	{
+		return playerShootUpSprite;
+	}
+
+	if (aimDirectionX == 0 && aimDirectionY == 1)
+	{
+		return playerShootDownSprite;
+	}
+
+	if (aimDirectionX == -1 && aimDirectionY == 0)
+	{
+		return playerShootLeftSprite;
+	}
+
+	if (aimDirectionX == 1 && aimDirectionY == 0)
+	{
+		return playerShootRightSprite;
+	}
+
+	if (aimDirectionX == -1 && aimDirectionY == -1)
+	{
+		return playerShootTopLeftSprite;
+	}
+
+	if (aimDirectionX == 1 && aimDirectionY == -1)
+	{
+		return playerShootTopRightSprite;
+	}
+
+	if (aimDirectionX == -1 && aimDirectionY == 1)
+	{
+		return playerShootBottomLeftSprite;
+	}
+
+	if (aimDirectionX == 1 && aimDirectionY == 1)
+	{
+		return playerShootBottomRightSprite;
+	}
+
+
+	return playerShootUpSprite;
 }

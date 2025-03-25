@@ -24,19 +24,26 @@
 	.import		_vram_write
 	.import		_check_collision
 	.import		_set_scroll_y
-	.export		_testSprite
+	.export		_playerSprite
+	.export		_playerShootUpSprite
+	.export		_playerShootDownSprite
+	.export		_playerShootLeftSprite
+	.export		_playerShootRightSprite
+	.export		_playerShootTopRightSprite
+	.export		_playerShootBottomRightSprite
+	.export		_playerShootBottomLeftSprite
+	.export		_playerShootTopLeftSprite
 	.export		_orangePortal
 	.export		_bluePortal
 	.export		_orangeBulletSprite
 	.export		_blueBulletSprite
-	.export		_testSpriteData
+	.export		_playerSpriteData
 	.export		_orangePortalSpriteData
 	.export		_bluePortalSpriteData
 	.export		_orangeBulletSpriteData
 	.export		_blueBulletSpriteData
 	.export		_bluePortalActive
 	.export		_orangePortalActive
-	.export		_drawSprite
 	.export		_drawOrangePortalSprite
 	.export		_drawBluePortalSprite
 	.export		_paletteBackground
@@ -66,11 +73,13 @@
 	.export		_drawBullet
 	.export		_onGround
 	.export		_applyGravity
+	.export		_getPlayerSprite
+	.export		_drawSprite
 	.export		_main
 
 .segment	"DATA"
 
-_testSpriteData:
+_playerSpriteData:
 	.byte	$10
 	.byte	$C8
 	.byte	$0F
@@ -118,7 +127,79 @@ _playerVelocity:
 
 .segment	"RODATA"
 
-_testSprite:
+_playerSprite:
+	.byte	$00
+	.byte	$00
+	.byte	$20
+	.byte	$00
+	.byte	$00
+	.byte	$08
+	.byte	$30
+	.byte	$00
+	.byte	$08
+	.byte	$00
+	.byte	$21
+	.byte	$00
+	.byte	$08
+	.byte	$08
+	.byte	$31
+	.byte	$00
+	.byte	$80
+_playerShootUpSprite:
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$00
+	.byte	$00
+	.byte	$08
+	.byte	$12
+	.byte	$00
+	.byte	$08
+	.byte	$00
+	.byte	$03
+	.byte	$00
+	.byte	$08
+	.byte	$08
+	.byte	$13
+	.byte	$00
+	.byte	$80
+_playerShootDownSprite:
+	.byte	$00
+	.byte	$00
+	.byte	$06
+	.byte	$00
+	.byte	$00
+	.byte	$08
+	.byte	$16
+	.byte	$00
+	.byte	$08
+	.byte	$00
+	.byte	$07
+	.byte	$00
+	.byte	$08
+	.byte	$08
+	.byte	$17
+	.byte	$00
+	.byte	$80
+_playerShootLeftSprite:
+	.byte	$00
+	.byte	$00
+	.byte	$04
+	.byte	$00
+	.byte	$00
+	.byte	$08
+	.byte	$14
+	.byte	$00
+	.byte	$08
+	.byte	$00
+	.byte	$05
+	.byte	$00
+	.byte	$08
+	.byte	$08
+	.byte	$15
+	.byte	$00
+	.byte	$80
+_playerShootRightSprite:
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -129,59 +210,131 @@ _testSprite:
 	.byte	$00
 	.byte	$08
 	.byte	$00
+	.byte	$01
 	.byte	$00
-	.byte	$40
 	.byte	$08
 	.byte	$08
-	.byte	$10
-	.byte	$40
+	.byte	$11
+	.byte	$00
+	.byte	$80
+_playerShootTopRightSprite:
+	.byte	$00
+	.byte	$00
+	.byte	$08
+	.byte	$00
+	.byte	$00
+	.byte	$08
+	.byte	$18
+	.byte	$00
+	.byte	$08
+	.byte	$00
+	.byte	$09
+	.byte	$00
+	.byte	$08
+	.byte	$08
+	.byte	$19
+	.byte	$00
+	.byte	$80
+_playerShootBottomRightSprite:
+	.byte	$00
+	.byte	$00
+	.byte	$0E
+	.byte	$00
+	.byte	$00
+	.byte	$08
+	.byte	$1E
+	.byte	$00
+	.byte	$08
+	.byte	$00
+	.byte	$0F
+	.byte	$00
+	.byte	$08
+	.byte	$08
+	.byte	$1F
+	.byte	$00
+	.byte	$80
+_playerShootBottomLeftSprite:
+	.byte	$00
+	.byte	$00
+	.byte	$0C
+	.byte	$00
+	.byte	$00
+	.byte	$08
+	.byte	$1C
+	.byte	$00
+	.byte	$08
+	.byte	$00
+	.byte	$0D
+	.byte	$00
+	.byte	$08
+	.byte	$08
+	.byte	$1D
+	.byte	$00
+	.byte	$80
+_playerShootTopLeftSprite:
+	.byte	$00
+	.byte	$00
+	.byte	$0A
+	.byte	$00
+	.byte	$00
+	.byte	$08
+	.byte	$1A
+	.byte	$00
+	.byte	$08
+	.byte	$00
+	.byte	$0B
+	.byte	$00
+	.byte	$08
+	.byte	$08
+	.byte	$1B
+	.byte	$00
 	.byte	$80
 _orangePortal:
 	.byte	$00
 	.byte	$00
-	.byte	$01
+	.byte	$EF
 	.byte	$01
 	.byte	$00
 	.byte	$08
-	.byte	$01
+	.byte	$EF
 	.byte	$81
 	.byte	$08
 	.byte	$00
-	.byte	$01
+	.byte	$EF
 	.byte	$41
 	.byte	$08
 	.byte	$08
-	.byte	$01
+	.byte	$EF
 	.byte	$C1
 	.byte	$80
 _bluePortal:
 	.byte	$00
 	.byte	$00
-	.byte	$01
+	.byte	$EF
 	.byte	$02
 	.byte	$00
 	.byte	$08
-	.byte	$01
+	.byte	$EF
 	.byte	$82
 	.byte	$08
 	.byte	$00
-	.byte	$01
+	.byte	$EF
 	.byte	$42
 	.byte	$08
 	.byte	$08
-	.byte	$01
+	.byte	$EF
 	.byte	$C2
 	.byte	$80
 _orangeBulletSprite:
 	.byte	$00
 	.byte	$00
-	.byte	$11
+	.byte	$FF
 	.byte	$01
 	.byte	$80
 _blueBulletSprite:
 	.byte	$00
 	.byte	$00
-	.byte	$11
+	.byte	$FF
 	.byte	$02
 	.byte	$80
 _paletteBackground:
@@ -203,9 +356,9 @@ _paletteBackground:
 	.byte	$00
 _paletteSprite:
 	.byte	$0F
-	.byte	$00
-	.byte	$10
+	.byte	$36
 	.byte	$30
+	.byte	$27
 	.byte	$0F
 	.byte	$00
 	.byte	$10
@@ -2280,32 +2433,6 @@ _bluePortalCollision:
 	.res	1,$00
 
 ; ---------------------------------------------------------------
-; void __near__ drawSprite (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_drawSprite: near
-
-.segment	"CODE"
-
-;
-; oam_meta_spr(testSpriteData.X, testSpriteData.Y, testSprite); // Draws the metasprite at x pos 64, y pos 80 and using the testSprite data. Nes Screen is 256 x 240 in pixels, so max range for sprite drawing is 255, 239.
-;
-	jsr     decsp2
-	lda     _testSpriteData
-	ldy     #$01
-	sta     (sp),y
-	lda     _testSpriteData+1
-	dey
-	sta     (sp),y
-	lda     #<(_testSprite)
-	ldx     #>(_testSprite)
-	jmp     _oam_meta_spr
-
-.endproc
-
-; ---------------------------------------------------------------
 ; void __near__ drawOrangePortalSprite (void)
 ; ---------------------------------------------------------------
 
@@ -2439,21 +2566,21 @@ M0001:
 	and     #$02
 	beq     L0007
 ;
-; testSpriteData.X--; // Decrement the X data of the Player Sprite. 
+; playerSpriteData.X--; // Decrement the X data of the Player Sprite. 
 ;
-	dec     _testSpriteData
+	dec     _playerSpriteData
 ;
-; if (playerWallCollision(&testSpriteData)) // If the new location of the Player Sprite is colliding with a wall.
+; if (playerWallCollision(&playerSpriteData)) // If the new location of the Player Sprite is colliding with a wall.
 ;
-	lda     #<(_testSpriteData)
-	ldx     #>(_testSpriteData)
+	lda     #<(_playerSpriteData)
+	ldx     #>(_playerSpriteData)
 	jsr     _playerWallCollision
 	tax
 	beq     L0006
 ;
-; testSpriteData.X++; // Increment the X data to move it out of the wall.
+; playerSpriteData.X++; // Increment the X data to move it out of the wall.
 ;
-	inc     _testSpriteData
+	inc     _playerSpriteData
 ;
 ; else if (pad1 & PAD_RIGHT) // If Right on the DPAD is pressed.
 ;
@@ -2462,21 +2589,21 @@ L0007:	lda     _pad1
 	and     #$01
 	beq     L0006
 ;
-; testSpriteData.X++; // Increment the X data of the Player Sprite.
+; playerSpriteData.X++; // Increment the X data of the Player Sprite.
 ;
-	inc     _testSpriteData
+	inc     _playerSpriteData
 ;
-; if (playerWallCollision(&testSpriteData)) // If the new location of the Player Sprite is colliding with a wall.
+; if (playerWallCollision(&playerSpriteData)) // If the new location of the Player Sprite is colliding with a wall.
 ;
-	lda     #<(_testSpriteData)
-	ldx     #>(_testSpriteData)
+	lda     #<(_playerSpriteData)
+	ldx     #>(_playerSpriteData)
 	jsr     _playerWallCollision
 	tax
 	beq     L0006
 ;
-; testSpriteData.X--; // Decrement the X data to move it out of the wall.
+; playerSpriteData.X--; // Decrement the X data to move it out of the wall.
 ;
-	dec     _testSpriteData
+	dec     _playerSpriteData
 ;
 ; }
 ;
@@ -2614,20 +2741,20 @@ L0012:	jmp     incsp2
 .segment	"CODE"
 
 ;
-; orangePortalCollision = check_collision(&testSpriteData, &orangePortalSpriteData); // Checks if the player is colliding with the data for the first portal.
+; orangePortalCollision = check_collision(&playerSpriteData, &orangePortalSpriteData); // Checks if the player is colliding with the data for the first portal.
 ;
-	lda     #<(_testSpriteData)
-	ldx     #>(_testSpriteData)
+	lda     #<(_playerSpriteData)
+	ldx     #>(_playerSpriteData)
 	jsr     pushax
 	lda     #<(_orangePortalSpriteData)
 	ldx     #>(_orangePortalSpriteData)
 	jsr     _check_collision
 	sta     _orangePortalCollision
 ;
-; bluePortalCollision = check_collision(&testSpriteData, &bluePortalSpriteData); // Checks if the player is colliding with the data for the second portal.
+; bluePortalCollision = check_collision(&playerSpriteData, &bluePortalSpriteData); // Checks if the player is colliding with the data for the second portal.
 ;
-	lda     #<(_testSpriteData)
-	ldx     #>(_testSpriteData)
+	lda     #<(_playerSpriteData)
+	ldx     #>(_playerSpriteData)
 	jsr     pushax
 	lda     #<(_bluePortalSpriteData)
 	ldx     #>(_bluePortalSpriteData)
@@ -2642,15 +2769,15 @@ L0012:	jmp     incsp2
 	cmp     #$01
 	beq     L0002
 ;
-; testSpriteData.X = bluePortalSpriteData.X; // Sets the player X data to the X location of the second portal.
+; playerSpriteData.X = bluePortalSpriteData.X; // Sets the player X data to the X location of the second portal.
 ;
 	lda     _bluePortalSpriteData
-	sta     _testSpriteData
+	sta     _playerSpriteData
 ;
-; testSpriteData.Y = bluePortalSpriteData.Y; // Sets the player Y data to the Y location of the second portal.
+; playerSpriteData.Y = bluePortalSpriteData.Y; // Sets the player Y data to the Y location of the second portal.
 ;
 	lda     _bluePortalSpriteData+1
-	sta     _testSpriteData+1
+	sta     _playerSpriteData+1
 ;
 ; lastPortalUsed = 2; // Sets the last used portal as the first portal, or arrived at portal two.
 ;
@@ -2665,15 +2792,15 @@ L0002:	lda     _bluePortalCollision
 	cmp     #$02
 	beq     L0007
 ;
-; testSpriteData.X = orangePortalSpriteData.X; // Sets the player X data to the X location of the first portal. 
+; playerSpriteData.X = orangePortalSpriteData.X; // Sets the player X data to the X location of the first portal. 
 ;
 	lda     _orangePortalSpriteData
-	sta     _testSpriteData
+	sta     _playerSpriteData
 ;
-; testSpriteData.Y = orangePortalSpriteData.Y; // Sets the player Y data to the Y location of the first portal.
+; playerSpriteData.Y = orangePortalSpriteData.Y; // Sets the player Y data to the Y location of the first portal.
 ;
 	lda     _orangePortalSpriteData+1
-	sta     _testSpriteData+1
+	sta     _playerSpriteData+1
 ;
 ; lastPortalUsed = 1; // Sets the last used portal as the second portal, or arrived at portal one.
 ;
@@ -2918,14 +3045,14 @@ L0005:	jmp     incsp6
 .segment	"CODE"
 
 ;
-; orangeBulletSpriteData.X = testSpriteData.X; // Sets the orange bullet X data to the Players X data.
+; orangeBulletSpriteData.X = playerSpriteData.X; // Sets the orange bullet X data to the Players X data.
 ;
-	lda     _testSpriteData
+	lda     _playerSpriteData
 	sta     _orangeBulletSpriteData
 ;
-; orangeBulletSpriteData.Y = testSpriteData.Y; // Sets the orange bullet Y data to the Players Y data.
+; orangeBulletSpriteData.Y = playerSpriteData.Y; // Sets the orange bullet Y data to the Players Y data.
 ;
-	lda     _testSpriteData+1
+	lda     _playerSpriteData+1
 	sta     _orangeBulletSpriteData+1
 ;
 ; bulletActive = 1; // Sets the bullet active to 1, to indicate it is a orange bullet.
@@ -2973,14 +3100,14 @@ L0008:	lda     #$FF
 .segment	"CODE"
 
 ;
-; blueBulletSpriteData.X = testSpriteData.X; // Sets the blue bullet X data to the Players X data.
+; blueBulletSpriteData.X = playerSpriteData.X; // Sets the blue bullet X data to the Players X data.
 ;
-	lda     _testSpriteData
+	lda     _playerSpriteData
 	sta     _blueBulletSpriteData
 ;
-; blueBulletSpriteData.Y = testSpriteData.Y; // Sets the blue bullet Y data to the Players Y data.
+; blueBulletSpriteData.Y = playerSpriteData.Y; // Sets the blue bullet Y data to the Players Y data.
 ;
-	lda     _testSpriteData+1
+	lda     _playerSpriteData+1
 	sta     _blueBulletSpriteData+1
 ;
 ; bulletActive = 2; // Sets the bullet active to 2, to indicate it's a blue bullet.
@@ -3034,7 +3161,7 @@ L0008:	lda     #$FF
 ;
 ; return; // Do nothing.
 ;
-	bne     L0060
+	bne     L006A
 ;
 ; }
 ;
@@ -3042,8 +3169,8 @@ L0008:	lda     #$FF
 ;
 ; if (bulletActive == 1) // If there is an orange bullet on the screen.
 ;
-L0060:	cmp     #$01
-	jne     L004A
+L006A:	cmp     #$01
+	jne     L0054
 ;
 ; orangeBulletSpriteData.X += bulletDirectionX; // Move the bullet across the screen.
 ;
@@ -3080,7 +3207,7 @@ L0006:	lda     #<(_orangeBulletSpriteData)
 	ldx     #>(_orangeBulletSpriteData)
 	jsr     _playerWallCollision
 	tax
-	bne     L0061
+	bne     L006B
 ;
 ; }
 ;
@@ -3088,7 +3215,7 @@ L0006:	lda     #<(_orangeBulletSpriteData)
 ;
 ; unsigned char tileX = (orangeBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
 ;
-L0061:	ldx     #$00
+L006B:	ldx     #$00
 	lda     _orangeBulletSpriteData
 	clc
 	adc     #$04
@@ -3115,10 +3242,10 @@ L0009:	jsr     asrax3
 	sbc     #$01
 	bvs     L000C
 	eor     #$80
-L000C:	bpl     L0044
+L000C:	bpl     L004A
 	ldy     #$01
 	lda     (sp),y
-	beq     L0044
+	beq     L004A
 ;
 ; tileX--;
 ;
@@ -3127,25 +3254,43 @@ L000C:	bpl     L0044
 ;
 ; else if (bulletDirectionY < 0 && tileX < 31)
 ;
-	jmp     L003A
-L0044:	lda     _bulletDirectionY
+	jmp     L0040
+L004A:	lda     _bulletDirectionY
 	asl     a
-	bcc     L0011
+	bcc     L004E
 	ldy     #$01
 	lda     (sp),y
 	cmp     #$1F
-	bcs     L0011
+	bcs     L004E
 ;
 ; tileX++;
 ;
 	tya
 	adc     (sp),y
-L003A:	sta     (sp),y
+L0040:	sta     (sp),y
+;
+; if (bulletDirectionY > 0 && tileY > 0)
+;
+L004E:	lda     _bulletDirectionY
+	sec
+	sbc     #$01
+	bvs     L0018
+	eor     #$80
+L0018:	bpl     L0016
+	ldy     #$00
+	lda     (sp),y
+	beq     L0016
+;
+; tileY--;
+;
+	sec
+	sbc     #$01
+	sta     (sp),y
 ;
 ; if (bluePortalActive) // If there is a blue portal active.
 ;
-L0011:	lda     _bluePortalActive
-	beq     L0016
+L0016:	lda     _bluePortalActive
+	beq     L001C
 ;
 ; unsigned char pTileX = bluePortalSpriteData.X >> 3; // Get the X tile from the blue portal.
 ;
@@ -3169,12 +3314,12 @@ L0011:	lda     _bluePortalActive
 	lda     (sp),y
 	ldy     #$03
 	cmp     (sp),y
-	bne     L0017
+	bne     L001D
 	ldy     #$00
 	lda     (sp),y
 	ldy     #$02
 	cmp     (sp),y
-	bne     L0017
+	bne     L001D
 ;
 ; bulletActive = 0; // Remove the bullet and do nothing.
 ;
@@ -3187,11 +3332,11 @@ L0011:	lda     _bluePortalActive
 ;
 ; }
 ;
-L0017:	jsr     incsp2
+L001D:	jsr     incsp2
 ;
 ; orangePortalSpriteData.X = tileX << 3; // Sets the orange portal X data to Tile X, if there is no portal there already.
 ;
-L0016:	ldy     #$01
+L001C:	ldy     #$01
 	lda     (sp),y
 	asl     a
 	asl     a
@@ -3214,10 +3359,10 @@ L0016:	ldy     #$01
 ;
 ; else if (bulletActive == 2) // If the bullet is a blue bullet.
 ;
-	jmp     L005F
-L004A:	lda     _bulletActive
+	jmp     L0069
+L0054:	lda     _bulletActive
 	cmp     #$02
-	beq     L0062
+	beq     L006C
 ;
 ; }
 ;
@@ -3225,7 +3370,7 @@ L004A:	lda     _bulletActive
 ;
 ; blueBulletSpriteData.X += bulletDirectionX; // Move the blue bullet sprite across the screen, in the direction of the X aiming variable, I.E, -1 to go left, +1 to go right.
 ;
-L0062:	lda     _bulletDirectionX
+L006C:	lda     _bulletDirectionX
 	clc
 	adc     _blueBulletSpriteData
 	sta     _blueBulletSpriteData
@@ -3241,7 +3386,7 @@ L0062:	lda     _bulletDirectionX
 ;
 	lda     _blueBulletSpriteData
 	cmp     #$F1
-	bcc     L001F
+	bcc     L0025
 ;
 ; bulletActive = 0; // Remove the bullet.
 ;
@@ -3254,11 +3399,11 @@ L0062:	lda     _bulletDirectionX
 ;
 ; if (playerWallCollision(&blueBulletSpriteData)) // If the blue bullet hits a wall.
 ;
-L001F:	lda     #<(_blueBulletSpriteData)
+L0025:	lda     #<(_blueBulletSpriteData)
 	ldx     #>(_blueBulletSpriteData)
 	jsr     _playerWallCollision
 	tax
-	bne     L0063
+	bne     L006D
 ;
 ; }
 ;
@@ -3266,13 +3411,13 @@ L001F:	lda     #<(_blueBulletSpriteData)
 ;
 ; unsigned char tileX = (blueBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
 ;
-L0063:	ldx     #$00
+L006D:	ldx     #$00
 	lda     _blueBulletSpriteData
 	clc
 	adc     #$04
-	bcc     L0021
+	bcc     L0027
 	inx
-L0021:	jsr     asrax3
+L0027:	jsr     asrax3
 	jsr     pusha
 ;
 ; unsigned char tileY = (blueBulletSpriteData.Y + 4) >> 3; // Get the Y tile from the centre of the bullet.
@@ -3281,56 +3426,56 @@ L0021:	jsr     asrax3
 	lda     _blueBulletSpriteData+1
 	clc
 	adc     #$04
-	bcc     L0022
+	bcc     L0028
 	inx
-L0022:	jsr     asrax3
+L0028:	jsr     asrax3
 	jsr     pusha
 ;
-; if (bulletDirectionX > 0 && tileX > 0) // If the bullet is moving to the right.
+; if (bulletDirectionX > 0 && tileX > 0)
 ;
 	lda     _bulletDirectionX
 	sec
 	sbc     #$01
-	bvs     L0025
+	bvs     L002B
 	eor     #$80
-L0025:	bpl     L0052
+L002B:	bpl     L005C
 	ldy     #$01
 	lda     (sp),y
-	beq     L0052
+	beq     L005C
 ;
-; tileX--; // Put the portal one tile to the left.
+; tileX--;
 ;
 	sec
 	sbc     #$01
 ;
-; else if (bulletDirectionX < 0 && tileX < 31) // If the bullet is moving to the left.
+; else if (bulletDirectionY < 0 && tileX < 31)
 ;
-	jmp     L003C
-L0052:	lda     _bulletDirectionX
+	jmp     L0042
+L005C:	lda     _bulletDirectionY
 	asl     a
-	bcc     L0056
+	bcc     L0060
 	ldy     #$01
 	lda     (sp),y
 	cmp     #$1F
-	bcs     L0056
+	bcs     L0060
 ;
-; tileX++; // PLace the portal one tile to the right.
+; tileX++;
 ;
 	tya
 	adc     (sp),y
-L003C:	sta     (sp),y
+L0042:	sta     (sp),y
 ;
 ; if (bulletDirectionY > 0 && tileY > 0)
 ;
-L0056:	lda     _bulletDirectionY
+L0060:	lda     _bulletDirectionY
 	sec
 	sbc     #$01
-	bvs     L0031
+	bvs     L0037
 	eor     #$80
-L0031:	bpl     L002F
+L0037:	bpl     L0035
 	ldy     #$00
 	lda     (sp),y
-	beq     L002F
+	beq     L0035
 ;
 ; tileY--;
 ;
@@ -3340,8 +3485,8 @@ L0031:	bpl     L002F
 ;
 ; if (orangePortalActive) // If there is an orange portal active.
 ;
-L002F:	lda     _orangePortalActive
-	beq     L0035
+L0035:	lda     _orangePortalActive
+	beq     L003B
 ;
 ; unsigned char pTileX = orangePortalSpriteData.X >> 3; // Get the X tile from the Orange Portal.
 ;
@@ -3365,12 +3510,12 @@ L002F:	lda     _orangePortalActive
 	lda     (sp),y
 	ldy     #$03
 	cmp     (sp),y
-	bne     L0036
+	bne     L003C
 	ldy     #$00
 	lda     (sp),y
 	ldy     #$02
 	cmp     (sp),y
-	bne     L0036
+	bne     L003C
 ;
 ; bulletActive = 0; // Remove the bullet and do nothing.
 ;
@@ -3383,11 +3528,11 @@ L002F:	lda     _orangePortalActive
 ;
 ; }
 ;
-L0036:	jsr     incsp2
+L003C:	jsr     incsp2
 ;
 ; bluePortalSpriteData.X = tileX << 3; // Sets the blue portal X data to Tile X, if there is no portal there already.
 ;
-L0035:	ldy     #$01
+L003B:	ldy     #$01
 	lda     (sp),y
 	asl     a
 	asl     a
@@ -3410,7 +3555,7 @@ L0035:	ldy     #$01
 ;
 ; bulletActive = 0; // Removes the bullet, allowing for more shots.
 ;
-L005F:	sty     _bulletActive
+L0069:	sty     _bulletActive
 ;
 ; }
 ;
@@ -3484,12 +3629,12 @@ L0004:	rts
 .segment	"CODE"
 
 ;
-; unsigned char footY = (testSpriteData.Y + testSpriteData.height + 1) >> 3;
+; unsigned char footY = (playerSpriteData.Y + playerSpriteData.height + 1) >> 3;
 ;
 	ldx     #$00
-	lda     _testSpriteData+1
+	lda     _playerSpriteData+1
 	clc
-	adc     _testSpriteData+2
+	adc     _playerSpriteData+2
 	bcc     L0008
 	inx
 	clc
@@ -3499,20 +3644,20 @@ L0008:	adc     #$01
 L0002:	jsr     asrax3
 	jsr     pusha
 ;
-; unsigned char footXLeft = testSpriteData.X >> 3;
+; unsigned char footXLeft = playerSpriteData.X >> 3;
 ;
-	lda     _testSpriteData
+	lda     _playerSpriteData
 	lsr     a
 	lsr     a
 	lsr     a
 	jsr     pusha
 ;
-; unsigned char footXRight = (testSpriteData.X + testSpriteData.width) >> 3;
+; unsigned char footXRight = (playerSpriteData.X + playerSpriteData.width) >> 3;
 ;
 	ldx     #$00
-	lda     _testSpriteData
+	lda     _playerSpriteData
 	clc
-	adc     _testSpriteData+3
+	adc     _playerSpriteData+3
 	bcc     L0007
 	inx
 L0007:	jsr     asrax3
@@ -3604,11 +3749,11 @@ L000E:	sta     _playerVelocity
 L0010:	lda     _playerVelocity
 	beq     L0013
 ;
-; testSpriteData.Y += playerVelocity; // Move the player down the screen at the speed of the velocity.
+; playerSpriteData.Y += playerVelocity; // Move the player down the screen at the speed of the velocity.
 ;
 	clc
-	adc     _testSpriteData+1
-	sta     _testSpriteData+1
+	adc     _playerSpriteData+1
+	sta     _playerSpriteData+1
 ;
 ; playerVelocity = 0;
 ;
@@ -3618,6 +3763,187 @@ L0013:	sta     _playerVelocity
 ; }
 ;
 	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; const unsigned char *__near__ getPlayerSprite (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_getPlayerSprite: near
+
+.segment	"CODE"
+
+;
+; if (mode == 0)
+;
+	lda     _mode
+	bne     L0034
+;
+; return playerSprite;
+;
+	lda     #<(_playerSprite)
+	ldx     #>(_playerSprite)
+	rts
+;
+; if (aimDirectionX == 0 && aimDirectionY == -1)
+;
+L0034:	lda     _aimDirectionX
+	bne     L0035
+	lda     _aimDirectionY
+	cmp     #$FF
+	jeq     L002D
+;
+; if (aimDirectionX == 0 && aimDirectionY == 1)
+;
+L0035:	lda     _aimDirectionX
+	bne     L0036
+	lda     _aimDirectionY
+	cmp     #$01
+	bne     L0036
+;
+; return playerShootDownSprite;
+;
+	lda     #<(_playerShootDownSprite)
+	ldx     #>(_playerShootDownSprite)
+	rts
+;
+; if (aimDirectionX == -1 && aimDirectionY == 0)
+;
+L0036:	lda     _aimDirectionX
+	cmp     #$FF
+	bne     L0037
+	lda     _aimDirectionY
+	bne     L0037
+;
+; return playerShootLeftSprite;
+;
+	lda     #<(_playerShootLeftSprite)
+	ldx     #>(_playerShootLeftSprite)
+	rts
+;
+; if (aimDirectionX == 1 && aimDirectionY == 0)
+;
+L0037:	lda     _aimDirectionX
+	cmp     #$01
+	bne     L0038
+	lda     _aimDirectionY
+	bne     L0038
+;
+; return playerShootRightSprite;
+;
+	lda     #<(_playerShootRightSprite)
+	ldx     #>(_playerShootRightSprite)
+	rts
+;
+; if (aimDirectionX == -1 && aimDirectionY == -1)
+;
+L0038:	lda     _aimDirectionX
+	cmp     #$FF
+	bne     L0039
+	lda     _aimDirectionY
+	cmp     #$FF
+	bne     L0039
+;
+; return playerShootTopLeftSprite;
+;
+	lda     #<(_playerShootTopLeftSprite)
+	ldx     #>(_playerShootTopLeftSprite)
+	rts
+;
+; if (aimDirectionX == 1 && aimDirectionY == -1)
+;
+L0039:	lda     _aimDirectionX
+	cmp     #$01
+	bne     L003A
+	lda     _aimDirectionY
+	cmp     #$FF
+	bne     L003A
+;
+; return playerShootTopRightSprite;
+;
+	lda     #<(_playerShootTopRightSprite)
+	ldx     #>(_playerShootTopRightSprite)
+	rts
+;
+; if (aimDirectionX == -1 && aimDirectionY == 1)
+;
+L003A:	lda     _aimDirectionX
+	cmp     #$FF
+	bne     L003B
+	lda     _aimDirectionY
+	cmp     #$01
+	bne     L003B
+;
+; return playerShootBottomLeftSprite;
+;
+	lda     #<(_playerShootBottomLeftSprite)
+	ldx     #>(_playerShootBottomLeftSprite)
+	rts
+;
+; if (aimDirectionX == 1 && aimDirectionY == 1)
+;
+L003B:	lda     _aimDirectionX
+	cmp     #$01
+	bne     L002D
+	lda     _aimDirectionY
+	cmp     #$01
+	bne     L002D
+;
+; return playerShootBottomRightSprite;
+;
+	lda     #<(_playerShootBottomRightSprite)
+	ldx     #>(_playerShootBottomRightSprite)
+	rts
+;
+; return playerShootUpSprite;
+;
+L002D:	lda     #<(_playerShootUpSprite)
+	ldx     #>(_playerShootUpSprite)
+;
+; }
+;
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ drawSprite (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_drawSprite: near
+
+.segment	"CODE"
+
+;
+; const unsigned char* currentSprite = getPlayerSprite();
+;
+	jsr     _getPlayerSprite
+	jsr     pushax
+;
+; oam_meta_spr(playerSpriteData.X, playerSpriteData.Y, currentSprite); // Draws the metasprite at x pos 64, y pos 80 and using the playerSprite data. Nes Screen is 256 x 240 in pixels, so max range for sprite drawing is 255, 239.
+;
+	jsr     decsp2
+	lda     _playerSpriteData
+	ldy     #$01
+	sta     (sp),y
+	lda     _playerSpriteData+1
+	dey
+	sta     (sp),y
+	ldy     #$03
+	lda     (sp),y
+	tax
+	dey
+	lda     (sp),y
+	jsr     _oam_meta_spr
+;
+; }
+;
+	jmp     incsp2
 
 .endproc
 
