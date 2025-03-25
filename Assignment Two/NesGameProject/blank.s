@@ -22,23 +22,46 @@
 	.import		_bank_spr
 	.import		_vram_adr
 	.import		_vram_put
-	.import		_vram_fill
+	.export		_testSprite
+	.export		_testSpriteData
+	.export		_drawSprite
+	.export		_movement
+	.export		_paletteBackground
+	.export		_paletteSprite
 	.export		_i
 	.export		_pad1
 	.export		_text
-	.export		_paletteBackground
-	.export		_paletteSprite
-	.export		_testSprite
-	.export		_setSubPalette0
-	.export		_setSubPalette1
-	.export		_drawSprite
+	.export		_testFunc
 	.export		_main
+
+.segment	"DATA"
+
+_testSpriteData:
+	.byte	$40
+	.byte	$50
+	.byte	$0F
+	.byte	$0E
 
 .segment	"RODATA"
 
-_text:
-	.byte	$43,$41,$49,$4E,$45,$27,$53,$20,$54,$45,$53,$54,$20,$50,$52,$4F
-	.byte	$4A,$45,$43,$54,$00
+_testSprite:
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$08
+	.byte	$10
+	.byte	$00
+	.byte	$08
+	.byte	$00
+	.byte	$00
+	.byte	$40
+	.byte	$08
+	.byte	$08
+	.byte	$10
+	.byte	$40
+	.byte	$80
 _paletteBackground:
 	.byte	$0F
 	.byte	$00
@@ -73,24 +96,9 @@ _paletteSprite:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-_testSprite:
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$08
-	.byte	$10
-	.byte	$00
-	.byte	$08
-	.byte	$00
-	.byte	$00
-	.byte	$40
-	.byte	$08
-	.byte	$08
-	.byte	$10
-	.byte	$40
-	.byte	$80
+_text:
+	.byte	$43,$41,$49,$4E,$45,$27,$53,$20,$54,$45,$53,$54,$20,$50,$52,$4F
+	.byte	$4A,$45,$43,$54,$00
 
 .segment	"BSS"
 
@@ -99,76 +107,6 @@ _i:
 	.res	1,$00
 _pad1:
 	.res	1,$00
-
-; ---------------------------------------------------------------
-; void __near__ setSubPalette0 (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_setSubPalette0: near
-
-.segment	"CODE"
-
-;
-; ppu_off(); // Turns the screen off.
-;
-	jsr     _ppu_off
-;
-; vram_adr(NTADR_A(0,0) + 0x03C0); // Goes to the VRAM address for the first name table. The +0x03C0 jumps to the attribute table of the name table.
-;
-	ldx     #$23
-	lda     #$C0
-	jsr     _vram_adr
-;
-; vram_fill(0x00, 64); // Changes all 64 bytes of the attribute table, telling it to use sub-palette zero. The 0x00 sets all 2-bit pairs to 00, meaning to use sub-palette zero.
-;
-	lda     #$00
-	jsr     pusha
-	tax
-	lda     #$40
-	jsr     _vram_fill
-;
-; ppu_on_all(); // Turns the screen on.
-;
-	jmp     _ppu_on_all
-
-.endproc
-
-; ---------------------------------------------------------------
-; void __near__ setSubPalette1 (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_setSubPalette1: near
-
-.segment	"CODE"
-
-;
-; ppu_off(); // Turns the screen off.
-;
-	jsr     _ppu_off
-;
-; vram_adr(NTADR_A(0,0) + 0x03C0); // Goes to the VRAM address for the first name table. The +0x03C0 jumps to the attribute table of the name table.
-;
-	ldx     #$23
-	lda     #$C0
-	jsr     _vram_adr
-;
-; vram_fill(0x55, 64); // Changes all 64 bytes of the attribute table, telling it to use sub-palette one. The 0x55 sets all 2-bit pairs to 01, meaning to use sub-palette one.
-;
-	lda     #$55
-	jsr     pusha
-	ldx     #$00
-	lda     #$40
-	jsr     _vram_fill
-;
-; ppu_on_all(); // Turns the screen on.
-;
-	jmp     _ppu_on_all
-
-.endproc
 
 ; ---------------------------------------------------------------
 ; void __near__ drawSprite (void)
@@ -185,18 +123,86 @@ _pad1:
 ;
 	jsr     _oam_clear
 ;
-; oam_meta_spr(16, 18, testSprite); // Draws the metasprite at x pos 16, y pos 18 and using the testSprite data. Nes Screen is 256 x 240 in pixels, so max range for sprite drawing is 255, 239.
+; oam_meta_spr(testSpriteData.X, testSpriteData.Y, testSprite); // Draws the metasprite at x pos 16, y pos 18 and using the testSprite data. Nes Screen is 256 x 240 in pixels, so max range for sprite drawing is 255, 239.
 ;
 	jsr     decsp2
-	lda     #$10
+	lda     _testSpriteData
 	ldy     #$01
 	sta     (sp),y
-	lda     #$12
+	lda     _testSpriteData+1
 	dey
 	sta     (sp),y
 	lda     #<(_testSprite)
 	ldx     #>(_testSprite)
 	jmp     _oam_meta_spr
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ movement (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_movement: near
+
+.segment	"CODE"
+
+;
+; if(pad1 & PAD_LEFT){
+;
+	lda     _pad1
+	and     #$02
+	beq     L0006
+;
+; testSpriteData.X -= 1;
+;
+	dec     _testSpriteData
+;
+; else if (pad1 & PAD_RIGHT){
+;
+	rts
+L0006:	lda     _pad1
+	and     #$01
+	beq     L0004
+;
+; testSpriteData.X += 1;
+;
+	inc     _testSpriteData
+;
+; }
+;
+L0004:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ testFunc (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_testFunc: near
+
+.segment	"CODE"
+
+;
+; if(pad1 & PAD_UP)
+;
+	lda     _pad1
+	and     #$08
+	beq     L0002
+;
+; testSpriteData.X += 40;
+;
+	lda     #$28
+	clc
+	adc     _testSpriteData
+	sta     _testSpriteData
+;
+; }
+;
+L0002:	rts
 
 .endproc
 
@@ -277,28 +283,17 @@ L0007:	jsr     _ppu_wait_nmi
 	jsr     _pad_poll
 	sta     _pad1
 ;
-; if (pad1 & PAD_A) {
-;
-	and     #$80
-	beq     L000C
-;
-; setSubPalette1();
-;
-	jsr     _setSubPalette1
-;
-; if (pad1 & PAD_B) {
-;
-L000C:	lda     _pad1
-	and     #$40
-	beq     L000B
-;
-; setSubPalette0();
-;
-	jsr     _setSubPalette0
-;
 ; drawSprite();
 ;
-L000B:	jsr     _drawSprite
+	jsr     _drawSprite
+;
+; movement();
+;
+	jsr     _movement
+;
+; testFunc();
+;
+	jsr     _testFunc
 ;
 ; while (1){
 ;
