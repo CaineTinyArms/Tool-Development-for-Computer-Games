@@ -16,16 +16,16 @@
 
 const unsigned char paletteBackground[]=
 {
-BLACK, DK_GY, LT_GY, WHITE, // Sub-Palette 0 
-ORANGE,BLUE,PURPLE,YELLOW, // Sub-Palette 1
-0,0,0,0, // Sub-Palette 2
+BLACK, DK_BLUE, LT_GY, WHITE, // Sub-Palette 0 
+ORANGE,ORANGE,ORANGE,ORANGE, // Sub-Palette 1
+ORANGE,ORANGE,ORANGE,ORANGE, // Sub-Palette 2
 0,0,0,0 // Sub-Palette 3
 }; 
 
 const char paletteSprite[] = 
 {
-BLACK, SKIN, WHITE, ORANGE, // Sub-Palette 0
-BLACK, DK_GY, LT_GY, ORANGE, // Sub-Palette 1
-BLACK, DK_GY, LT_GY, DK_BLUE, // Sub Palette 2
+BLACK, ORANGE, LT_GY, WHITE, // Sub-Palette 0
+BLACK, ORANGE, LT_GY, ORANGE, // Sub-Palette 1
+BLACK, ORANGE, LT_GY, DK_BLUE, // Sub Palette 2
 0,0,0,0 // Sub Palette 3
 };

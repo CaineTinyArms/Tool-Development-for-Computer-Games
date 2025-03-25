@@ -4,7 +4,7 @@
 #include "headers/colours.h"
 #include "headers/testlevel.h"
 #include "headers/testlevelcollision.h"
-
+#include "headers/menu.h"
 #pragma bss-name(push, "ZEROPAGE")
 
 // Global Variables
@@ -50,7 +50,7 @@ void spawnBlueBullet(void);
 void updateBullet(void);
 void drawBullet(void);
 
-unsigned char onGround(void);
+unsigned char onGround(void);	
 void applyGravity(void);
 
 const unsigned char* getPlayerSprite(void);
@@ -66,11 +66,13 @@ void main (void) {
 	set_scroll_y(0xff); // Moves the background down by 1 pixel.
 
 	vram_adr(NAMETABLE_A); // Sets the address to NameTable A (the first name table), for the data to be written to.
-	vram_write(testlevel, sizeof(testlevel)); // Writes the data from the testlevel header 
+	vram_write(menu, 1024); // Writes the data from the testlevel header 
+
+	ppu_on_all();
 
     bank_spr(1); // Tells the program to use the second batch of tiles from the bank for the sprite. Both background and sprite uses 0 by default, however Alpha3 has the sprite tiles on 2.
 	
-	ppu_on_all(); // Turns on the Screen.
+	 // Turns on the Screen.
 	
 	
 	while (1){
@@ -95,10 +97,10 @@ void main (void) {
         portalPlayerCollision(); // Handle Portal Collision with the Player. 
 
 		oam_clear(); // Clears the OAM buffer.
-		drawSprite(); // Draws the player sprite. 
-		drawBullet(); // Draws the bullet sprites.
-		drawBluePortalSprite();
-		drawOrangePortalSprite();
+		//drawSprite(); // Draws the player sprite. 
+		//drawBullet(); // Draws the bullet sprites.
+		//drawBluePortalSprite();
+		//drawOrangePortalSprite();
 	}
 }
 	
