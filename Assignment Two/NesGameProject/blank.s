@@ -3161,7 +3161,7 @@ L0008:	lda     #$FF
 ;
 ; return; // Do nothing.
 ;
-	bne     L006A
+	bne     L0052
 ;
 ; }
 ;
@@ -3169,8 +3169,8 @@ L0008:	lda     #$FF
 ;
 ; if (bulletActive == 1) // If there is an orange bullet on the screen.
 ;
-L006A:	cmp     #$01
-	jne     L0054
+L0052:	cmp     #$01
+	jne     L0042
 ;
 ; orangeBulletSpriteData.X += bulletDirectionX; // Move the bullet across the screen.
 ;
@@ -3207,7 +3207,7 @@ L0006:	lda     #<(_orangeBulletSpriteData)
 	ldx     #>(_orangeBulletSpriteData)
 	jsr     _playerWallCollision
 	tax
-	bne     L006B
+	bne     L0053
 ;
 ; }
 ;
@@ -3215,7 +3215,7 @@ L0006:	lda     #<(_orangeBulletSpriteData)
 ;
 ; unsigned char tileX = (orangeBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
 ;
-L006B:	ldx     #$00
+L0053:	ldx     #$00
 	lda     _orangeBulletSpriteData
 	clc
 	adc     #$04
@@ -3235,51 +3235,35 @@ L0008:	jsr     asrax3
 L0009:	jsr     asrax3
 	jsr     pusha
 ;
-; if (bulletDirectionX > 0 && tileX > 0)
+; if (bulletDirectionX > 0 && tileX > 0) 
 ;
 	lda     _bulletDirectionX
 	sec
 	sbc     #$01
 	bvs     L000C
 	eor     #$80
-L000C:	bpl     L004A
+L000C:	bpl     L003C
 	ldy     #$01
 	lda     (sp),y
-	beq     L004A
+	beq     L003C
 ;
 ; tileX--;
 ;
 	sec
 	sbc     #$01
+	sta     (sp),y
 ;
-; else if (bulletDirectionY < 0 && tileX < 31)
+; if (bulletDirectionY > 0 && tileY > 0) 
 ;
-	jmp     L0040
-L004A:	lda     _bulletDirectionY
-	asl     a
-	bcc     L004E
-	ldy     #$01
-	lda     (sp),y
-	cmp     #$1F
-	bcs     L004E
-;
-; tileX++;
-;
-	tya
-	adc     (sp),y
-L0040:	sta     (sp),y
-;
-; if (bulletDirectionY > 0 && tileY > 0)
-;
-L004E:	lda     _bulletDirectionY
+L003C:	lda     _bulletDirectionY
 	sec
 	sbc     #$01
-	bvs     L0018
+	bvs     L0012
 	eor     #$80
-L0018:	bpl     L0016
+L0012:	bpl     L0010
 	ldy     #$00
 	lda     (sp),y
-	beq     L0016
+	beq     L0010
 ;
 ; tileY--;
 ;
@@ -3289,8 +3273,8 @@ L0018:	bpl     L0016
 ;
 ; if (bluePortalActive) // If there is a blue portal active.
 ;
-L0016:	lda     _bluePortalActive
-	beq     L001C
+L0010:	lda     _bluePortalActive
+	beq     L0016
 ;
 ; unsigned char pTileX = bluePortalSpriteData.X >> 3; // Get the X tile from the blue portal.
 ;
@@ -3314,12 +3298,12 @@ L0016:	lda     _bluePortalActive
 	lda     (sp),y
 	ldy     #$03
 	cmp     (sp),y
-	bne     L001D
+	bne     L0017
 	ldy     #$00
 	lda     (sp),y
 	ldy     #$02
 	cmp     (sp),y
-	bne     L001D
+	bne     L0017
 ;
 ; bulletActive = 0; // Remove the bullet and do nothing.
 ;
@@ -3332,11 +3316,11 @@ L0016:	lda     _bluePortalActive
 ;
 ; }
 ;
-L001D:	jsr     incsp2
+L0017:	jsr     incsp2
 ;
 ; orangePortalSpriteData.X = tileX << 3; // Sets the orange portal X data to Tile X, if there is no portal there already.
 ;
-L001C:	ldy     #$01
+L0016:	ldy     #$01
 	lda     (sp),y
 	asl     a
 	asl     a
@@ -3359,10 +3343,10 @@ L001C:	ldy     #$01
 ;
 ; else if (bulletActive == 2) // If the bullet is a blue bullet.
 ;
-	jmp     L0069
-L0054:	lda     _bulletActive
+	jmp     L0051
+L0042:	lda     _bulletActive
 	cmp     #$02
-	beq     L006C
+	beq     L0054
 ;
 ; }
 ;
@@ -3370,7 +3354,7 @@ L0054:	lda     _bulletActive
 ;
 ; blueBulletSpriteData.X += bulletDirectionX; // Move the blue bullet sprite across the screen, in the direction of the X aiming variable, I.E, -1 to go left, +1 to go right.
 ;
-L006C:	lda     _bulletDirectionX
+L0054:	lda     _bulletDirectionX
 	clc
 	adc     _blueBulletSpriteData
 	sta     _blueBulletSpriteData
@@ -3386,7 +3370,7 @@ L006C:	lda     _bulletDirectionX
 ;
 	lda     _blueBulletSpriteData
 	cmp     #$F1
-	bcc     L0025
+	bcc     L001F
 ;
 ; bulletActive = 0; // Remove the bullet.
 ;
@@ -3399,11 +3383,11 @@ L006C:	lda     _bulletDirectionX
 ;
 ; if (playerWallCollision(&blueBulletSpriteData)) // If the blue bullet hits a wall.
 ;
-L0025:	lda     #<(_blueBulletSpriteData)
+L001F:	lda     #<(_blueBulletSpriteData)
 	ldx     #>(_blueBulletSpriteData)
 	jsr     _playerWallCollision
 	tax
-	bne     L006D
+	bne     L0055
 ;
 ; }
 ;
@@ -3411,13 +3395,13 @@ L0025:	lda     #<(_blueBulletSpriteData)
 ;
 ; unsigned char tileX = (blueBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
 ;
-L006D:	ldx     #$00
+L0055:	ldx     #$00
 	lda     _blueBulletSpriteData
 	clc
 	adc     #$04
-	bcc     L0027
+	bcc     L0021
 	inx
-L0027:	jsr     asrax3
+L0021:	jsr     asrax3
 	jsr     pusha
 ;
 ; unsigned char tileY = (blueBulletSpriteData.Y + 4) >> 3; // Get the Y tile from the centre of the bullet.
@@ -3426,56 +3410,40 @@ L0027:	jsr     asrax3
 	lda     _blueBulletSpriteData+1
 	clc
 	adc     #$04
-	bcc     L0028
+	bcc     L0022
 	inx
-L0028:	jsr     asrax3
+L0022:	jsr     asrax3
 	jsr     pusha
 ;
-; if (bulletDirectionX > 0 && tileX > 0)
+; if (bulletDirectionX > 0 && tileX > 0) 
 ;
 	lda     _bulletDirectionX
 	sec
 	sbc     #$01
-	bvs     L002B
+	bvs     L0025
 	eor     #$80
-L002B:	bpl     L005C
+L0025:	bpl     L004A
 	ldy     #$01
 	lda     (sp),y
-	beq     L005C
+	beq     L004A
 ;
 ; tileX--;
 ;
 	sec
 	sbc     #$01
+	sta     (sp),y
 ;
-; else if (bulletDirectionY < 0 && tileX < 31)
+; if (bulletDirectionY > 0 && tileY > 0) 
 ;
-	jmp     L0042
-L005C:	lda     _bulletDirectionY
-	asl     a
-	bcc     L0060
-	ldy     #$01
-	lda     (sp),y
-	cmp     #$1F
-	bcs     L0060
-;
-; tileX++;
-;
-	tya
-	adc     (sp),y
-L0042:	sta     (sp),y
-;
-; if (bulletDirectionY > 0 && tileY > 0)
-;
-L0060:	lda     _bulletDirectionY
+L004A:	lda     _bulletDirectionY
 	sec
 	sbc     #$01
-	bvs     L0037
+	bvs     L002B
 	eor     #$80
-L0037:	bpl     L0035
+L002B:	bpl     L0029
 	ldy     #$00
 	lda     (sp),y
-	beq     L0035
+	beq     L0029
 ;
 ; tileY--;
 ;
@@ -3485,8 +3453,8 @@ L0037:	bpl     L0035
 ;
 ; if (orangePortalActive) // If there is an orange portal active.
 ;
-L0035:	lda     _orangePortalActive
-	beq     L003B
+L0029:	lda     _orangePortalActive
+	beq     L002F
 ;
 ; unsigned char pTileX = orangePortalSpriteData.X >> 3; // Get the X tile from the Orange Portal.
 ;
@@ -3510,12 +3478,12 @@ L0035:	lda     _orangePortalActive
 	lda     (sp),y
 	ldy     #$03
 	cmp     (sp),y
-	bne     L003C
+	bne     L0030
 	ldy     #$00
 	lda     (sp),y
 	ldy     #$02
 	cmp     (sp),y
-	bne     L003C
+	bne     L0030
 ;
 ; bulletActive = 0; // Remove the bullet and do nothing.
 ;
@@ -3528,11 +3496,11 @@ L0035:	lda     _orangePortalActive
 ;
 ; }
 ;
-L003C:	jsr     incsp2
+L0030:	jsr     incsp2
 ;
 ; bluePortalSpriteData.X = tileX << 3; // Sets the blue portal X data to Tile X, if there is no portal there already.
 ;
-L003B:	ldy     #$01
+L002F:	ldy     #$01
 	lda     (sp),y
 	asl     a
 	asl     a
@@ -3555,7 +3523,7 @@ L003B:	ldy     #$01
 ;
 ; bulletActive = 0; // Removes the bullet, allowing for more shots.
 ;
-L0069:	sty     _bulletActive
+L0051:	sty     _bulletActive
 ;
 ; }
 ;

@@ -206,19 +206,15 @@ void updateBullet(void)
             unsigned char tileX = (orangeBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
             unsigned char tileY = (orangeBulletSpriteData.Y + 4) >> 3; // Get the Y tile from the centre of the billet.
 
-			if (bulletDirectionX > 0 && tileX > 0)
+			if (bulletDirectionX > 0 && tileX > 0) 
 			{
-				tileX--;
+   				tileX--;
 			}
 
-			else if (bulletDirectionY < 0 && tileX < 31)
-			{
-				tileX++;
-			}
 
-			if (bulletDirectionY > 0 && tileY > 0)
+			if (bulletDirectionY > 0 && tileY > 0) 
 			{
-				tileY--;
+   				tileY--;
 			}
 
             if (bluePortalActive) // If there is a blue portal active.
@@ -257,19 +253,15 @@ void updateBullet(void)
             unsigned char tileX = (blueBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
             unsigned char tileY = (blueBulletSpriteData.Y + 4) >> 3; // Get the Y tile from the centre of the bullet.
 
-            if (bulletDirectionX > 0 && tileX > 0)
+			if (bulletDirectionX > 0 && tileX > 0) 
 			{
-				tileX--;
+   				tileX--;
 			}
 
-			else if (bulletDirectionY < 0 && tileX < 31)
-			{
-				tileX++;
-			}
 
-			if (bulletDirectionY > 0 && tileY > 0)
+			if (bulletDirectionY > 0 && tileY > 0) 
 			{
-				tileY--;
+   				tileY--;
 			}
 
             if (orangePortalActive) // If there is an orange portal active.
