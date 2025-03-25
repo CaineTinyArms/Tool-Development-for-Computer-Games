@@ -25,11 +25,15 @@
 	.import		_check_collision
 	.import		_set_scroll_y
 	.export		_testSprite
-	.export		_testPortal1
-	.export		_testPortal2
+	.export		_orangePortal
+	.export		_bluePortal
+	.export		_orangeBulletSprite
+	.export		_blueBulletSprite
 	.export		_testSpriteData
-	.export		_portal1SpriteData
-	.export		_portal2SpriteData
+	.export		_orangePortalSpriteData
+	.export		_bluePortalSpriteData
+	.export		_orangeBulletSpriteData
+	.export		_blueBulletSpriteData
 	.export		_drawSprite
 	.export		_paletteBackground
 	.export		_paletteSprite
@@ -37,13 +41,18 @@
 	.export		_testlevelcollision
 	.export		_i
 	.export		_pad1
-	.export		_portal1Collision
-	.export		_portal2Collision
+	.export		_orangePortalCollision
+	.export		_bluePortalCollision
 	.export		_lastPortalUsed
+	.export		_bulletActive
 	.export		_movement
 	.export		_portalPlayerCollision
 	.export		_wallDetection
 	.export		_playerWallCollision
+	.export		_spawnOrangeBullet
+	.export		_spawnBlueBullet
+	.export		_updateBullet
+	.export		_drawBullet
 	.export		_main
 
 .segment	"DATA"
@@ -53,17 +62,29 @@ _testSpriteData:
 	.byte	$C8
 	.byte	$0F
 	.byte	$0E
-_portal1SpriteData:
+_orangePortalSpriteData:
 	.byte	$C8
 	.byte	$C8
-	.byte	$07
-	.byte	$02
-_portal2SpriteData:
+	.byte	$10
+	.byte	$10
+_bluePortalSpriteData:
 	.byte	$64
 	.byte	$C8
+	.byte	$10
+	.byte	$10
+_orangeBulletSpriteData:
+	.byte	$00
+	.byte	$00
 	.byte	$07
-	.byte	$02
+	.byte	$07
+_blueBulletSpriteData:
+	.byte	$00
+	.byte	$00
+	.byte	$07
+	.byte	$07
 _lastPortalUsed:
+	.byte	$00
+_bulletActive:
 	.byte	$00
 
 .segment	"RODATA"
@@ -86,7 +107,7 @@ _testSprite:
 	.byte	$10
 	.byte	$40
 	.byte	$80
-_testPortal1:
+_orangePortal:
 	.byte	$00
 	.byte	$00
 	.byte	$01
@@ -95,8 +116,16 @@ _testPortal1:
 	.byte	$08
 	.byte	$01
 	.byte	$81
+	.byte	$08
+	.byte	$00
+	.byte	$01
+	.byte	$41
+	.byte	$08
+	.byte	$08
+	.byte	$01
+	.byte	$C1
 	.byte	$80
-_testPortal2:
+_bluePortal:
 	.byte	$00
 	.byte	$00
 	.byte	$01
@@ -105,6 +134,26 @@ _testPortal2:
 	.byte	$08
 	.byte	$01
 	.byte	$82
+	.byte	$08
+	.byte	$00
+	.byte	$01
+	.byte	$42
+	.byte	$08
+	.byte	$08
+	.byte	$01
+	.byte	$C2
+	.byte	$80
+_orangeBulletSprite:
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$01
+	.byte	$80
+_blueBulletSprite:
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$02
 	.byte	$80
 _paletteBackground:
 	.byte	$0F
@@ -2198,9 +2247,9 @@ _i:
 	.res	1,$00
 _pad1:
 	.res	1,$00
-_portal1Collision:
+_orangePortalCollision:
 	.res	1,$00
-_portal2Collision:
+_bluePortalCollision:
 	.res	1,$00
 
 ; ---------------------------------------------------------------
@@ -2231,30 +2280,30 @@ _portal2Collision:
 	ldx     #>(_testSprite)
 	jsr     _oam_meta_spr
 ;
-; oam_meta_spr(portal1SpriteData.X, portal1SpriteData.Y, testPortal1);
+; oam_meta_spr(orangePortalSpriteData.X, orangePortalSpriteData.Y, orangePortal);
 ;
 	jsr     decsp2
-	lda     _portal1SpriteData
+	lda     _orangePortalSpriteData
 	ldy     #$01
 	sta     (sp),y
-	lda     _portal1SpriteData+1
+	lda     _orangePortalSpriteData+1
 	dey
 	sta     (sp),y
-	lda     #<(_testPortal1)
-	ldx     #>(_testPortal1)
+	lda     #<(_orangePortal)
+	ldx     #>(_orangePortal)
 	jsr     _oam_meta_spr
 ;
-; oam_meta_spr(portal2SpriteData.X, portal2SpriteData.Y, testPortal2);
+; oam_meta_spr(bluePortalSpriteData.X, bluePortalSpriteData.Y, bluePortal);
 ;
 	jsr     decsp2
-	lda     _portal2SpriteData
+	lda     _bluePortalSpriteData
 	ldy     #$01
 	sta     (sp),y
-	lda     _portal2SpriteData+1
+	lda     _bluePortalSpriteData+1
 	dey
 	sta     (sp),y
-	lda     #<(_testPortal2)
-	ldx     #>(_testPortal2)
+	lda     #<(_bluePortal)
+	ldx     #>(_bluePortal)
 	jmp     _oam_meta_spr
 
 .endproc
@@ -2332,68 +2381,68 @@ L0006:	rts
 .segment	"CODE"
 
 ;
-; portal1Collision = check_collision(&testSpriteData, &portal1SpriteData); // Checks if the player is colliding with the data for the first portal.
+; orangePortalCollision = check_collision(&testSpriteData, &orangePortalSpriteData); // Checks if the player is colliding with the data for the first portal.
 ;
 	lda     #<(_testSpriteData)
 	ldx     #>(_testSpriteData)
 	jsr     pushax
-	lda     #<(_portal1SpriteData)
-	ldx     #>(_portal1SpriteData)
+	lda     #<(_orangePortalSpriteData)
+	ldx     #>(_orangePortalSpriteData)
 	jsr     _check_collision
-	sta     _portal1Collision
+	sta     _orangePortalCollision
 ;
-; portal2Collision = check_collision(&testSpriteData, &portal2SpriteData); // Checks if the player is colliding with the data for the second portal.
+; bluePortalCollision = check_collision(&testSpriteData, &bluePortalSpriteData); // Checks if the player is colliding with the data for the second portal.
 ;
 	lda     #<(_testSpriteData)
 	ldx     #>(_testSpriteData)
 	jsr     pushax
-	lda     #<(_portal2SpriteData)
-	ldx     #>(_portal2SpriteData)
+	lda     #<(_bluePortalSpriteData)
+	ldx     #>(_bluePortalSpriteData)
 	jsr     _check_collision
-	sta     _portal2Collision
+	sta     _bluePortalCollision
 ;
-; if (portal1Collision && lastPortalUsed != 1) // If the player is colliding with the first portal.
+; if (orangePortalCollision && lastPortalUsed != 1) // If the player is colliding with the first portal, and the previously used portal isn't the first one.
 ;
-	lda     _portal1Collision
+	lda     _orangePortalCollision
 	beq     L0002
 	lda     _lastPortalUsed
 	cmp     #$01
 	beq     L0002
 ;
-; testSpriteData.X = portal2SpriteData.X; // Sets the player X data to the X location of the second portal.
+; testSpriteData.X = bluePortalSpriteData.X; // Sets the player X data to the X location of the second portal.
 ;
-	lda     _portal2SpriteData
+	lda     _bluePortalSpriteData
 	sta     _testSpriteData
 ;
-; testSpriteData.Y = portal2SpriteData.Y; // Sets the player Y data to the Y location of the second portal.
+; testSpriteData.Y = bluePortalSpriteData.Y; // Sets the player Y data to the Y location of the second portal.
 ;
-	lda     _portal2SpriteData+1
+	lda     _bluePortalSpriteData+1
 	sta     _testSpriteData+1
 ;
-; lastPortalUsed = 2;
+; lastPortalUsed = 2; // Sets the last used portal as the first portal, or arrived at portal two.
 ;
 	lda     #$02
 ;
-; else if (portal2Collision && lastPortalUsed != 2) // If the player is colliding with the second portal.
+; else if (bluePortalCollision && lastPortalUsed != 2) // If the player is colliding with the second portal, and the previously used portal isn't the second one.
 ;
 	jmp     L0010
-L0002:	lda     _portal2Collision
+L0002:	lda     _bluePortalCollision
 	beq     L0007
 	lda     _lastPortalUsed
 	cmp     #$02
 	beq     L0007
 ;
-; testSpriteData.X = portal1SpriteData.X; // Sets the player X data to the X location of the first portal. 
+; testSpriteData.X = orangePortalSpriteData.X; // Sets the player X data to the X location of the first portal. 
 ;
-	lda     _portal1SpriteData
+	lda     _orangePortalSpriteData
 	sta     _testSpriteData
 ;
-; testSpriteData.Y = portal1SpriteData.Y; // Sets the player Y data to the Y location of the first portal.
+; testSpriteData.Y = orangePortalSpriteData.Y; // Sets the player Y data to the Y location of the first portal.
 ;
-	lda     _portal1SpriteData+1
+	lda     _orangePortalSpriteData+1
 	sta     _testSpriteData+1
 ;
-; lastPortalUsed = 1;
+; lastPortalUsed = 1; // Sets the last used portal as the second portal, or arrived at portal one.
 ;
 	lda     #$01
 ;
@@ -2401,15 +2450,15 @@ L0002:	lda     _portal2Collision
 ;
 	jmp     L0010
 ;
-; if (!portal1Collision && !portal2Collision)
+; if (!orangePortalCollision && !bluePortalCollision) // If the player is not touching any portals.
 ;
-L0007:	lda     _portal1Collision
+L0007:	lda     _orangePortalCollision
 	bne     L0015
-	lda     _portal2Collision
+	lda     _bluePortalCollision
 	beq     L0010
 L0015:	rts
 ;
-; lastPortalUsed = 0;
+; lastPortalUsed = 0; // Sets the last used portal as 0, also means the player can now use any portal.
 ;
 L0010:	sta     _lastPortalUsed
 ;
@@ -2626,6 +2675,206 @@ L0005:	jmp     incsp6
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ spawnOrangeBullet (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_spawnOrangeBullet: near
+
+.segment	"CODE"
+
+;
+; orangeBulletSpriteData.X = testSpriteData.X;
+;
+	lda     _testSpriteData
+	sta     _orangeBulletSpriteData
+;
+; orangeBulletSpriteData.Y = testSpriteData.Y;
+;
+	lda     _testSpriteData+1
+	sta     _orangeBulletSpriteData+1
+;
+; bulletActive = 1;
+;
+	lda     #$01
+	sta     _bulletActive
+;
+; }
+;
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ spawnBlueBullet (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_spawnBlueBullet: near
+
+.segment	"CODE"
+
+;
+; blueBulletSpriteData.X = testSpriteData.X;
+;
+	lda     _testSpriteData
+	sta     _blueBulletSpriteData
+;
+; blueBulletSpriteData.Y = testSpriteData.Y;
+;
+	lda     _testSpriteData+1
+	sta     _blueBulletSpriteData+1
+;
+; bulletActive = 2;
+;
+	lda     #$02
+	sta     _bulletActive
+;
+; }
+;
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ updateBullet (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_updateBullet: near
+
+.segment	"CODE"
+
+;
+; if (bulletActive == 0)
+;
+	lda     _bulletActive
+;
+; return;
+;
+	beq     L0009
+;
+; if (bulletActive == 1)
+;
+	cmp     #$01
+	bne     L000B
+;
+; orangeBulletSpriteData.X ++;
+;
+	inc     _orangeBulletSpriteData
+;
+; if (orangeBulletSpriteData.X > 240)
+;
+	lda     _orangeBulletSpriteData
+	cmp     #$F1
+;
+; return;
+;
+	bcs     L000C
+;
+; if (playerWallCollision(&orangeBulletSpriteData))
+;
+	lda     #<(_orangeBulletSpriteData)
+	ldx     #>(_orangeBulletSpriteData)
+;
+; else if (bulletActive == 2)
+;
+	jmp     L000F
+L000B:	lda     _bulletActive
+	cmp     #$02
+	bne     L0009
+;
+; blueBulletSpriteData.X ++;
+;
+	inc     _blueBulletSpriteData
+;
+; if (blueBulletSpriteData.X > 240)
+;
+	lda     _blueBulletSpriteData
+	cmp     #$F1
+;
+; return;
+;
+	bcs     L000C
+;
+; if (playerWallCollision(&blueBulletSpriteData))
+;
+	lda     #<(_blueBulletSpriteData)
+	ldx     #>(_blueBulletSpriteData)
+L000F:	jsr     _playerWallCollision
+	tax
+	beq     L0009
+;
+; bulletActive = 0;
+;
+L000C:	lda     #$00
+	sta     _bulletActive
+;
+; }
+;
+L0009:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ drawBullet (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_drawBullet: near
+
+.segment	"CODE"
+
+;
+; if (bulletActive == 1)
+;
+	lda     _bulletActive
+	cmp     #$01
+	bne     L0006
+;
+; oam_meta_spr(orangeBulletSpriteData.X, orangeBulletSpriteData.Y, orangeBulletSprite);
+;
+	jsr     decsp2
+	lda     _orangeBulletSpriteData
+	ldy     #$01
+	sta     (sp),y
+	lda     _orangeBulletSpriteData+1
+	dey
+	sta     (sp),y
+	lda     #<(_orangeBulletSprite)
+	ldx     #>(_orangeBulletSprite)
+;
+; else if (bulletActive == 2)
+;
+	jmp     _oam_meta_spr
+L0006:	lda     _bulletActive
+	cmp     #$02
+	bne     L0004
+;
+; oam_meta_spr(blueBulletSpriteData.X, blueBulletSpriteData.Y, blueBulletSprite);
+;
+	jsr     decsp2
+	lda     _blueBulletSpriteData
+	ldy     #$01
+	sta     (sp),y
+	lda     _blueBulletSpriteData+1
+	dey
+	sta     (sp),y
+	lda     #<(_blueBulletSprite)
+	ldx     #>(_blueBulletSprite)
+	jmp     _oam_meta_spr
+;
+; }
+;
+L0004:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ main (void)
 ; ---------------------------------------------------------------
 
@@ -2692,17 +2941,58 @@ L0002:	jsr     _ppu_wait_nmi
 	jsr     _pad_poll
 	sta     _pad1
 ;
-; drawSprite(); // Draw all sprites.
+; if (pad1 & PAD_A)
 ;
-	jsr     _drawSprite
+	and     #$80
+	beq     L0009
+;
+; if(!bulletActive)
+;
+	lda     _bulletActive
+	bne     L0009
+;
+; spawnOrangeBullet();
+;
+	jsr     _spawnOrangeBullet
+;
+; if (pad1 & PAD_B)
+;
+L0009:	lda     _pad1
+	and     #$40
+	beq     L0008
+;
+; if(!bulletActive)
+;
+	lda     _bulletActive
+	bne     L0008
+;
+; spawnBlueBullet();
+;
+	jsr     _spawnBlueBullet
 ;
 ; movement(); // Handle Player Movement.
 ;
-	jsr     _movement
+L0008:	jsr     _movement
+;
+; updateBullet();
+;
+	jsr     _updateBullet
 ;
 ; portalPlayerCollision(); // Handle Portal Collision with the Player.
 ;
 	jsr     _portalPlayerCollision
+;
+; oam_clear();
+;
+	jsr     _oam_clear
+;
+; drawSprite();
+;
+	jsr     _drawSprite
+;
+; drawBullet();
+;
+	jsr     _drawBullet
 ;
 ; while (1){
 ;
