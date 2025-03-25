@@ -29,7 +29,7 @@ struct spriteData // Struct to hold the Sprite Format that every sprite will fol
     unsigned char width;
 };
 
-struct spriteData testSpriteData = {64, 80, 15, 14}; // Sprite Data For the Player Sprite
+struct spriteData testSpriteData = {16, 200, 15, 14}; // Sprite Data For the Player Sprite
 
 struct spriteData portal1SpriteData = {200, 80, 7, 2}; // Sprite Data for the First Portal Sprite.
 

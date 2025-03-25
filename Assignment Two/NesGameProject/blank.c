@@ -1,20 +1,21 @@
 #include "LIB/neslib.h"
 #include "LIB/nesdoug.h" 
-#include "sprite.h"
-#include "colours.h"
+#include "headers/sprite.h"
+#include "headers/colours.h"
+#include "headers/testlevel.h"
+#include "headers/testlevelcollision.h"
 
 #pragma bss-name(push, "ZEROPAGE")
 
 unsigned char i;
-unsigned char pad1; // Variable for controller 1
+unsigned char pad1; 
 unsigned char portal1Collision;
 unsigned char portal2Collision;
 
-const unsigned char text[]="CAINE'S TEST PROJECT"; // zero terminated c string
-
 void movement(void);
 void portalPlayerCollision(void);
-void testFunc(void);
+unsigned char wallDetection(unsigned char x, unsigned char y);
+unsigned char playerWallCollision(struct spriteData *spr);
 
 
 void main (void) {
@@ -24,22 +25,18 @@ void main (void) {
 	pal_bg(paletteBackground); //	Sets the Background Palette.
     pal_spr(paletteSprite); // Sets the Sprite Palette.
 	
+	set_scroll_y(0xff);
+
+	vram_adr(NAMETABLE_A); // Sets the address to NameTable A (the first name table), for the data to be written to.
+	vram_write(testlevel, sizeof(testlevel)); // Writes the data from the testlevel header 
+
     bank_spr(1); // Tells the program to use the second batch of tiles from the bank for the sprite. Both background and sprite uses 0 by default, however Alpha3 has the sprite tiles on 2.
-
-	vram_adr(NTADR_A(0,0)); // Sets starting point for the text to 0, 0.
-
-	i = 0; // Sets [i] to 0, so the text displays from the beginning.
-	while(text[i]){ // Runs while there is still chars in the text string.
-		vram_put(text[i]); // Pushes the [i] char from the text string to the screen.
-		++i; // Increments [i]
-	}	
 	
 	ppu_on_all(); // Turns on the Screen.
 	
 	
 	while (1){
 
-	   // Wait for NMI and read controller
         ppu_wait_nmi();
         pad1 = pad_poll(0);  // read the first controller
         drawSprite(); // Draw all sprites.
@@ -50,11 +47,22 @@ void main (void) {
 	
 void movement(void)
 {
-    if(pad1 & PAD_LEFT){ // If Left on the DPAD is pressed, remove one from the player's X data.
-		testSpriteData.X -= 1;
+	unsigned char oldX = testSpriteData.X; // Stores the starting X location, in case collision is detected.
+	unsigned char oldY = testSpriteData.Y; // Stores the starting Y location, in case collision is detected.
+
+    if(pad1 & PAD_LEFT){ // If Left on the DPAD is pressed.
+		testSpriteData.X -= 1; // Moves the sprite to the left.
+		if (playerWallCollision(&testSpriteData))
+		{
+			testSpriteData.X = oldX;
+		}
 	}
 	else if (pad1 & PAD_RIGHT){ // If Right on the DPAD is pressed, add one to the player's X data.
 		testSpriteData.X += 1;
+		if (playerWallCollision(&testSpriteData))
+		{
+			testSpriteData.X = oldX;
+		}
 	}
 }
 
@@ -75,7 +83,28 @@ void portalPlayerCollision(void)
 	}
 }
 
-void testFunc(void)
+unsigned char wallDetection(unsigned char x, unsigned char y)
 {
+    if (x >= 32 || y >= 30) // Checks if the player is out of the screen area somehow.
+    {
+        return 1; // Returns a 1 to represent collision.
+    }
+    return testlevelcollision[y * 32 + x]; // Returns the appropriate tile from the testlevelcollision.h array, where 1 represents collision and 0 represents no collision.
+}
 
+unsigned char playerWallCollision(struct spriteData *spr)
+{
+    unsigned char leftTile   = spr->X >> 3; // Converts the pixel location of the left side of the player into a tile location, which makes overlapping easier to detect.
+    unsigned char rightTile  = (spr->X + spr->width) >> 3; // Converts the pixel location of right side of the player into a tile location, which makes overlapping easier to detect.
+    unsigned char topTile    = spr->Y >> 3; // Converts the pixel location of the top half of the player into a tile location, which makes overlapping easier to detect.
+    unsigned char bottomTile = (spr->Y + spr->height) >> 3; // Converts the pixel location of the bottom half of the player into a tile location, which makes overlapping easier to detect.
+
+    if (wallDetection(leftTile, topTile)  || wallDetection(rightTile, topTile) || wallDetection(leftTile, bottomTile) || wallDetection(rightTile, bottomTile)) // This checks if any of the tiles are a wall.
+    {
+        return 1; // Returns a 1 to represent collision.
+    }
+    else
+    {
+        return 0; // Returns a 0 to represent no collision.
+    }
 }
