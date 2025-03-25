@@ -34,12 +34,15 @@
 	.export		_bluePortalSpriteData
 	.export		_orangeBulletSpriteData
 	.export		_blueBulletSpriteData
+	.export		_bluePortalActive
+	.export		_orangePortalActive
 	.export		_drawSprite
+	.export		_drawOrangePortalSprite
+	.export		_drawBluePortalSprite
 	.export		_paletteBackground
 	.export		_paletteSprite
 	.export		_testlevel
 	.export		_testlevelcollision
-	.export		_i
 	.export		_pad1
 	.export		_orangePortalCollision
 	.export		_bluePortalCollision
@@ -63,13 +66,13 @@ _testSpriteData:
 	.byte	$0F
 	.byte	$0E
 _orangePortalSpriteData:
-	.byte	$C8
-	.byte	$C8
+	.byte	$00
+	.byte	$00
 	.byte	$10
 	.byte	$10
 _bluePortalSpriteData:
-	.byte	$64
-	.byte	$C8
+	.byte	$00
+	.byte	$00
 	.byte	$10
 	.byte	$10
 _orangeBulletSpriteData:
@@ -82,6 +85,10 @@ _blueBulletSpriteData:
 	.byte	$00
 	.byte	$07
 	.byte	$07
+_bluePortalActive:
+	.byte	$00
+_orangePortalActive:
+	.byte	$00
 _lastPortalUsed:
 	.byte	$00
 _bulletActive:
@@ -2243,8 +2250,6 @@ _testlevelcollision:
 .segment	"BSS"
 
 .segment	"ZEROPAGE"
-_i:
-	.res	1,$00
 _pad1:
 	.res	1,$00
 _orangePortalCollision:
@@ -2263,10 +2268,6 @@ _bluePortalCollision:
 .segment	"CODE"
 
 ;
-; oam_clear(); // Clears all sprites from the sprite buffer.
-;
-	jsr     _oam_clear
-;
 ; oam_meta_spr(testSpriteData.X, testSpriteData.Y, testSprite); // Draws the metasprite at x pos 64, y pos 80 and using the testSprite data. Nes Screen is 256 x 240 in pixels, so max range for sprite drawing is 255, 239.
 ;
 	jsr     decsp2
@@ -2278,7 +2279,25 @@ _bluePortalCollision:
 	sta     (sp),y
 	lda     #<(_testSprite)
 	ldx     #>(_testSprite)
-	jsr     _oam_meta_spr
+	jmp     _oam_meta_spr
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ drawOrangePortalSprite (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_drawOrangePortalSprite: near
+
+.segment	"CODE"
+
+;
+; if (orangePortalActive)
+;
+	lda     _orangePortalActive
+	beq     L0002
 ;
 ; oam_meta_spr(orangePortalSpriteData.X, orangePortalSpriteData.Y, orangePortal);
 ;
@@ -2291,7 +2310,29 @@ _bluePortalCollision:
 	sta     (sp),y
 	lda     #<(_orangePortal)
 	ldx     #>(_orangePortal)
-	jsr     _oam_meta_spr
+	jmp     _oam_meta_spr
+;
+; }
+;
+L0002:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ drawBluePortalSprite (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_drawBluePortalSprite: near
+
+.segment	"CODE"
+
+;
+; if (bluePortalActive)
+;
+	lda     _bluePortalActive
+	beq     L0002
 ;
 ; oam_meta_spr(bluePortalSpriteData.X, bluePortalSpriteData.Y, bluePortal);
 ;
@@ -2305,6 +2346,10 @@ _bluePortalCollision:
 	lda     #<(_bluePortal)
 	ldx     #>(_bluePortal)
 	jmp     _oam_meta_spr
+;
+; }
+;
+L0002:	rts
 
 .endproc
 
@@ -2685,17 +2730,17 @@ L0005:	jmp     incsp6
 .segment	"CODE"
 
 ;
-; orangeBulletSpriteData.X = testSpriteData.X;
+; orangeBulletSpriteData.X = testSpriteData.X; // Sets the orange bullet X data to the Players X data.
 ;
 	lda     _testSpriteData
 	sta     _orangeBulletSpriteData
 ;
-; orangeBulletSpriteData.Y = testSpriteData.Y;
+; orangeBulletSpriteData.Y = testSpriteData.Y; // Sets the orange bullet Y data to the Players Y data.
 ;
 	lda     _testSpriteData+1
 	sta     _orangeBulletSpriteData+1
 ;
-; bulletActive = 1;
+; bulletActive = 1; // Sets the bullet active to 1, to indicate it is a orange bullet.
 ;
 	lda     #$01
 	sta     _bulletActive
@@ -2717,17 +2762,17 @@ L0005:	jmp     incsp6
 .segment	"CODE"
 
 ;
-; blueBulletSpriteData.X = testSpriteData.X;
+; blueBulletSpriteData.X = testSpriteData.X; // Sets the blue bullet X data to the Players X data.
 ;
 	lda     _testSpriteData
 	sta     _blueBulletSpriteData
 ;
-; blueBulletSpriteData.Y = testSpriteData.Y;
+; blueBulletSpriteData.Y = testSpriteData.Y; // Sets the blue bullet Y data to the Players Y data.
 ;
 	lda     _testSpriteData+1
 	sta     _blueBulletSpriteData+1
 ;
-; bulletActive = 2;
+; bulletActive = 2; // Sets the bullet active to 2, to indicate it's a blue bullet.
 ;
 	lda     #$02
 	sta     _bulletActive
@@ -2753,69 +2798,301 @@ L0005:	jmp     incsp6
 ;
 	lda     _bulletActive
 ;
-; return;
+; return; // no bullet
 ;
-	beq     L0009
+	bne     L0026
+;
+; }
+;
+	rts
 ;
 ; if (bulletActive == 1)
 ;
-	cmp     #$01
-	bne     L000B
+L0026:	cmp     #$01
+	jne     L001F
 ;
-; orangeBulletSpriteData.X ++;
+; orangeBulletSpriteData.X++;
 ;
 	inc     _orangeBulletSpriteData
 ;
-; if (orangeBulletSpriteData.X > 240)
+; if (orangeBulletSpriteData.X > 250)
 ;
 	lda     _orangeBulletSpriteData
-	cmp     #$F1
+	cmp     #$FB
+	bcc     L0004
+;
+; bulletActive = 0;
+;
+	lda     #$00
+	sta     _bulletActive
 ;
 ; return;
 ;
-	bcs     L000C
+	rts
 ;
 ; if (playerWallCollision(&orangeBulletSpriteData))
 ;
-	lda     #<(_orangeBulletSpriteData)
+L0004:	lda     #<(_orangeBulletSpriteData)
 	ldx     #>(_orangeBulletSpriteData)
+	jsr     _playerWallCollision
+	tax
+	bne     L0027
+;
+; }
+;
+	rts
+;
+; unsigned char tileX = (orangeBulletSpriteData.X + 4) >> 3;
+;
+L0027:	ldx     #$00
+	lda     _orangeBulletSpriteData
+	clc
+	adc     #$04
+	bcc     L0006
+	inx
+L0006:	jsr     asrax3
+	jsr     pusha
+;
+; unsigned char tileY = (orangeBulletSpriteData.Y + 4) >> 3;
+;
+	ldx     #$00
+	lda     _orangeBulletSpriteData+1
+	clc
+	adc     #$04
+	bcc     L0007
+	inx
+L0007:	jsr     asrax3
+	jsr     pusha
+;
+; if (tileX > 0) { tileX--; } // shift left if needed
+;
+	ldy     #$01
+	lda     (sp),y
+	beq     L0008
+	sec
+	sbc     #$01
+	sta     (sp),y
+;
+; if (bluePortalActive)
+;
+L0008:	lda     _bluePortalActive
+	beq     L001E
+;
+; unsigned char pTileX = bluePortalSpriteData.X >> 3; 
+;
+	lda     _bluePortalSpriteData
+	lsr     a
+	lsr     a
+	lsr     a
+	jsr     pusha
+;
+; unsigned char pTileY = bluePortalSpriteData.Y >> 3;
+;
+	lda     _bluePortalSpriteData+1
+	lsr     a
+	lsr     a
+	lsr     a
+	jsr     pusha
+;
+; if (pTileX == tileX && pTileY == tileY)
+;
+	ldy     #$01
+	lda     (sp),y
+	ldy     #$03
+	cmp     (sp),y
+	bne     L000A
+	ldy     #$00
+	lda     (sp),y
+	ldy     #$02
+	cmp     (sp),y
+	bne     L000A
+;
+; bulletActive = 0;
+;
+	lda     #$00
+	sta     _bulletActive
+;
+; return; // do nothing
+;
+	jmp     incsp4
+;
+; }
+;
+L000A:	jsr     incsp2
+;
+; orangePortalSpriteData.X = tileX << 3;
+;
+	ldy     #$01
+L001E:	lda     (sp),y
+	asl     a
+	asl     a
+	asl     a
+	sta     _orangePortalSpriteData
+;
+; orangePortalSpriteData.Y = tileY << 3;
+;
+	dey
+	lda     (sp),y
+	asl     a
+	asl     a
+	asl     a
+	sta     _orangePortalSpriteData+1
+;
+; orangePortalActive = 1;
+;
+	lda     #$01
+	sta     _orangePortalActive
 ;
 ; else if (bulletActive == 2)
 ;
-	jmp     L000F
-L000B:	lda     _bulletActive
+	jmp     L0025
+L001F:	lda     _bulletActive
 	cmp     #$02
-	bne     L0009
+	beq     L0028
 ;
-; blueBulletSpriteData.X ++;
+; }
 ;
-	inc     _blueBulletSpriteData
+	rts
+;
+; blueBulletSpriteData.X++;
+;
+L0028:	inc     _blueBulletSpriteData
 ;
 ; if (blueBulletSpriteData.X > 240)
 ;
 	lda     _blueBulletSpriteData
 	cmp     #$F1
-;
-; return;
-;
-	bcs     L000C
-;
-; if (playerWallCollision(&blueBulletSpriteData))
-;
-	lda     #<(_blueBulletSpriteData)
-	ldx     #>(_blueBulletSpriteData)
-L000F:	jsr     _playerWallCollision
-	tax
-	beq     L0009
+	bcc     L0010
 ;
 ; bulletActive = 0;
 ;
-L000C:	lda     #$00
+	lda     #$00
 	sta     _bulletActive
+;
+; return;
+;
+	rts
+;
+; if (playerWallCollision(&blueBulletSpriteData))
+;
+L0010:	lda     #<(_blueBulletSpriteData)
+	ldx     #>(_blueBulletSpriteData)
+	jsr     _playerWallCollision
+	tax
+	bne     L0029
 ;
 ; }
 ;
-L0009:	rts
+	rts
+;
+; unsigned char tileX = (blueBulletSpriteData.X + 4) >> 3;
+;
+L0029:	ldx     #$00
+	lda     _blueBulletSpriteData
+	clc
+	adc     #$04
+	bcc     L0012
+	inx
+L0012:	jsr     asrax3
+	jsr     pusha
+;
+; unsigned char tileY = (blueBulletSpriteData.Y + 4) >> 3;
+;
+	ldx     #$00
+	lda     _blueBulletSpriteData+1
+	clc
+	adc     #$04
+	bcc     L0013
+	inx
+L0013:	jsr     asrax3
+	jsr     pusha
+;
+; if (tileX > 0) { tileX--; }
+;
+	ldy     #$01
+	lda     (sp),y
+	beq     L0014
+	sec
+	sbc     #$01
+	sta     (sp),y
+;
+; if (orangePortalActive)
+;
+L0014:	lda     _orangePortalActive
+	beq     L0023
+;
+; unsigned char pTileX = orangePortalSpriteData.X >> 3;
+;
+	lda     _orangePortalSpriteData
+	lsr     a
+	lsr     a
+	lsr     a
+	jsr     pusha
+;
+; unsigned char pTileY = orangePortalSpriteData.Y >> 3;
+;
+	lda     _orangePortalSpriteData+1
+	lsr     a
+	lsr     a
+	lsr     a
+	jsr     pusha
+;
+; if (pTileX == tileX && pTileY == tileY)
+;
+	ldy     #$01
+	lda     (sp),y
+	ldy     #$03
+	cmp     (sp),y
+	bne     L0016
+	ldy     #$00
+	lda     (sp),y
+	ldy     #$02
+	cmp     (sp),y
+	bne     L0016
+;
+; bulletActive = 0;
+;
+	lda     #$00
+	sta     _bulletActive
+;
+; return;
+;
+	jmp     incsp4
+;
+; }
+;
+L0016:	jsr     incsp2
+;
+; bluePortalSpriteData.X = tileX << 3;
+;
+	ldy     #$01
+L0023:	lda     (sp),y
+	asl     a
+	asl     a
+	asl     a
+	sta     _bluePortalSpriteData
+;
+; bluePortalSpriteData.Y = tileY << 3;
+;
+	dey
+	lda     (sp),y
+	asl     a
+	asl     a
+	asl     a
+	sta     _bluePortalSpriteData+1
+;
+; bluePortalActive = 1;
+;
+	lda     #$01
+	sta     _bluePortalActive
+;
+; bulletActive = 0;
+;
+L0025:	sty     _bulletActive
+;
+; }
+;
+	jmp     incsp2
 
 .endproc
 
@@ -2830,13 +3107,13 @@ L0009:	rts
 .segment	"CODE"
 
 ;
-; if (bulletActive == 1)
+; if (bulletActive == 1) // If the bullet active is orange.
 ;
 	lda     _bulletActive
 	cmp     #$01
 	bne     L0006
 ;
-; oam_meta_spr(orangeBulletSpriteData.X, orangeBulletSpriteData.Y, orangeBulletSprite);
+; oam_meta_spr(orangeBulletSpriteData.X, orangeBulletSpriteData.Y, orangeBulletSprite); // Draw the orange sprite.
 ;
 	jsr     decsp2
 	lda     _orangeBulletSpriteData
@@ -2848,14 +3125,14 @@ L0009:	rts
 	lda     #<(_orangeBulletSprite)
 	ldx     #>(_orangeBulletSprite)
 ;
-; else if (bulletActive == 2)
+; else if (bulletActive == 2) // If the bullet active is blue.
 ;
 	jmp     _oam_meta_spr
 L0006:	lda     _bulletActive
 	cmp     #$02
 	bne     L0004
 ;
-; oam_meta_spr(blueBulletSpriteData.X, blueBulletSpriteData.Y, blueBulletSprite);
+; oam_meta_spr(blueBulletSpriteData.X, blueBulletSpriteData.Y, blueBulletSprite); // Draw the blue sprite.
 ;
 	jsr     decsp2
 	lda     _blueBulletSpriteData
@@ -2901,7 +3178,7 @@ L0004:	rts
 	ldx     #>(_paletteSprite)
 	jsr     _pal_spr
 ;
-; set_scroll_y(0xff);
+; set_scroll_y(0xff); // Moves the background down by 1 pixel.
 ;
 	ldx     #$00
 	lda     #$FF
@@ -2941,32 +3218,32 @@ L0002:	jsr     _ppu_wait_nmi
 	jsr     _pad_poll
 	sta     _pad1
 ;
-; if (pad1 & PAD_A)
+; if (pad1 & PAD_A) // If the A button is pressed.
 ;
 	and     #$80
 	beq     L0009
 ;
-; if(!bulletActive)
+; if(!bulletActive) // If there is no bullets on the screen.
 ;
 	lda     _bulletActive
 	bne     L0009
 ;
-; spawnOrangeBullet();
+; spawnOrangeBullet(); // Spawn the orange bullet.
 ;
 	jsr     _spawnOrangeBullet
 ;
-; if (pad1 & PAD_B)
+; if (pad1 & PAD_B) // If the B button is pressed.
 ;
 L0009:	lda     _pad1
 	and     #$40
 	beq     L0008
 ;
-; if(!bulletActive)
+; if(!bulletActive) // If there is no bullets on the screen.
 ;
 	lda     _bulletActive
 	bne     L0008
 ;
-; spawnBlueBullet();
+; spawnBlueBullet(); // Spawn the blue bullet.
 ;
 	jsr     _spawnBlueBullet
 ;
@@ -2974,7 +3251,7 @@ L0009:	lda     _pad1
 ;
 L0008:	jsr     _movement
 ;
-; updateBullet();
+; updateBullet(); // Moves Bullet.
 ;
 	jsr     _updateBullet
 ;
@@ -2982,17 +3259,25 @@ L0008:	jsr     _movement
 ;
 	jsr     _portalPlayerCollision
 ;
-; oam_clear();
+; oam_clear(); // Clears the OAM buffer.
 ;
 	jsr     _oam_clear
 ;
-; drawSprite();
+; drawSprite(); // Draws the player sprite. 
 ;
 	jsr     _drawSprite
 ;
-; drawBullet();
+; drawBullet(); // Draws the bullet sprites.
 ;
 	jsr     _drawBullet
+;
+; drawBluePortalSprite();
+;
+	jsr     _drawBluePortalSprite
+;
+; drawOrangePortalSprite();
+;
+	jsr     _drawOrangePortalSprite
 ;
 ; while (1){
 ;

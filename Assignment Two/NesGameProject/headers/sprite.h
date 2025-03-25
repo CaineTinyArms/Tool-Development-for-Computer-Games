@@ -47,23 +47,41 @@ struct spriteData // Struct to hold the Sprite Format that every sprite will fol
 
 struct spriteData testSpriteData = {16, 200, 15, 14}; // Sprite Data For the Player Sprite
 
-struct spriteData orangePortalSpriteData = {200, 200, 16, 16}; // Sprite Data for the First Portal Sprite.
+struct spriteData orangePortalSpriteData = {0, 0, 16, 16}; // Sprite Data for the First Portal Sprite.
 
-struct spriteData bluePortalSpriteData = {100, 200, 16, 16}; // Sprite Data for the Second Portal Sprite.
+struct spriteData bluePortalSpriteData = {0, 0, 16, 16}; // Sprite Data for the Second Portal Sprite.
 
 struct spriteData orangeBulletSpriteData = {0, 0, 7, 7};
 
 struct spriteData blueBulletSpriteData = {0, 0, 7 ,7};
 
+
+unsigned char bluePortalActive = 0;
+unsigned char orangePortalActive = 0;
+
+
 // FUNCTION PROTOTYPES
 void drawSprite(void); // Prototype for drawing sprite function.
+void drawOrangePortalSprite(void);
+void drawBluePortalSprite(void);
 
 void drawSprite(void)
 {
-    oam_clear(); // Clears all sprites from the sprite buffer.
-
     oam_meta_spr(testSpriteData.X, testSpriteData.Y, testSprite); // Draws the metasprite at x pos 64, y pos 80 and using the testSprite data. Nes Screen is 256 x 240 in pixels, so max range for sprite drawing is 255, 239.
-    oam_meta_spr(orangePortalSpriteData.X, orangePortalSpriteData.Y, orangePortal);
-    oam_meta_spr(bluePortalSpriteData.X, bluePortalSpriteData.Y, bluePortal);
 }
 
+void drawOrangePortalSprite(void)
+{
+    if (orangePortalActive)
+    {
+        oam_meta_spr(orangePortalSpriteData.X, orangePortalSpriteData.Y, orangePortal);
+    }
+}
+
+void drawBluePortalSprite(void)
+{
+    if (bluePortalActive)
+    {
+        oam_meta_spr(bluePortalSpriteData.X, bluePortalSpriteData.Y, bluePortal);
+    }
+}

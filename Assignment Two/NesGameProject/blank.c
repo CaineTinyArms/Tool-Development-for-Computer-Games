@@ -7,12 +7,18 @@
 
 #pragma bss-name(push, "ZEROPAGE")
 
+// Global Variables
+// -====================================-
 unsigned char pad1; 
 unsigned char orangePortalCollision; 
 unsigned char bluePortalCollision;
 unsigned char lastPortalUsed = 0; // 0 for none, 1 for orange, 2 for blue.
 unsigned char bulletActive = 0; // 0 for none, 1 for orange, 2 for blue.
 
+
+
+// Function Prototypes.
+// -================================-
 void movement(void);
 void portalPlayerCollision(void);
 unsigned char wallDetection(unsigned char x, unsigned char y);
@@ -30,7 +36,7 @@ void main (void) {
 	pal_bg(paletteBackground); //	Sets the Background Palette.
     pal_spr(paletteSprite); // Sets the Sprite Palette.
 	
-	set_scroll_y(0xff);
+	set_scroll_y(0xff); // Moves the background down by 1 pixel.
 
 	vram_adr(NAMETABLE_A); // Sets the address to NameTable A (the first name table), for the data to be written to.
 	vram_write(testlevel, sizeof(testlevel)); // Writes the data from the testlevel header 
@@ -65,6 +71,8 @@ void main (void) {
 		oam_clear(); // Clears the OAM buffer.
 		drawSprite(); // Draws the player sprite. 
 		drawBullet(); // Draws the bullet sprites.
+		drawBluePortalSprite();
+		drawOrangePortalSprite();
 	}
 }
 	
@@ -154,43 +162,90 @@ void spawnBlueBullet(void)
 
 void updateBullet(void)
 {
-	if (bulletActive == 0) // If there is no bullet active
-	{
-		return; // Do nothing
-	}
+    if (bulletActive == 0) // If there is no bullet on the screen.
+        return; // Do nothing.
 
-	if (bulletActive == 1) // If there is an orange bullet active.
-	{
-		orangeBulletSpriteData.X ++; // Increment the orange bullet X data.
+    if (bulletActive == 1) // If there is an orange bullet on the screen.
+    {
+        orangeBulletSpriteData.X++; // Move the bullet across the screen.
 
-		if (orangeBulletSpriteData.X > 250) // If the orange bullet goes too far off the screen
-		{
-			bulletActive = 0; // Set the bullet active to 0.
-			return; 
-		}
+        if (orangeBulletSpriteData.X > 250) // IF the bullet goes too far off the screen.
+        {
+            bulletActive = 0; // Remove the bullet from being active.
+            return; 
+        }
 
-		if (playerWallCollision(&orangeBulletSpriteData)) // If the orange bullet hits a wall.
-		{
-			bulletActive = 0; // Set the bullet active to 0/
-		}
-	}
+        if (playerWallCollision(&orangeBulletSpriteData)) // If the orange bullet hits a wall.
+        {
 
-	else if (bulletActive == 2) // If there is a blue bullet active.
-	{
-		blueBulletSpriteData.X ++; // Increment the blue bullet X data.
+            unsigned char tileX = (orangeBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
+            unsigned char tileY = (orangeBulletSpriteData.Y + 4) >> 3; // Get the Y tile from the centre of the billet.
 
-			if (blueBulletSpriteData.X > 240) // If the blue bullet goes too far off screen.
+            if (tileX > 0) 
+			{ 
+				tileX--; // Moves the tile one to the left, to account for the portal being 16 x 16.
+			} 
+
+            if (bluePortalActive) // If there is a blue portal active.
+            {
+                unsigned char pTileX = bluePortalSpriteData.X >> 3; // Get the X tile from the blue portal.
+                unsigned char pTileY = bluePortalSpriteData.Y >> 3; // Get the Y tile from the blue portal.
+                
+                if (pTileX == tileX && pTileY == tileY) // If the tiles are the same for both portals.
+                {
+                    bulletActive = 0; // Remove the bullet and do nothing.
+                    return;
+                }
+            }
+
+            orangePortalSpriteData.X = tileX << 3; // Sets the orange portal X data to Tile X, if there is no portal there already.
+            orangePortalSpriteData.Y = tileY << 3; // Sets the orange portal Y data to Tile Y, if there is no portal there already.
+            orangePortalActive = 1; // Sets the orange portal as active.
+            bulletActive = 0; // Removes the bullet, allowing for more shots.
+        }
+    }
+   
+
+    else if (bulletActive == 2) // If the bullet is a blue bullet.
+    {
+        blueBulletSpriteData.X++; // Move the blue bullet sprite across the screen.
+
+        if (blueBulletSpriteData.X > 240) // If the bullet goes too far off the screen.
+        { 
+            bulletActive = 0; // Remove the bullet.
+            return;
+        }
+
+        if (playerWallCollision(&blueBulletSpriteData)) // If the blue bullet hits a wall.
+        {
+            unsigned char tileX = (blueBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
+            unsigned char tileY = (blueBulletSpriteData.Y + 4) >> 3; // Get the Y tile from the centre of the bullet.
+            if (tileX > 0)
 			{
-				bulletActive = 0; // Sets the bullet active to 0.
-				return;
+				tileX --; // Moves the tile one to the left, to account for the portal being 16 x 16.
 			}
 
-			if (playerWallCollision(&blueBulletSpriteData)) // If the blue bullet hits a wall.
-			{
-				bulletActive = 0; // Sets the bullet active to 0.
-			}
-	}
+            if (orangePortalActive) // If there is an orange portal active.
+            {
+                unsigned char pTileX = orangePortalSpriteData.X >> 3; // Get the X tile from the Orange Portal.
+                unsigned char pTileY = orangePortalSpriteData.Y >> 3; // Get the Y tile from the Orange Portal.
+
+                if (pTileX == tileX && pTileY == tileY) // IF the tiles are the same for both portals.
+                {
+                    bulletActive = 0; // Remove the bullet and do nothing.
+                    return;
+                }
+            }
+
+            bluePortalSpriteData.X = tileX << 3; // Sets the blue portal X data to Tile X, if there is no portal there already.
+            bluePortalSpriteData.Y = tileY << 3; // Sets the blue portal Y data to Tile Y, if there is no portal there already.
+            bluePortalActive = 1; // Sets the blue portal to active. 
+
+            bulletActive = 0; // Removes the bullet, allowing for more shots.
+        }
+    }
 }
+
 
 void drawBullet(void)
 {
