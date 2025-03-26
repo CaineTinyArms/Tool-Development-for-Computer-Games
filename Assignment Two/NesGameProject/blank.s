@@ -347,18 +347,18 @@ _paletteBackground:
 	.byte	$01
 	.byte	$10
 	.byte	$30
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
 	.byte	$27
-	.byte	$27
-	.byte	$27
-	.byte	$27
-	.byte	$27
-	.byte	$27
-	.byte	$27
-	.byte	$27
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
 _paletteSprite:
 	.byte	$0F
 	.byte	$36
@@ -2464,28 +2464,28 @@ _menu:
 	.byte	$03
 	.byte	$00
 	.byte	$00
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -2495,73 +2495,73 @@ _menu:
 	.byte	$00
 	.byte	$03
 	.byte	$03
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$12
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$11
 	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$10
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$12
 	.byte	$00
 	.byte	$03
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$10
+	.byte	$10
+	.byte	$11
+	.byte	$12
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
 	.byte	$12
 	.byte	$12
-	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -2574,58 +2574,58 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$11
+	.byte	$12
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
 	.byte	$10
+	.byte	$11
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
+	.byte	$11
 	.byte	$12
 	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
 	.byte	$11
-	.byte	$10
-	.byte	$11
-	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
 	.byte	$12
+	.byte	$12
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
 	.byte	$11
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
 	.byte	$10
+	.byte	$11
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
 	.byte	$03
 	.byte	$03
 	.byte	$00
@@ -2637,26 +2637,26 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$00
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$00
-	.byte	$00
 	.byte	$12
-	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$00
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
 	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
+	.byte	$11
+	.byte	$12
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$11
 	.byte	$11
@@ -2670,272 +2670,176 @@ _menu:
 	.byte	$11
 	.byte	$00
 	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$00
-	.byte	$12
-	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$10
 	.byte	$12
 	.byte	$00
 	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$00
 	.byte	$12
-	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$12
 	.byte	$00
-	.byte	$11
 	.byte	$10
 	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$00
-	.byte	$12
-	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$12
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$12
-	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$11
-	.byte	$10
-	.byte	$10
 	.byte	$12
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$00
 	.byte	$00
 	.byte	$11
+	.byte	$12
+	.byte	$12
 	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
 	.byte	$00
 	.byte	$11
-	.byte	$10
-	.byte	$00
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$11
-	.byte	$10
-	.byte	$10
-	.byte	$00
-	.byte	$10
 	.byte	$12
 	.byte	$11
+	.byte	$12
+	.byte	$12
+	.byte	$00
 	.byte	$11
+	.byte	$12
+	.byte	$00
 	.byte	$11
+	.byte	$12
+	.byte	$11
+	.byte	$12
+	.byte	$12
+	.byte	$00
+	.byte	$10
+	.byte	$11
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$11
+	.byte	$12
+	.byte	$12
+	.byte	$10
 	.byte	$00
+	.byte	$11
+	.byte	$12
+	.byte	$11
+	.byte	$12
+	.byte	$12
+	.byte	$00
+	.byte	$11
 	.byte	$12
 	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
+	.byte	$11
 	.byte	$12
+	.byte	$00
+	.byte	$11
+	.byte	$12
+	.byte	$11
+	.byte	$12
+	.byte	$12
+	.byte	$00
+	.byte	$10
+	.byte	$11
 	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$11
+	.byte	$12
+	.byte	$12
+	.byte	$10
 	.byte	$00
-	.byte	$00
-	.byte	$00
+	.byte	$11
+	.byte	$12
+	.byte	$12
 	.byte	$12
 	.byte	$12
 	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$12
+	.byte	$11
 	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$11
+	.byte	$12
 	.byte	$00
-	.byte	$00
+	.byte	$11
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$10
+	.byte	$11
 	.byte	$12
 	.byte	$12
 	.byte	$00
 	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
+	.byte	$11
+	.byte	$12
+	.byte	$12
+	.byte	$10
 	.byte	$00
 	.byte	$00
 	.byte	$12
 	.byte	$12
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
 	.byte	$12
+	.byte	$00
+	.byte	$00
+	.byte	$11
 	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$11
+	.byte	$12
 	.byte	$00
 	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
+	.byte	$11
 	.byte	$12
 	.byte	$12
+	.byte	$00
+	.byte	$12
+	.byte	$10
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$10
+	.byte	$10
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$10
+	.byte	$10
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -2976,6 +2880,102 @@ _menu:
 	.byte	$00
 	.byte	$10
 	.byte	$10
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$10
+	.byte	$10
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$10
+	.byte	$10
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$10
+	.byte	$10
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$12
+	.byte	$12
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$12
+	.byte	$12
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -2998,16 +2998,16 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3030,16 +3030,16 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3062,16 +3062,16 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3094,16 +3094,16 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3126,16 +3126,16 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3158,16 +3158,16 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3190,16 +3190,16 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3222,16 +3222,16 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3254,16 +3254,16 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3286,8 +3286,8 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3295,8 +3295,8 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3317,8 +3317,8 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3327,30 +3327,30 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3361,26 +3361,26 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
-	.byte	$10
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
+	.byte	$12
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3419,37 +3419,37 @@ _menu:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$88
-	.byte	$22
+	.byte	$44
+	.byte	$11
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$88
-	.byte	$22
-	.byte	$88
-	.byte	$22
+	.byte	$44
+	.byte	$11
+	.byte	$44
+	.byte	$11
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$88
-	.byte	$22
-	.byte	$88
-	.byte	$22
+	.byte	$44
+	.byte	$11
+	.byte	$44
+	.byte	$11
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$88
-	.byte	$22
+	.byte	$44
+	.byte	$11
 	.byte	$00
-	.byte	$0A
-	.byte	$0A
-	.byte	$0A
-	.byte	$0A
-	.byte	$0A
-	.byte	$0A
+	.byte	$05
+	.byte	$05
+	.byte	$05
+	.byte	$05
+	.byte	$05
+	.byte	$05
 	.byte	$00
 
 .segment	"BSS"

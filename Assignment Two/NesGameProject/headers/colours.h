@@ -17,9 +17,9 @@
 const unsigned char paletteBackground[]=
 {
 BLACK, DK_BLUE, LT_GY, WHITE, // Sub-Palette 0 
-ORANGE,ORANGE,ORANGE,ORANGE, // Sub-Palette 1
-ORANGE,ORANGE,ORANGE,ORANGE, // Sub-Palette 2
-0,0,0,0 // Sub-Palette 3
+BLACK,BLACK,BLACK,ORANGE, // Sub-Palette 1
+BLACK,BLACK,BLACK,BLACK, // Sub-Palette 2
+BLACK,BLACK,BLACK,BLACK // Sub-Palette 3
 }; 
 
 const char paletteSprite[] = 
