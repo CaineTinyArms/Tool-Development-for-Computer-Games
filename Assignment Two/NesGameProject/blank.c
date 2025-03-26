@@ -113,6 +113,11 @@ void portalPlayerCollision(void)
 	orangePortalCollision = check_collision(&playerSpriteData, &orangePortalSpriteData); // Checks if the player is colliding with the data for the first portal.
 	bluePortalCollision = check_collision(&playerSpriteData, &bluePortalSpriteData); // Checks if the player is colliding with the data for the second portal.
 
+	if (bluePortalActive == 0 || orangePortalActive == 0)
+	{
+		return;
+	}
+
 	if (orangePortalCollision && lastPortalUsed != 1) // If the player is colliding with the first portal, and the previously used portal isn't the first one.
 	{ 
 		playerSpriteData.X = bluePortalSpriteData.X; // Sets the player X data to the X location of the second portal.

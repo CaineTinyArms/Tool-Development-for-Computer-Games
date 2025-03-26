@@ -3795,13 +3795,24 @@ L0012:	jmp     incsp2
 	jsr     _check_collision
 	sta     _bluePortalCollision
 ;
+; if (bluePortalActive == 0 || orangePortalActive == 0)
+;
+	lda     _bluePortalActive
+	beq     L0014
+	lda     _orangePortalActive
+	bne     L0002
+;
+; return;
+;
+L0014:	rts
+;
 ; if (orangePortalCollision && lastPortalUsed != 1) // If the player is colliding with the first portal, and the previously used portal isn't the first one.
 ;
-	lda     _orangePortalCollision
-	beq     L0002
+L0002:	lda     _orangePortalCollision
+	beq     L0005
 	lda     _lastPortalUsed
 	cmp     #$01
-	beq     L0002
+	beq     L0005
 ;
 ; playerSpriteData.X = bluePortalSpriteData.X; // Sets the player X data to the X location of the second portal.
 ;
@@ -3819,12 +3830,12 @@ L0012:	jmp     incsp2
 ;
 ; else if (bluePortalCollision && lastPortalUsed != 2) // If the player is colliding with the second portal, and the previously used portal isn't the second one.
 ;
-	jmp     L0010
-L0002:	lda     _bluePortalCollision
-	beq     L0007
+	jmp     L0013
+L0005:	lda     _bluePortalCollision
+	beq     L000A
 	lda     _lastPortalUsed
 	cmp     #$02
-	beq     L0007
+	beq     L000A
 ;
 ; playerSpriteData.X = orangePortalSpriteData.X; // Sets the player X data to the X location of the first portal. 
 ;
@@ -3842,19 +3853,19 @@ L0002:	lda     _bluePortalCollision
 ;
 ; else
 ;
-	jmp     L0010
+	jmp     L0013
 ;
 ; if (!orangePortalCollision && !bluePortalCollision) // If the player is not touching any portals.
 ;
-L0007:	lda     _orangePortalCollision
-	bne     L0015
+L000A:	lda     _orangePortalCollision
+	bne     L001B
 	lda     _bluePortalCollision
-	beq     L0010
-L0015:	rts
+	beq     L0013
+L001B:	rts
 ;
 ; lastPortalUsed = 0; // Sets the last used portal as 0, also means the player can now use any portal.
 ;
-L0010:	sta     _lastPortalUsed
+L0013:	sta     _lastPortalUsed
 ;
 ; }
 ;
