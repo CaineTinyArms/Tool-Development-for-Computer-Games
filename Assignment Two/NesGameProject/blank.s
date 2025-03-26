@@ -48,8 +48,8 @@
 	.export		_drawBluePortalSprite
 	.export		_paletteBackground
 	.export		_paletteSprite
-	.export		_testlevel
-	.export		_testlevelcollision
+	.export		_levelOneData
+	.export		_levelOneCollision
 	.export		_menu
 	.export		_pad1
 	.export		_orangePortalCollision
@@ -62,6 +62,8 @@
 	.export		_bulletDirectionX
 	.export		_bulletDirectionY
 	.export		_playerVelocity
+	.export		_currentLevel
+	.export		_gameState
 	.export		_modeToggle
 	.export		_walkMode
 	.export		_shootMode
@@ -76,6 +78,8 @@
 	.export		_applyGravity
 	.export		_getPlayerSprite
 	.export		_drawSprite
+	.export		_loadLevel
+	.export		_drawMainMenu
 	.export		_main
 
 .segment	"DATA"
@@ -357,22 +361,22 @@ _paletteBackground:
 	.byte	$00
 _paletteSprite:
 	.byte	$0F
-	.byte	$27
-	.byte	$10
+	.byte	$36
 	.byte	$30
-	.byte	$0F
-	.byte	$27
-	.byte	$10
 	.byte	$27
 	.byte	$0F
 	.byte	$27
 	.byte	$10
+	.byte	$27
+	.byte	$0F
+	.byte	$27
+	.byte	$10
 	.byte	$01
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-_testlevel:
+_levelOneData:
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -1397,7 +1401,7 @@ _testlevel:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-_testlevelcollision:
+_levelOneCollision:
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -3457,6 +3461,10 @@ _orangePortalCollision:
 	.res	1,$00
 _bluePortalCollision:
 	.res	1,$00
+_currentLevel:
+	.res	1,$00
+_gameState:
+	.res	1,$00
 
 ; ---------------------------------------------------------------
 ; void __near__ drawOrangePortalSprite (void)
@@ -3874,23 +3882,31 @@ L0010:	sta     _lastPortalUsed
 	ldy     #$01
 	lda     (sp),y
 	cmp     #$20
-	bcs     L0006
+	bcs     L0009
 	dey
 	lda     (sp),y
 	cmp     #$1E
-	bcs     L0006
+	bcs     L0009
 	ldx     #$00
-	jmp     L0008
+	jmp     L000A
 ;
 ; return 1; // Returns a 1 to represent collision.
 ;
-L0006:	ldx     #$00
+L0009:	ldx     #$00
 	lda     #$01
 	jmp     incsp2
 ;
-; return testlevelcollision[y * 32 + x]; // Returns the appropriate tile from the testlevelcollision.h array, where 1 represents collision and 0 represents no collision.
+; switch (currentLevel)
 ;
-L0008:	lda     (sp),y
+L000A:	lda     _currentLevel
+;
+; }
+;
+	bne     L0006
+;
+; return levelOneCollision[y * 32 + x];
+;
+	lda     (sp),y
 	jsr     shlax4
 	stx     tmp1
 	asl     a
@@ -3901,20 +3917,20 @@ L0008:	lda     (sp),y
 	clc
 	adc     ptr1
 	ldx     tmp1
-	bcc     L0005
+	bcc     L0008
 	inx
-L0005:	sta     ptr1
+L0008:	sta     ptr1
 	txa
 	clc
-	adc     #>(_testlevelcollision)
+	adc     #>(_levelOneCollision)
 	sta     ptr1+1
-	ldy     #<(_testlevelcollision)
+	ldy     #<(_levelOneCollision)
 	ldx     #$00
 	lda     (ptr1),y
 ;
 ; }
 ;
-	jmp     incsp2
+L0006:	jmp     incsp2
 
 .endproc
 
@@ -4942,6 +4958,121 @@ L002D:	lda     #<(_playerShootUpSprite)
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ loadLevel (unsigned char lvl)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_loadLevel: near
+
+.segment	"CODE"
+
+;
+; {
+;
+	jsr     pusha
+;
+; ppu_off(); // Turn the screen off.
+;
+	jsr     _ppu_off
+;
+; switch(lvl) // Switches on level passed through when function is called.
+;
+	ldy     #$00
+	lda     (sp),y
+;
+; } 
+;
+	bne     L0005
+;
+; vram_adr(NAMETABLE_A); // Sets the VRAM address to nametable A.
+;
+	ldx     #$20
+	jsr     _vram_adr
+;
+; vram_write(levelOneData, 1024); // Writes all the data from levelOneData to nametable A, including the attribute table.
+;
+	lda     #<(_levelOneData)
+	ldx     #>(_levelOneData)
+	jsr     pushax
+	ldx     #$04
+	lda     #$00
+	jsr     _vram_write
+;
+; playerSpriteData.X = 16; // Sets the player to the bottom left tile, AKA, the starting point.
+;
+L0005:	lda     #$10
+	sta     _playerSpriteData
+;
+; playerSpriteData.Y = 200; // Sets the player to the bottom left tile, AKA, the starting point.
+;
+	lda     #$C8
+	sta     _playerSpriteData+1
+;
+; bluePortalActive = 0; // Disables the Blue portal.
+;
+	lda     #$00
+	sta     _bluePortalActive
+;
+; orangePortalActive = 0; // Disables the Orange portal.
+;
+	sta     _orangePortalActive
+;
+; bulletActive = 0; // Disables any bullets still on screen.
+;
+	sta     _bulletActive
+;
+; lastPortalUsed = 0; // Allows the user to enter any portal.
+;
+	sta     _lastPortalUsed
+;
+; ppu_on_all(); // Turn the screen back on.
+;
+	jsr     _ppu_on_all
+;
+; }
+;
+	jmp     incsp1
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ drawMainMenu (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_drawMainMenu: near
+
+.segment	"CODE"
+
+;
+; ppu_off(); // Turns the screen off.
+;
+	jsr     _ppu_off
+;
+; vram_adr(NAMETABLE_A);
+;
+	ldx     #$20
+	lda     #$00
+	jsr     _vram_adr
+;
+; vram_write(menu, 1024);
+;
+	lda     #<(_menu)
+	ldx     #>(_menu)
+	jsr     pushax
+	ldx     #$04
+	lda     #$00
+	jsr     _vram_write
+;
+; ppu_on_all(); // Turns the screen back on.
+;
+	jmp     _ppu_on_all
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ main (void)
 ; ---------------------------------------------------------------
 
@@ -4974,29 +5105,23 @@ L002D:	lda     #<(_playerShootUpSprite)
 	lda     #$FF
 	jsr     _set_scroll_y
 ;
-; vram_adr(NAMETABLE_A); // Sets the address to NameTable A (the first name table), for the data to be written to.
+; gameState = 0; // 0 means main menu.
 ;
-	ldx     #$20
 	lda     #$00
-	jsr     _vram_adr
+	sta     _gameState
 ;
-; vram_write(menu, 1024); // Writes the data from the testlevel header 
+; drawMainMenu();
 ;
-	lda     #<(_menu)
-	ldx     #>(_menu)
-	jsr     pushax
-	ldx     #$04
-	lda     #$00
-	jsr     _vram_write
-;
-; ppu_on_all();
-;
-	jsr     _ppu_on_all
+	jsr     _drawMainMenu
 ;
 ; bank_spr(1); // Tells the program to use the second batch of tiles from the bank for the sprite. Both background and sprite uses 0 by default, however Alpha3 has the sprite tiles on 2.
 ;
 	lda     #$01
 	jsr     _bank_spr
+;
+; ppu_on_all(); // Turns on the Screen.
+;
+	jsr     _ppu_on_all
 ;
 ; ppu_wait_nmi();
 ;
@@ -5008,6 +5133,38 @@ L0002:	jsr     _ppu_wait_nmi
 	jsr     _pad_poll
 	sta     _pad1
 ;
+; if (gameState == 0)
+;
+	lda     _gameState
+	bne     L000C
+;
+; if (pad1 & PAD_START) 
+;
+	lda     _pad1
+	and     #$10
+	beq     L0002
+;
+; currentLevel = 0; 
+;
+	lda     #$00
+	sta     _currentLevel
+;
+; loadLevel(currentLevel);
+;
+	jsr     _loadLevel
+;
+; gameState = 1;
+;
+	lda     #$01
+	sta     _gameState
+;
+; else if (gameState == 1)
+;
+	jmp     L0002
+L000C:	lda     _gameState
+	cmp     #$01
+	bne     L0002
+;
 ; modeToggle();
 ;
 	jsr     _modeToggle
@@ -5015,7 +5172,7 @@ L0002:	jsr     _ppu_wait_nmi
 ; if (mode == 0)
 ;
 	lda     _mode
-	bne     L0008
+	bne     L000D
 ;
 ; walkMode();
 ;
@@ -5023,10 +5180,10 @@ L0002:	jsr     _ppu_wait_nmi
 ;
 ; else if (mode == 1)
 ;
-	jmp     L0007
-L0008:	lda     _mode
+	jmp     L000B
+L000D:	lda     _mode
 	cmp     #$01
-	bne     L0007
+	bne     L000B
 ;
 ; shootMode();
 ;
@@ -5034,7 +5191,7 @@ L0008:	lda     _mode
 ;
 ; applyGravity();
 ;
-L0007:	jsr     _applyGravity
+L000B:	jsr     _applyGravity
 ;
 ; updateBullet(); // Moves Bullet.
 ;
@@ -5047,6 +5204,22 @@ L0007:	jsr     _applyGravity
 ; oam_clear(); // Clears the OAM buffer.
 ;
 	jsr     _oam_clear
+;
+; drawSprite(); // Draws the player sprite. 
+;
+	jsr     _drawSprite
+;
+; drawBullet(); // Draws the bullet sprites.
+;
+	jsr     _drawBullet
+;
+; drawBluePortalSprite();
+;
+	jsr     _drawBluePortalSprite
+;
+; drawOrangePortalSprite();
+;
+	jsr     _drawOrangePortalSprite
 ;
 ; while (1){
 ;

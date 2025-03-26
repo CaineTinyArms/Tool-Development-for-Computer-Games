@@ -2,8 +2,8 @@
 #include "LIB/nesdoug.h" 
 #include "headers/sprite.h"
 #include "headers/colours.h"
-#include "headers/testlevel.h"
-#include "headers/testlevelcollision.h"
+#include "headers/levelOneData.h"
+#include "headers/levelOneCollision.h"
 #include "headers/menu.h"
 #pragma bss-name(push, "ZEROPAGE")
 
@@ -24,37 +24,27 @@ signed char playerVelocity = 0;
 #define GRAVITY 1
 #define MAX_FALL_SPEED 4
 
-
-extern const unsigned char playerSprite[];       
-extern const unsigned char playerShootUpSprite[];
-extern const unsigned char playerShootRightSprite[];
-extern const unsigned char playerShootLeftSprite[];
-extern const unsigned char playerShootDownSprite[];
-extern const unsigned char playerShootTopLeftSprite[];
-extern const unsigned char playerShootTopRightSprite[];
-extern const unsigned char playerShootBottomLeftSprite[];
-extern const unsigned char playerShootBottomRightSprite[];
+unsigned char currentLevel;
+unsigned char gameState;
 
 // Function Prototypes.
 // -================================-
 void modeToggle(void);
 void walkMode(void);
 void shootMode(void);
-
 void portalPlayerCollision(void);
 unsigned char wallDetection(unsigned char x, unsigned char y);
 unsigned char playerWallCollision(struct spriteData *spr);
-
 void spawnOrangeBullet(void);
 void spawnBlueBullet(void);
 void updateBullet(void);
 void drawBullet(void);
-
 unsigned char onGround(void);	
 void applyGravity(void);
-
 const unsigned char* getPlayerSprite(void);
 void drawSprite(void); // Prototype for drawing sprite function.
+void loadLevel(unsigned char level);
+void drawMainMenu(void);
 
 void main (void) {
 	
@@ -65,42 +55,51 @@ void main (void) {
 	
 	set_scroll_y(0xff); // Moves the background down by 1 pixel.
 
-	vram_adr(NAMETABLE_A); // Sets the address to NameTable A (the first name table), for the data to be written to.
-	vram_write(menu, 1024); // Writes the data from the testlevel header 
+	gameState = 0; // 0 means main menu.
+	drawMainMenu();
 
-	ppu_on_all();
+	bank_spr(1); // Tells the program to use the second batch of tiles from the bank for the sprite. Both background and sprite uses 0 by default, however Alpha3 has the sprite tiles on 2.
+	ppu_on_all(); // Turns on the Screen.
 
-    bank_spr(1); // Tells the program to use the second batch of tiles from the bank for the sprite. Both background and sprite uses 0 by default, however Alpha3 has the sprite tiles on 2.
-	
-	 // Turns on the Screen.
-	
-	
 	while (1){
 
         ppu_wait_nmi();
         pad1 = pad_poll(0);  // read the first controller
 
-		modeToggle();
-
-		if (mode == 0)
+		if (gameState == 0)
 		{
-			walkMode();
+			if (pad1 & PAD_START) 
+			{
+                currentLevel = 0; 
+                loadLevel(currentLevel);
+                gameState = 1;
+            }
 		}
-		else if (mode == 1)
+
+		else if (gameState == 1)
 		{
-			shootMode();
-		}
+			modeToggle();
 
-		applyGravity();
+			if (mode == 0)
+			{
+				walkMode();
+			}
+			else if (mode == 1)
+			{
+				shootMode();
+			}
 
-		updateBullet(); // Moves Bullet.
-        portalPlayerCollision(); // Handle Portal Collision with the Player. 
+			applyGravity();
 
-		oam_clear(); // Clears the OAM buffer.
-		//drawSprite(); // Draws the player sprite. 
-		//drawBullet(); // Draws the bullet sprites.
-		//drawBluePortalSprite();
-		//drawOrangePortalSprite();
+			updateBullet(); // Moves Bullet.
+       		portalPlayerCollision(); // Handle Portal Collision with the Player. 
+
+			oam_clear(); // Clears the OAM buffer.
+			drawSprite(); // Draws the player sprite. 
+			drawBullet(); // Draws the bullet sprites.
+			drawBluePortalSprite();
+			drawOrangePortalSprite();
+		}	
 	}
 }
 	
@@ -137,7 +136,12 @@ unsigned char wallDetection(unsigned char x, unsigned char y)
     {
         return 1; // Returns a 1 to represent collision.
     }
-    return testlevelcollision[y * 32 + x]; // Returns the appropriate tile from the testlevelcollision.h array, where 1 represents collision and 0 represents no collision.
+
+	switch (currentLevel)
+	{
+		case 0:
+			return levelOneCollision[y * 32 + x];
+	}
 }
 
 unsigned char playerWallCollision(struct spriteData *spr)
@@ -478,4 +482,36 @@ const unsigned char* getPlayerSprite(void)
 
 
 	return playerShootUpSprite;
+}
+
+void loadLevel(unsigned char lvl)
+{
+	ppu_off(); // Turn the screen off.
+
+	switch(lvl) // Switches on level passed through when function is called.
+	{
+		case 0: // If the level is 0, or the first level in the game.
+		vram_adr(NAMETABLE_A); // Sets the VRAM address to nametable A.
+		vram_write(levelOneData, 1024); // Writes all the data from levelOneData to nametable A, including the attribute table.
+		break; // Breaks the switch statement.
+	}	
+
+	playerSpriteData.X = 16; // Sets the player to the bottom left tile, AKA, the starting point.
+	playerSpriteData.Y = 200; // Sets the player to the bottom left tile, AKA, the starting point.
+	bluePortalActive = 0; // Disables the Blue portal.
+	orangePortalActive = 0; // Disables the Orange portal.
+	bulletActive = 0; // Disables any bullets still on screen.
+	lastPortalUsed = 0; // Allows the user to enter any portal.
+
+	ppu_on_all(); // Turn the screen back on.
+}
+
+void drawMainMenu(void)
+{
+	ppu_off(); // Turns the screen off.
+
+	vram_adr(NAMETABLE_A);
+	vram_write(menu, 1024);
+
+	ppu_on_all(); // Turns the screen back on.
 }

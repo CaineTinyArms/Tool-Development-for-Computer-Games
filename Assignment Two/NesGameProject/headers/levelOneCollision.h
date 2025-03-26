@@ -1,4 +1,4 @@
-const unsigned char testlevelcollision[1024]={
+const unsigned char levelOneCollision[1024]={
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

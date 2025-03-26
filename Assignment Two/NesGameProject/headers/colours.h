@@ -24,7 +24,7 @@ ORANGE,ORANGE,ORANGE,ORANGE, // Sub-Palette 2
 
 const char paletteSprite[] = 
 {
-BLACK, ORANGE, LT_GY, WHITE, // Sub-Palette 0
+BLACK, SKIN, WHITE, ORANGE, // Sub-Palette 0
 BLACK, ORANGE, LT_GY, ORANGE, // Sub-Palette 1
 BLACK, ORANGE, LT_GY, DK_BLUE, // Sub Palette 2
 0,0,0,0 // Sub Palette 3
