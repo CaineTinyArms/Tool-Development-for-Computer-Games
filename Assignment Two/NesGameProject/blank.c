@@ -7,7 +7,7 @@
 #include "headers/menu.h"
 #pragma bss-name(push, "ZEROPAGE")
 
-// Global Variables
+// GLOBAL VARIABLES.
 // -====================================-
 unsigned char pad1; 
 unsigned char orangePortalCollision; 
@@ -27,7 +27,7 @@ signed char playerVelocity = 0;
 unsigned char currentLevel;
 unsigned char gameState;
 
-// Function Prototypes.
+// FUNCTION PROTOTYPES.
 // -================================-
 void modeToggle(void);
 void walkMode(void);
@@ -46,6 +46,9 @@ void drawSprite(void); // Prototype for drawing sprite function.
 void loadLevel(unsigned char level);
 void drawMainMenu(void);
 
+
+// MAIN GAME LOOP
+// -=========================================-
 void main (void) {
 	
 	ppu_off(); // Turns the screen off.
@@ -103,7 +106,8 @@ void main (void) {
 	}
 }
 	
-
+// COLLISION FUNCTIONS.
+// -===========================================-
 void portalPlayerCollision(void)
 {
 	orangePortalCollision = check_collision(&playerSpriteData, &orangePortalSpriteData); // Checks if the player is colliding with the data for the first portal.
@@ -161,6 +165,10 @@ unsigned char playerWallCollision(struct spriteData *spr)
     }
 }
 
+
+
+// PORTAL BULLET FUNCTIONS 
+// -===============================================================-
 void spawnOrangeBullet(void)
 {
 	orangeBulletSpriteData.X = playerSpriteData.X; // Sets the orange bullet X data to the Players X data.
@@ -305,6 +313,10 @@ void drawBullet(void)
 	}
 }
 
+
+
+// WALKING AND SHOOTING FUNCTIONS 
+// -=============================================================-
 void modeToggle(void)
 {
 	static unsigned char oldSelect = 0; // Stores the old select value.
@@ -384,6 +396,9 @@ void shootMode(void)
 	}
 }
 
+
+// GRAVITY FUNCTIONS 
+// -============================================================================-
 unsigned char onGround(void)
 {
 	 unsigned char footY = (playerSpriteData.Y + playerSpriteData.height + 1) >> 3;
@@ -425,7 +440,8 @@ void applyGravity(void)
 	playerVelocity = 0;
 }
 
-
+// PLAYER SPRITE FUNCTIONS 
+// -=======================================================================-
 
 void drawSprite(void)
 {
@@ -484,6 +500,9 @@ const unsigned char* getPlayerSprite(void)
 	return playerShootUpSprite;
 }
 
+
+// LEVEL LOADING FUNCTIONS 
+//-==============================================================================-
 void loadLevel(unsigned char lvl)
 {
 	ppu_off(); // Turn the screen off.
