@@ -24,7 +24,9 @@ signed char playerVelocity = 0; // Variable for the players velocity, used for m
 #define MAX_FALL_SPEED 4 // Defines the max fall speed of the player.
 unsigned char currentLevel; // Variable to track what level the player is currently on.
 unsigned char gameState; // Variable to track the current game state, 0 = main menu, 1 = in game etc.
-unsigned char blankTiles[11] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+unsigned char blankTiles[12] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+unsigned char pressStartTiles[12] = {0x50, 0x52, 0x45, 0x53, 0x53, 0x00, 0x53, 0x54, 0x41, 0x52, 0x54, 0x21};
+
 
 
 // FUNCTION PROTOTYPES.
@@ -45,7 +47,7 @@ const unsigned char* getPlayerSprite(void);
 void drawSprite(void); 
 void loadLevel(unsigned char level);
 void drawMainMenu(void);
-
+void animatePressStartText(void);
 
 // MAIN GAME LOOP
 // -=========================================-
@@ -77,6 +79,7 @@ void main (void) {
                 loadLevel(currentLevel);
                 gameState = 1;
             }
+			animatePressStartText();
 		}
 
 		else if (gameState == 1)
@@ -538,4 +541,35 @@ void drawMainMenu(void)
 	vram_write(menu, 1024); // Writes all the data from the menu array to NAMETABLE_A, including the attribute table.
 
 	ppu_on_all(); // Turns the screen back on.
+}
+
+void animatePressStartText(void)
+{
+	static unsigned char flashTimer = 0; 
+	static unsigned char showPressStartText = 1;
+
+	flashTimer++;
+
+	if (flashTimer >= 30)
+	{
+		flashTimer = 0;
+
+		ppu_off();
+
+		vram_adr(NAMETABLE_A + (17 * 32) + 10);
+
+		if (showPressStartText)
+		{
+			vram_write(blankTiles, 12);
+			showPressStartText = 0;
+		}
+
+		else 
+		{
+			vram_write(pressStartTiles, 12);
+			showPressStartText = 1;
+		}
+
+		ppu_on_all();
+	}
 }

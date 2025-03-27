@@ -65,6 +65,7 @@
 	.export		_currentLevel
 	.export		_gameState
 	.export		_blankTiles
+	.export		_pressStartTiles
 	.export		_modeToggle
 	.export		_walkMode
 	.export		_shootMode
@@ -81,6 +82,7 @@
 	.export		_drawSprite
 	.export		_loadLevel
 	.export		_drawMainMenu
+	.export		_animatePressStartText
 	.export		_main
 
 .segment	"DATA"
@@ -142,6 +144,20 @@ _blankTiles:
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$00
+_pressStartTiles:
+	.byte	$50
+	.byte	$52
+	.byte	$45
+	.byte	$53
+	.byte	$53
+	.byte	$00
+	.byte	$53
+	.byte	$54
+	.byte	$41
+	.byte	$52
+	.byte	$54
+	.byte	$21
 
 .segment	"RODATA"
 
@@ -3005,7 +3021,7 @@ _menu:
 	.byte	$41
 	.byte	$52
 	.byte	$54
-	.byte	$00
+	.byte	$21
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -5097,6 +5113,95 @@ L0005:	lda     #$10
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ animatePressStartText (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_animatePressStartText: near
+
+.segment	"CODE"
+
+;
+; flashTimer++;
+;
+	inc     M0001
+;
+; if (flashTimer >= 30)
+;
+	lda     M0001
+	cmp     #$1E
+	bcc     L0002
+;
+; flashTimer = 0;
+;
+	lda     #$00
+	sta     M0001
+;
+; ppu_off();
+;
+	jsr     _ppu_off
+;
+; vram_adr(NAMETABLE_A + (17 * 32) + 10);
+;
+	ldx     #$22
+	lda     #$2A
+	jsr     _vram_adr
+;
+; if (showPressStartText)
+;
+	lda     M0002
+	beq     L0003
+;
+; vram_write(blankTiles, 12);
+;
+	lda     #<(_blankTiles)
+	ldx     #>(_blankTiles)
+	jsr     pushax
+	ldx     #$00
+	lda     #$0C
+	jsr     _vram_write
+;
+; showPressStartText = 0;
+;
+	lda     #$00
+;
+; else 
+;
+	jmp     L0005
+;
+; vram_write(pressStartTiles, 12);
+;
+L0003:	lda     #<(_pressStartTiles)
+	ldx     #>(_pressStartTiles)
+	jsr     pushax
+	ldx     #$00
+	lda     #$0C
+	jsr     _vram_write
+;
+; showPressStartText = 1;
+;
+	lda     #$01
+L0005:	sta     M0002
+;
+; ppu_on_all();
+;
+	jmp     _ppu_on_all
+;
+; }
+;
+L0002:	rts
+
+.segment	"DATA"
+
+M0001:
+	.byte	$00
+M0002:
+	.byte	$01
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ main (void)
 ; ---------------------------------------------------------------
 
@@ -5166,7 +5271,7 @@ L0002:	jsr     _ppu_wait_nmi
 ;
 	lda     _pad1
 	and     #$10
-	beq     L0002
+	beq     L0006
 ;
 ; currentLevel = 0; 
 ;
@@ -5181,6 +5286,10 @@ L0002:	jsr     _ppu_wait_nmi
 ;
 	lda     #$01
 	sta     _gameState
+;
+; animatePressStartText();
+;
+L0006:	jsr     _animatePressStartText
 ;
 ; else if (gameState == 1)
 ;
