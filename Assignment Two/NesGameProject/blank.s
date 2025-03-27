@@ -64,6 +64,7 @@
 	.export		_playerVelocity
 	.export		_currentLevel
 	.export		_gameState
+	.export		_blankTiles
 	.export		_modeToggle
 	.export		_walkMode
 	.export		_shootMode
@@ -128,6 +129,18 @@ _bulletDirectionX:
 _bulletDirectionY:
 	.byte	$00
 _playerVelocity:
+	.byte	$00
+_blankTiles:
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
 	.byte	$00
 
 .segment	"RODATA"
@@ -4798,18 +4811,18 @@ L0013:	sta     _playerVelocity
 .segment	"CODE"
 
 ;
-; if (mode == 0)
+; if (mode == 0) // If the player is in move mode.
 ;
 	lda     _mode
 	bne     L0034
 ;
-; return playerSprite;
+; return playerSprite; // Return the default player sprite.
 ;
 	lda     #<(_playerSprite)
 	ldx     #>(_playerSprite)
 	rts
 ;
-; if (aimDirectionX == 0 && aimDirectionY == -1)
+; if (aimDirectionX == 0 && aimDirectionY == -1) // If the player is aiming up.
 ;
 L0034:	lda     _aimDirectionX
 	bne     L0035
@@ -4817,7 +4830,7 @@ L0034:	lda     _aimDirectionX
 	cmp     #$FF
 	jeq     L002D
 ;
-; if (aimDirectionX == 0 && aimDirectionY == 1)
+; if (aimDirectionX == 0 && aimDirectionY == 1) // If the player is aiming down.
 ;
 L0035:	lda     _aimDirectionX
 	bne     L0036
@@ -4825,13 +4838,13 @@ L0035:	lda     _aimDirectionX
 	cmp     #$01
 	bne     L0036
 ;
-; return playerShootDownSprite;
+; return playerShootDownSprite; // Return the player aiming down sprite.
 ;
 	lda     #<(_playerShootDownSprite)
 	ldx     #>(_playerShootDownSprite)
 	rts
 ;
-; if (aimDirectionX == -1 && aimDirectionY == 0)
+; if (aimDirectionX == -1 && aimDirectionY == 0) // If the player is aiming left.
 ;
 L0036:	lda     _aimDirectionX
 	cmp     #$FF
@@ -4839,13 +4852,13 @@ L0036:	lda     _aimDirectionX
 	lda     _aimDirectionY
 	bne     L0037
 ;
-; return playerShootLeftSprite;
+; return playerShootLeftSprite; // Return the player aiming left sprite.
 ;
 	lda     #<(_playerShootLeftSprite)
 	ldx     #>(_playerShootLeftSprite)
 	rts
 ;
-; if (aimDirectionX == 1 && aimDirectionY == 0)
+; if (aimDirectionX == 1 && aimDirectionY == 0) // If the player is aiming right.
 ;
 L0037:	lda     _aimDirectionX
 	cmp     #$01
@@ -4853,13 +4866,13 @@ L0037:	lda     _aimDirectionX
 	lda     _aimDirectionY
 	bne     L0038
 ;
-; return playerShootRightSprite;
+; return playerShootRightSprite; // Return the player aiming right sprite.
 ;
 	lda     #<(_playerShootRightSprite)
 	ldx     #>(_playerShootRightSprite)
 	rts
 ;
-; if (aimDirectionX == -1 && aimDirectionY == -1)
+; if (aimDirectionX == -1 && aimDirectionY == -1) // If the player is aiming up and left.
 ;
 L0038:	lda     _aimDirectionX
 	cmp     #$FF
@@ -4868,13 +4881,13 @@ L0038:	lda     _aimDirectionX
 	cmp     #$FF
 	bne     L0039
 ;
-; return playerShootTopLeftSprite;
+; return playerShootTopLeftSprite; // Return the player aiming up and left sprite.
 ;
 	lda     #<(_playerShootTopLeftSprite)
 	ldx     #>(_playerShootTopLeftSprite)
 	rts
 ;
-; if (aimDirectionX == 1 && aimDirectionY == -1)
+; if (aimDirectionX == 1 && aimDirectionY == -1) // If the player is aiming up and right.
 ;
 L0039:	lda     _aimDirectionX
 	cmp     #$01
@@ -4883,13 +4896,13 @@ L0039:	lda     _aimDirectionX
 	cmp     #$FF
 	bne     L003A
 ;
-; return playerShootTopRightSprite;
+; return playerShootTopRightSprite; // Return the player aiming up and right sprite.
 ;
 	lda     #<(_playerShootTopRightSprite)
 	ldx     #>(_playerShootTopRightSprite)
 	rts
 ;
-; if (aimDirectionX == -1 && aimDirectionY == 1)
+; if (aimDirectionX == -1 && aimDirectionY == 1) // If the player is aiming down and left.
 ;
 L003A:	lda     _aimDirectionX
 	cmp     #$FF
@@ -4898,13 +4911,13 @@ L003A:	lda     _aimDirectionX
 	cmp     #$01
 	bne     L003B
 ;
-; return playerShootBottomLeftSprite;
+; return playerShootBottomLeftSprite; // Return the player aiming down and left sprite.
 ;
 	lda     #<(_playerShootBottomLeftSprite)
 	ldx     #>(_playerShootBottomLeftSprite)
 	rts
 ;
-; if (aimDirectionX == 1 && aimDirectionY == 1)
+; if (aimDirectionX == 1 && aimDirectionY == 1) // If the player is aiming down and right.
 ;
 L003B:	lda     _aimDirectionX
 	cmp     #$01
@@ -4913,13 +4926,13 @@ L003B:	lda     _aimDirectionX
 	cmp     #$01
 	bne     L002D
 ;
-; return playerShootBottomRightSprite;
+; return playerShootBottomRightSprite; // Return the player aiming down and right sprite.
 ;
 	lda     #<(_playerShootBottomRightSprite)
 	ldx     #>(_playerShootBottomRightSprite)
 	rts
 ;
-; return playerShootUpSprite;
+; return playerShootUpSprite; // If the player isn't aiming anywhere, return the aiming up sprite as that's where the bullets go by default.
 ;
 L002D:	lda     #<(_playerShootUpSprite)
 	ldx     #>(_playerShootUpSprite)
@@ -5062,13 +5075,13 @@ L0005:	lda     #$10
 ;
 	jsr     _ppu_off
 ;
-; vram_adr(NAMETABLE_A);
+; vram_adr(NAMETABLE_A); // Sets the VRAM address to the location of NAMETABLE_A.
 ;
 	ldx     #$20
 	lda     #$00
 	jsr     _vram_adr
 ;
-; vram_write(menu, 1024);
+; vram_write(menu, 1024); // Writes all the data from the menu array to NAMETABLE_A, including the attribute table.
 ;
 	lda     #<(_menu)
 	ldx     #>(_menu)

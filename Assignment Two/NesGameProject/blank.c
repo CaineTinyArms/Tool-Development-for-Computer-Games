@@ -9,27 +9,27 @@
 
 // GLOBAL VARIABLES.
 // -====================================-
-unsigned char pad1; 
-unsigned char orangePortalCollision; 
-unsigned char bluePortalCollision;
+unsigned char pad1; // Variable for the controller.
+unsigned char orangePortalCollision; // Variable for if the player is touching the orange portal.
+unsigned char bluePortalCollision; // Variable for if the player is touching the blue portal.
 unsigned char lastPortalUsed = 0; // 0 for none, 1 for orange, 2 for blue.
 unsigned char bulletActive = 0; // 0 for none, 1 for orange, 2 for blue.
 unsigned char mode = 0; // 0 for walk mode, 1 for shoot mode.
-signed char aimDirectionX = 0;
-signed char aimDirectionY = 0;
-signed char bulletDirectionX = 0;
-signed char bulletDirectionY = 0;
+signed char aimDirectionX = 0; // Variable for the X direction the player is aiming (left and right)
+signed char aimDirectionY = 0; // Variable for the Y direction the player is aiming (up and down)
+signed char bulletDirectionX = 0; // Variable for the X direction of the bullet (left and right)
+signed char bulletDirectionY = 0; // Variable for the Y direction of the bullet (up and down)
+signed char playerVelocity = 0; // Variable for the players velocity, used for making them fall.
+#define GRAVITY 1 // Defines the speed of gravity that is added while the player is falling.
+#define MAX_FALL_SPEED 4 // Defines the max fall speed of the player.
+unsigned char currentLevel; // Variable to track what level the player is currently on.
+unsigned char gameState; // Variable to track the current game state, 0 = main menu, 1 = in game etc.
+unsigned char blankTiles[11] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-signed char playerVelocity = 0;
-#define GRAVITY 1
-#define MAX_FALL_SPEED 4
-
-unsigned char currentLevel;
-unsigned char gameState;
 
 // FUNCTION PROTOTYPES.
 // -================================-
-void modeToggle(void);
+void modeToggle(void); 
 void walkMode(void);
 void shootMode(void);
 void portalPlayerCollision(void);
@@ -42,7 +42,7 @@ void drawBullet(void);
 unsigned char onGround(void);	
 void applyGravity(void);
 const unsigned char* getPlayerSprite(void);
-void drawSprite(void); // Prototype for drawing sprite function.
+void drawSprite(void); 
 void loadLevel(unsigned char level);
 void drawMainMenu(void);
 
@@ -456,53 +456,53 @@ void drawSprite(void)
 
 const unsigned char* getPlayerSprite(void)
 {
-	if (mode == 0)
+	if (mode == 0) // If the player is in move mode.
 	{
-		return playerSprite;
+		return playerSprite; // Return the default player sprite.
 	}
 
-	if (aimDirectionX == 0 && aimDirectionY == -1)
+	if (aimDirectionX == 0 && aimDirectionY == -1) // If the player is aiming up.
 	{
-		return playerShootUpSprite;
+		return playerShootUpSprite; // Return the player aiming up sprite.
 	}
 
-	if (aimDirectionX == 0 && aimDirectionY == 1)
+	if (aimDirectionX == 0 && aimDirectionY == 1) // If the player is aiming down.
 	{
-		return playerShootDownSprite;
+		return playerShootDownSprite; // Return the player aiming down sprite.
 	}
 
-	if (aimDirectionX == -1 && aimDirectionY == 0)
+	if (aimDirectionX == -1 && aimDirectionY == 0) // If the player is aiming left.
 	{
-		return playerShootLeftSprite;
+		return playerShootLeftSprite; // Return the player aiming left sprite.
 	}
 
-	if (aimDirectionX == 1 && aimDirectionY == 0)
+	if (aimDirectionX == 1 && aimDirectionY == 0) // If the player is aiming right.
 	{
-		return playerShootRightSprite;
+		return playerShootRightSprite; // Return the player aiming right sprite.
 	}
 
-	if (aimDirectionX == -1 && aimDirectionY == -1)
+	if (aimDirectionX == -1 && aimDirectionY == -1) // If the player is aiming up and left.
 	{
-		return playerShootTopLeftSprite;
+		return playerShootTopLeftSprite; // Return the player aiming up and left sprite.
 	}
 
-	if (aimDirectionX == 1 && aimDirectionY == -1)
+	if (aimDirectionX == 1 && aimDirectionY == -1) // If the player is aiming up and right.
 	{
-		return playerShootTopRightSprite;
+		return playerShootTopRightSprite; // Return the player aiming up and right sprite.
 	}
 
-	if (aimDirectionX == -1 && aimDirectionY == 1)
+	if (aimDirectionX == -1 && aimDirectionY == 1) // If the player is aiming down and left.
 	{
-		return playerShootBottomLeftSprite;
+		return playerShootBottomLeftSprite; // Return the player aiming down and left sprite.
 	}
 
-	if (aimDirectionX == 1 && aimDirectionY == 1)
+	if (aimDirectionX == 1 && aimDirectionY == 1) // If the player is aiming down and right.
 	{
-		return playerShootBottomRightSprite;
+		return playerShootBottomRightSprite; // Return the player aiming down and right sprite.
 	}
 
 
-	return playerShootUpSprite;
+	return playerShootUpSprite; // If the player isn't aiming anywhere, return the aiming up sprite as that's where the bullets go by default.
 }
 
 
@@ -534,8 +534,8 @@ void drawMainMenu(void)
 {
 	ppu_off(); // Turns the screen off.
 
-	vram_adr(NAMETABLE_A);
-	vram_write(menu, 1024);
+	vram_adr(NAMETABLE_A); // Sets the VRAM address to the location of NAMETABLE_A.
+	vram_write(menu, 1024); // Writes all the data from the menu array to NAMETABLE_A, including the attribute table.
 
 	ppu_on_all(); // Turns the screen back on.
 }
