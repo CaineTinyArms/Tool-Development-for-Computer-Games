@@ -37,11 +37,13 @@
 	.export		_bluePortal
 	.export		_orangeBulletSprite
 	.export		_blueBulletSprite
+	.export		_doorSprite
 	.export		_playerSpriteData
 	.export		_orangePortalSpriteData
 	.export		_bluePortalSpriteData
 	.export		_orangeBulletSpriteData
 	.export		_blueBulletSpriteData
+	.export		_doorSpriteData
 	.export		_paletteBackground
 	.export		_paletteSprite
 	.export		_levelPaletteBackground
@@ -90,6 +92,7 @@
 	.export		_drawOrangePortalSprite
 	.export		_drawBluePortalSprite
 	.export		_getCollisionValue
+	.export		_drawDoorSprite
 	.export		_main
 
 .segment	"DATA"
@@ -119,6 +122,11 @@ _blueBulletSpriteData:
 	.byte	$00
 	.byte	$07
 	.byte	$07
+_doorSpriteData:
+	.byte	$00
+	.byte	$00
+	.byte	$10
+	.byte	$10
 _lastPortalUsed:
 	.byte	$00
 _mode:
@@ -387,6 +395,24 @@ _blueBulletSprite:
 	.byte	$00
 	.byte	$FF
 	.byte	$02
+	.byte	$80
+_doorSprite:
+	.byte	$00
+	.byte	$00
+	.byte	$22
+	.byte	$01
+	.byte	$00
+	.byte	$08
+	.byte	$32
+	.byte	$01
+	.byte	$08
+	.byte	$00
+	.byte	$22
+	.byte	$41
+	.byte	$08
+	.byte	$08
+	.byte	$32
+	.byte	$41
 	.byte	$80
 _paletteBackground:
 	.byte	$0F
@@ -4336,9 +4362,9 @@ L0008:	lda     #$FF
 ;
 ; if(orangeBulletActive) // If the orange bullet is active.
 ;
-	jsr     decsp3
+	jsr     decsp5
 	lda     _orangeBulletActive
-	jeq     L0018
+	jeq     L001D
 ;
 ; orangeBulletSpriteData.X += orangeBulletDirectionX; // Moves the orange bullet in the X direction that the player was aiming when it was shot.
 ;
@@ -4363,7 +4389,7 @@ L0008:	lda     #$FF
 	bcc     L0005
 	inx
 L0005:	jsr     asrax3
-	ldy     #$02
+	ldy     #$04
 	sta     (sp),y
 ;
 ; tileY = (orangeBulletSpriteData.Y + 4) >> 3; // Sets the Y tile value to the tile the bullet collided with.
@@ -4383,16 +4409,16 @@ L0006:	jsr     asrax3
 	iny
 	lda     (sp),y
 	jsr     pusha
-	ldy     #$02
+	ldy     #$04
 	lda     (sp),y
 	jsr     _getCollisionValue
-	ldy     #$00
+	ldy     #$02
 	sta     (sp),y
 ;
 ; if(collision == 2) // If the tile has a collision value of 2, meaning it can hold a portal.
 ;
 	cmp     #$02
-	jne     L003F
+	jne     L004C
 ;
 ; if(orangeBulletDirectionX > 0) // If the orange bullet was shot to the right.
 ;
@@ -4401,7 +4427,7 @@ L0006:	jsr     asrax3
 	sbc     #$01
 	bvs     L000A
 	eor     #$80
-L000A:	bpl     L003A
+L000A:	bpl     L0044
 ;
 ; orangePortalOrientation = 1; // Set the portal orientaion to right, so the player gets spit out to the left
 ;
@@ -4409,10 +4435,10 @@ L000A:	bpl     L003A
 ;
 ; else if(orangeBulletDirectionX < 0) // If the orange bullet was shot to the left.  
 ;
-	jmp     L0030
-L003A:	lda     _orangeBulletDirectionX
+	jmp     L003A
+L0044:	lda     _orangeBulletDirectionX
 	asl     a
-	bcc     L003B
+	bcc     L0045
 ;
 ; orangePortalOrientation = 3; // Set the portal orientaion to left, so the player gets spit out to the right.
 ;
@@ -4420,32 +4446,78 @@ L003A:	lda     _orangeBulletDirectionX
 ;
 ; else if(orangeBulletDirectionY > 0) // If the orange bullet was shot down.
 ;
-	jmp     L0030
-L003B:	lda     _orangeBulletDirectionY
+	jmp     L003A
+L0045:	lda     _orangeBulletDirectionY
 	sec
 	sbc     #$01
 	bvs     L0011
 	eor     #$80
 L0011:	asl     a
-	tya
-	bcc     L0030
+	lda     #$00
+	bcc     L003A
 ;
 ; orangePortalOrientation = 2; // Set the portal orientaion to down, so the player gets spit out up.
 ;
-	lda     #$02
+	tya
 ;
 ; orangePortalOrientation = 0; // Set the portal orientaion to up, so the player gets spit out down.
 ;
-L0030:	sta     _orangePortalOrientation
+L003A:	sta     _orangePortalOrientation
+;
+; if (bluePortalActive) // If the blue portal is active.
+;
+	lda     _bluePortalActive
+	beq     L0049
+;
+; otherPortalTileX = bluePortalSpriteData.X >> 3; // Get the X tile that the blue portal is located on.
+;
+	lda     _bluePortalSpriteData
+	lsr     a
+	lsr     a
+	lsr     a
+	dey
+	sta     (sp),y
+;
+; otherPortalTileY = bluePortalSpriteData.Y >> 3; // Get the Y tile that the blue portal is location on.
+;
+	lda     _bluePortalSpriteData+1
+	lsr     a
+	lsr     a
+	lsr     a
+	dey
+	sta     (sp),y
+;
+; if (otherPortalTileX == tileX && otherPortalTileY == tileY) // Check if the orange portal is trying to be placed at the same location as the blue portal.
+;
+	iny
+	lda     (sp),y
+	ldy     #$04
+	cmp     (sp),y
+	bne     L0049
+	ldy     #$00
+	lda     (sp),y
+	ldy     #$03
+	cmp     (sp),y
+	bne     L0049
+;
+; orangeBulletActive = 0; // Disable the orange bullet if true.
+;
+	lda     #$00
+	sta     _orangeBulletActive
+;
+; return;
+;
+	jmp     incsp5
 ;
 ; if(orangePortalOrientation == 1) // If the portal was shot to the right.
 ;
+L0049:	lda     _orangePortalOrientation
 	cmp     #$01
-	bne     L003D
+	bne     L004A
 ;
 ; orangePortalSpriteData.X = (tileX << 3) + (8 - PORTAL_WIDTH); // Shift the portal to the left, so it's not stuck fully in the wall and can be entered.
 ;
-	ldy     #$02
+	ldy     #$04
 	ldx     #$00
 	lda     (sp),y
 	jsr     aslax3
@@ -4457,14 +4529,14 @@ L0030:	sta     _orangePortalOrientation
 ;
 ; else if(orangePortalOrientation == 2) // If the portal was shot down.
 ;
-	jmp     L0054
-L003D:	lda     _orangePortalOrientation
+	jmp     L0064
+L004A:	lda     _orangePortalOrientation
 	cmp     #$02
-	bne     L0015
+	bne     L001A
 ;
 ; orangePortalSpriteData.X = tileX << 3; // Shift the portal up.
 ;
-	tay
+	ldy     #$04
 	lda     (sp),y
 	asl     a
 	asl     a
@@ -4486,11 +4558,11 @@ L003D:	lda     _orangePortalOrientation
 ;
 ; else // If the portal was shot left or up, just place the portal normally.
 ;
-	jmp     L0031
+	jmp     L003B
 ;
 ; orangePortalSpriteData.X = tileX << 3;
 ;
-L0015:	ldy     #$02
+L001A:	ldy     #$04
 	lda     (sp),y
 	asl     a
 	asl     a
@@ -4499,33 +4571,34 @@ L0015:	ldy     #$02
 ;
 ; orangePortalSpriteData.Y = tileY << 3;
 ;
-L0054:	dey
+L0064:	dey
 	lda     (sp),y
 	asl     a
 	asl     a
 	asl     a
-L0031:	sta     _orangePortalSpriteData+1
+L003B:	sta     _orangePortalSpriteData+1
 ;
 ; orangePortalActive = 1; // Set the orange portal as active.
 ;
-	sty     _orangePortalActive
+	lda     #$01
+	sta     _orangePortalActive
 ;
 ; else if(collision == 1) // If the bullet hits a normal wall.
 ;
-	jmp     L004B
-L003F:	lda     (sp),y
+	jmp     L005B
+L004C:	lda     (sp),y
 	cmp     #$01
-	bne     L0018
+	bne     L001D
 ;
 ; orangeBulletActive = 0; // Set the orange bullet as not active, so it stops getting drawn.
 ;
-L004B:	lda     #$00
+L005B:	lda     #$00
 	sta     _orangeBulletActive
 ;
 ; if(blueBulletActive) // If the blue bullet is active.
 ;
-L0018:	lda     _blueBulletActive
-	jeq     L002F
+L001D:	lda     _blueBulletActive
+	jeq     L0039
 ;
 ; blueBulletSpriteData.X += blueBulletDirectionX; // Move the bullet in the X direction the player was aiming when it was shot.
 ;
@@ -4547,10 +4620,10 @@ L0018:	lda     _blueBulletActive
 	lda     _blueBulletSpriteData
 	clc
 	adc     #$04
-	bcc     L001C
+	bcc     L0021
 	inx
-L001C:	jsr     asrax3
-	ldy     #$02
+L0021:	jsr     asrax3
+	ldy     #$04
 	sta     (sp),y
 ;
 ; tileY = (blueBulletSpriteData.Y + 4) >> 3; // Sets the Y tile value to the tile the bullet collided with.
@@ -4559,9 +4632,9 @@ L001C:	jsr     asrax3
 	lda     _blueBulletSpriteData+1
 	clc
 	adc     #$04
-	bcc     L001D
+	bcc     L0022
 	inx
-L001D:	jsr     asrax3
+L0022:	jsr     asrax3
 	dey
 	sta     (sp),y
 ;
@@ -4570,25 +4643,25 @@ L001D:	jsr     asrax3
 	iny
 	lda     (sp),y
 	jsr     pusha
-	ldy     #$02
+	ldy     #$04
 	lda     (sp),y
 	jsr     _getCollisionValue
-	ldy     #$00
+	ldy     #$02
 	sta     (sp),y
 ;
 ; if(collision == 2) // If the tile has a collision of 2, meaning it can hold a portal.
 ;
 	cmp     #$02
-	jne     L0049
+	jne     L0059
 ;
 ; if (blueBulletDirectionX > 0) // If the bullet was shot to the right.
 ;
 	lda     _blueBulletDirectionX
 	sec
 	sbc     #$01
-	bvs     L0021
+	bvs     L0026
 	eor     #$80
-L0021:	bpl     L0044
+L0026:	bpl     L0051
 ;
 ; bluePortalOrientation = 1; // Set the portal orientation to the right, so the player gets spit out to the left.
 ;
@@ -4596,10 +4669,10 @@ L0021:	bpl     L0044
 ;
 ; else if (blueBulletDirectionX < 0) // If the bullet was shot to the left.
 ;
-	jmp     L0033
-L0044:	lda     _blueBulletDirectionX
+	jmp     L003D
+L0051:	lda     _blueBulletDirectionX
 	asl     a
-	bcc     L0045
+	bcc     L0052
 ;
 ; bluePortalOrientation = 3; // Set the portal orientation to the left, so the player gets spit out to the right.
 ;
@@ -4607,32 +4680,69 @@ L0044:	lda     _blueBulletDirectionX
 ;
 ; else if (blueBulletDirectionY > 0) // If the bullet was shot down.
 ;
-	jmp     L0033
-L0045:	lda     _blueBulletDirectionY
+	jmp     L003D
+L0052:	lda     _blueBulletDirectionY
 	sec
 	sbc     #$01
-	bvs     L0028
+	bvs     L002D
 	eor     #$80
-L0028:	asl     a
-	tya
-	bcc     L0033
+L002D:	asl     a
+	lda     #$00
+	bcc     L003D
 ;
 ; bluePortalOrientation = 2; // Set the portal orientation to down, so the player gets spit out up.
 ;
-	lda     #$02
+	tya
 ;
 ; bluePortalOrientation = 0; // Set the portal orientation to up, so the player gets spit out down.
 ;
-L0033:	sta     _bluePortalOrientation
+L003D:	sta     _bluePortalOrientation
+;
+; if (orangePortalActive) // If the orange portal is active.
+;
+	lda     _orangePortalActive
+	beq     L0056
+;
+; otherPortalTileX = orangePortalSpriteData.X >> 3; // Get the X tile that the orange portal is located at.
+;
+	lda     _orangePortalSpriteData
+	lsr     a
+	lsr     a
+	lsr     a
+	dey
+	sta     (sp),y
+;
+; otherPortalTileY = orangePortalSpriteData.Y >> 3; // Get the Y tile that the orange portal is located at.
+;
+	lda     _orangePortalSpriteData+1
+	lsr     a
+	lsr     a
+	lsr     a
+	dey
+	sta     (sp),y
+;
+; if (otherPortalTileX == tileX && otherPortalTileY == tileY) // Check if the blue portal is trying to be placed at the same location of the orange portal.
+;
+	iny
+	lda     (sp),y
+	ldy     #$04
+	cmp     (sp),y
+	bne     L0056
+	ldy     #$00
+	lda     (sp),y
+	ldy     #$03
+	cmp     (sp),y
+	beq     L005C
 ;
 ; if (bluePortalOrientation == 1) // If the portal was shot to the right.
 ;
+L0056:	lda     _bluePortalOrientation
 	cmp     #$01
-	bne     L0047
+	bne     L0057
 ;
 ; bluePortalSpriteData.X = (tileX << 3) + (8 - PORTAL_WIDTH); // Shift the portal to the left, so it's not stuck fully in the wall and can be entered.
 ;
-	ldy     #$02
+	ldy     #$04
 	ldx     #$00
 	lda     (sp),y
 	jsr     aslax3
@@ -4644,14 +4754,14 @@ L0033:	sta     _bluePortalOrientation
 ;
 ; else if (bluePortalOrientation == 2) // If the portal was shot down.
 ;
-	jmp     L0055
-L0047:	lda     _bluePortalOrientation
+	jmp     L0065
+L0057:	lda     _bluePortalOrientation
 	cmp     #$02
-	bne     L002C
+	bne     L0036
 ;
 ; bluePortalSpriteData.X = tileX << 3; // Shift the portal up.
 ;
-	tay
+	ldy     #$04
 	lda     (sp),y
 	asl     a
 	asl     a
@@ -4673,11 +4783,11 @@ L0047:	lda     _bluePortalOrientation
 ;
 ; else // If the portal was shot left or up, just place the portal normally.
 ;
-	jmp     L0034
+	jmp     L003F
 ;
 ; bluePortalSpriteData.X = tileX << 3;
 ;
-L002C:	ldy     #$02
+L0036:	ldy     #$04
 	lda     (sp),y
 	asl     a
 	asl     a
@@ -4686,32 +4796,33 @@ L002C:	ldy     #$02
 ;
 ; bluePortalSpriteData.Y = tileY << 3;
 ;
-L0055:	dey
+L0065:	dey
 	lda     (sp),y
 	asl     a
 	asl     a
 	asl     a
-L0034:	sta     _bluePortalSpriteData+1
+L003F:	sta     _bluePortalSpriteData+1
 ;
 ; bluePortalActive = 1; // Set the blue portal to active.
 ;
-	sty     _bluePortalActive
+	lda     #$01
+	sta     _bluePortalActive
 ;
 ; else if (collision == 1) // If the bullet hits a wall that can't hold a portal.
 ;
-	jmp     L004D
-L0049:	lda     (sp),y
+	jmp     L005C
+L0059:	lda     (sp),y
 	cmp     #$01
-	bne     L002F
+	bne     L0039
 ;
 ; blueBulletActive = 0;// Set the blue bullet to not active so it can be shot again.
 ;
-L004D:	lda     #$00
+L005C:	lda     #$00
 	sta     _blueBulletActive
 ;
 ; }
 ;
-L002F:	jmp     incsp3
+L0039:	jmp     incsp5
 
 .endproc
 
@@ -5155,6 +5266,16 @@ L002D:	lda     #<(_playerShootUpSprite)
 	lda     #$D8
 	sta     _playerSpriteData+1
 ;
+; doorSpriteData.X = 200;
+;
+	lda     #$C8
+	sta     _doorSpriteData
+;
+; doorSpriteData.Y = 216;
+;
+	lda     #$D8
+	sta     _doorSpriteData+1
+;
 ; bluePortalActive   = 0; // Reset the blue portal active.
 ;
 L0005:	lda     #$00
@@ -5454,6 +5575,32 @@ L0006:	jmp     incsp2
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ drawDoorSprite (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_drawDoorSprite: near
+
+.segment	"CODE"
+
+;
+; oam_meta_spr(doorSpriteData.X, doorSpriteData.Y, doorSprite);
+;
+	jsr     decsp2
+	lda     _doorSpriteData
+	ldy     #$01
+	sta     (sp),y
+	lda     _doorSpriteData+1
+	dey
+	sta     (sp),y
+	lda     #<(_doorSprite)
+	ldx     #>(_doorSprite)
+	jmp     _oam_meta_spr
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ main (void)
 ; ---------------------------------------------------------------
 
@@ -5605,6 +5752,10 @@ L000B:	jsr     _applyGravity
 ; drawOrangePortalSprite(); // Draws the orange portal sprite.
 ;
 	jsr     _drawOrangePortalSprite
+;
+; drawDoorSprite();
+;
+	jsr     _drawDoorSprite
 ;
 ; while(1) {
 ;

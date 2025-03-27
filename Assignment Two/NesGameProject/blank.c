@@ -12,6 +12,7 @@
 unsigned char pad1; // Variable for the controller.
 unsigned char orangePortalCollision; // Variable for if the player is touching the orange portal.
 unsigned char bluePortalCollision; // Variable for if the player is touching the blue portal.
+unsigned char doorCollision; 
 unsigned char lastPortalUsed = 0; // 0 for none, 1 for orange, 2 for blue.
 unsigned char mode = 0; // 0 for walk mode, 1 for shoot mode.
 signed char aimDirectionX = 0; // Variable for the X direction the player is aiming (left and right)
@@ -36,6 +37,7 @@ unsigned char bluePortalOrientation   = 0; // Tracks the orientation of the blue
 #define PORTAL_WIDTH  16 // Defines the width of the portal sprite.
 #define PORTAL_HEIGHT 16 // Defines the height of the portal sprite.
 
+
 // FUNCTION PROTOTYPES.
 // -================================-
 void modeToggle(void); 
@@ -58,6 +60,8 @@ void animatePressStartText(void);
 void drawOrangePortalSprite(void);
 void drawBluePortalSprite(void);
 unsigned char getCollisionValue(unsigned char x, unsigned char y);
+void drawDoorSprite();
+void doorPlayerCollision(void);
 
 // MAIN GAME LOOP
 // -=========================================- 
@@ -105,6 +109,7 @@ void main(void) {
             drawBullet(); // Draws the bullet sprites.
             drawBluePortalSprite(); // Draws the blue portal sprite.
             drawOrangePortalSprite(); // Draws the orange portal sprite.
+			drawDoorSprite();
         }
     }
 }
@@ -263,6 +268,8 @@ void updateBullet(void)
     unsigned char tileX; // Holds the X tile that the bullet has collided with.
     unsigned char tileY; // Holds the Y tile that the bullet has collided with.
     unsigned char collision; // Holds the collision value of the tile the bullet collided with.
+	unsigned char otherPortalTileX; // Holds the X tile that the opposite portal is located at.
+	unsigned char otherPortalTileY; // Holds the Y tile that the opposite portal is located at.
 
     if(orangeBulletActive) // If the orange bullet is active.
     {
@@ -275,8 +282,6 @@ void updateBullet(void)
 
         if(collision == 2) // If the tile has a collision value of 2, meaning it can hold a portal.
         {
-            // "portal-able" wall 
-            // Determine the orientation from bullet direction
             if(orangeBulletDirectionX > 0) // If the orange bullet was shot to the right.
 			{
                 orangePortalOrientation = 1; // Set the portal orientaion to right, so the player gets spit out to the left
@@ -293,6 +298,17 @@ void updateBullet(void)
 			{
                 orangePortalOrientation = 0; // Set the portal orientaion to up, so the player gets spit out down.
             }
+
+			if (bluePortalActive) // If the blue portal is active.
+			{
+				otherPortalTileX = bluePortalSpriteData.X >> 3; // Get the X tile that the blue portal is located on.
+				otherPortalTileY = bluePortalSpriteData.Y >> 3; // Get the Y tile that the blue portal is location on.
+				if (otherPortalTileX == tileX && otherPortalTileY == tileY) // Check if the orange portal is trying to be placed at the same location as the blue portal.
+				{
+					orangeBulletActive = 0; // Disable the orange bullet if true.
+					return;
+				}
+			}
 
             if(orangePortalOrientation == 1) // If the portal was shot to the right.
 			{
@@ -347,6 +363,17 @@ void updateBullet(void)
 			{
                 bluePortalOrientation = 0; // Set the portal orientation to up, so the player gets spit out down.
             }
+
+			if (orangePortalActive) // If the orange portal is active.
+			{
+				otherPortalTileX = orangePortalSpriteData.X >> 3; // Get the X tile that the orange portal is located at.
+				otherPortalTileY = orangePortalSpriteData.Y >> 3; // Get the Y tile that the orange portal is located at.
+				if (otherPortalTileX == tileX && otherPortalTileY == tileY) // Check if the blue portal is trying to be placed at the same location of the orange portal.
+				{
+					blueBulletActive = 0; // Disable the blue bullet if true.
+					return;
+				}
+			}
 
             if (bluePortalOrientation == 1) // If the portal was shot to the right.
             {
@@ -569,6 +596,8 @@ void loadLevel(unsigned char lvl)
             vram_write(levelOneData, 1024); // Fill NameTableA with all 1024 bytes from the levelOneData array, which includes the attribute table.
             playerSpriteData.X = 136; // Sets the player location to the starting location for level 1.
             playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
+			doorSpriteData.X = 200;
+			doorSpriteData.Y = 216;
             break;
     }
 
@@ -632,4 +661,20 @@ void drawBluePortalSprite(void)
     {
         oam_meta_spr(bluePortalSpriteData.X, bluePortalSpriteData.Y, bluePortal);
     }
+}
+
+void drawDoorSprite(void)
+{
+	oam_meta_spr(doorSpriteData.X, doorSpriteData.Y, doorSprite);
+}
+
+void doorPlayerCollision(void)
+{
+	 doorCollision = check_collision(&playerSpriteData, &doorSpriteData);
+
+	 if (doorCollision)
+	 {
+		currentLevel++;
+		loadLevel(currentLevel);
+	 }
 }
