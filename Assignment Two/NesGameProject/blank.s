@@ -67,6 +67,8 @@
 	.export		_orangeBulletDirectionY
 	.export		_blueBulletDirectionX
 	.export		_blueBulletDirectionY
+	.export		_orangePortalOrientation
+	.export		_bluePortalOrientation
 	.export		_modeToggle
 	.export		_walkMode
 	.export		_shootMode
@@ -167,6 +169,10 @@ _orangeBulletDirectionY:
 _blueBulletDirectionX:
 	.byte	$00
 _blueBulletDirectionY:
+	.byte	$00
+_orangePortalOrientation:
+	.byte	$00
+_bluePortalOrientation:
 	.byte	$00
 
 .segment	"RODATA"
@@ -3516,13 +3522,13 @@ _gameState:
 .segment	"CODE"
 
 ;
-; unsigned char newSelect = (pad1 & PAD_SELECT); // Sets the new select value to if the button is pressed.
+; unsigned char newSelect = (pad1 & PAD_SELECT); // Sets the new select value.
 ;
 	lda     _pad1
 	and     #$20
 	jsr     pusha
 ;
-; if (newSelect && !oldSelect) // If the value is different, AKA, the button has been pressed.
+; if (newSelect && !oldSelect) // If the value changed from not pressed to pressed.
 ;
 	ldy     #$00
 	lda     (sp),y
@@ -3536,7 +3542,7 @@ _gameState:
 	jsr     bnega
 	sta     _mode
 ;
-; oldSelect = newSelect; // Set the oldSelect to the newSelect, as it is now the old select state.
+; oldSelect = newSelect; 
 ;
 L000A:	lda     (sp),y
 	sta     M0001
@@ -3569,11 +3575,11 @@ M0001:
 	and     #$02
 	beq     L0007
 ;
-; playerSpriteData.X--; // Decrement the X data of the Player Sprite. 
+; playerSpriteData.X--; // Move the player to the left.
 ;
 	dec     _playerSpriteData
 ;
-; if (playerWallCollision(&playerSpriteData)) // If the new location of the Player Sprite is colliding with a wall.
+; if (playerWallCollision(&playerSpriteData)) // If the player is now colliding with a wall.
 ;
 	lda     #<(_playerSpriteData)
 	ldx     #>(_playerSpriteData)
@@ -3581,7 +3587,7 @@ M0001:
 	tax
 	beq     L0006
 ;
-; playerSpriteData.X++; // Increment the X data to move it out of the wall.
+; playerSpriteData.X++; // Move the player to the right, so they're not in the wall anymore.
 ;
 	inc     _playerSpriteData
 ;
@@ -3592,11 +3598,11 @@ L0007:	lda     _pad1
 	and     #$01
 	beq     L0006
 ;
-; playerSpriteData.X++; // Increment the X data of the Player Sprite.
+; playerSpriteData.X++; // Move the player to the right.
 ;
 	inc     _playerSpriteData
 ;
-; if (playerWallCollision(&playerSpriteData)) // If the new location of the Player Sprite is colliding with a wall.
+; if (playerWallCollision(&playerSpriteData)) // If the player is now colliding with a wall.
 ;
 	lda     #<(_playerSpriteData)
 	ldx     #>(_playerSpriteData)
@@ -3604,7 +3610,7 @@ L0007:	lda     _pad1
 	tax
 	beq     L0006
 ;
-; playerSpriteData.X--; // Decrement the X data to move it out of the wall.
+; playerSpriteData.X--; // Move the player to the left, so they're not in the wall anymore.
 ;
 	dec     _playerSpriteData
 ;
@@ -3634,53 +3640,53 @@ L0006:	rts
 ;
 	jsr     pusha
 ;
-; if (pad1 & PAD_UP) // If up is pressed on the DPAD.
+; if(pad1 & PAD_UP) // If Up on the DPAD is pressed.
 ;
 	lda     _pad1
 	and     #$08
 	beq     L0019
 ;
-; newDirectionY = -1; // Set the aiming direction for Y to -1.
+; newDirectionY = -1; // Set the new Y aiming direction to -1, to signify up.
 ;
 	lda     #$FF
 ;
-; else if (pad1 & PAD_DOWN) // If down is pressed on the DPAD.
+; else if(pad1 & PAD_DOWN) // If Down on the DPAD is pressed.  
 ;
 	jmp     L001E
 L0019:	lda     _pad1
 	and     #$04
 	beq     L001A
 ;
-; newDirectionY = 1; // Set the aiming direction for Y to 1.
+; newDirectionY = 1; // Set the new Y aiming direction to 1, to signify down.
 ;
 	lda     #$01
 L001E:	ldy     #$00
 	sta     (sp),y
 ;
-; if (pad1 & PAD_LEFT) // If left is pressed on the DPAD.
+; if(pad1 & PAD_LEFT) // If Left on the DPAD is pressed.
 ;
 L001A:	lda     _pad1
 	and     #$02
 	beq     L001B
 ;
-; newDirectionX = -1; // Set the aiming direction for X to -1.
+; newDirectionX = -1; // Set the new X aiming direction to -1, to signify left.
 ;
 	lda     #$FF
 ;
-; else if (pad1 & PAD_RIGHT) // If right is pressed on the DPAD.
+; else if(pad1 & PAD_RIGHT) // If Right on the DPAD is pressed.
 ;
 	jmp     L001F
 L001B:	lda     _pad1
 	and     #$01
 	beq     L0007
 ;
-; newDirectionX = 1; // Set the aiming direction for X to 1.
+; newDirectionX = 1; // Set the new X aiming direction to 1, to signify right.
 ;
 	lda     #$01
 L001F:	ldy     #$01
 	sta     (sp),y
 ;
-; if (newDirectionX != 0 || newDirectionY != 0) // If the aiming has been changed. 
+; if(newDirectionX != 0 || newDirectionY != 0) // If the player has aimed somewhere.
 ;
 L0007:	ldy     #$01
 	lda     (sp),y
@@ -3689,19 +3695,19 @@ L0007:	ldy     #$01
 	lda     (sp),y
 	beq     L0008
 ;
-; aimDirectionX = newDirectionX; // Set the aiming direction X to the new direction.
+; aimDirectionX = newDirectionX; // Set the global X aiming direction to the new X aiming direction.
 ;
 	iny
 L0020:	lda     (sp),y
 	sta     _aimDirectionX
 ;
-; aimDirectionY = newDirectionY; // Set the aiming direction Y to the new direction.
+; aimDirectionY = newDirectionY; // Set the global Y aiming direction to the new Y aiming direction.
 ;
 	dey
 	lda     (sp),y
 	sta     _aimDirectionY
 ;
-; if (!orangeBulletActive && (pad1 & PAD_A))
+; if(!orangeBulletActive && (pad1 & PAD_A)) // If there is not a orange bullet, and A is pressed.
 ;
 L0008:	lda     _orangeBulletActive
 	bne     L000F
@@ -3709,11 +3715,11 @@ L0008:	lda     _orangeBulletActive
 	and     #$80
 	beq     L000F
 ;
-; spawnOrangeBullet();
+; spawnOrangeBullet(); // Spawn an orange bullet.
 ;
 	jsr     _spawnOrangeBullet
 ;
-; if (!blueBulletActive && (pad1 & PAD_B))
+; if(!blueBulletActive && (pad1 & PAD_B)) // If there is not a blue bullet, and B is pressed.
 ;
 L000F:	lda     _blueBulletActive
 	bne     L0013
@@ -3721,7 +3727,7 @@ L000F:	lda     _blueBulletActive
 	and     #$40
 	beq     L0013
 ;
-; spawnBlueBullet();
+; spawnBlueBullet(); // Spawn a blue bullet.
 ;
 	jsr     _spawnBlueBullet
 ;
@@ -3742,7 +3748,7 @@ L0013:	jmp     incsp2
 .segment	"CODE"
 
 ;
-; orangePortalCollision = check_collision(&playerSpriteData, &orangePortalSpriteData); // Checks if the player is colliding with the data for the first portal.
+; orangePortalCollision = check_collision(&playerSpriteData, &orangePortalSpriteData); // Checks if the player is colliding with the orange portal.
 ;
 	lda     #<(_playerSpriteData)
 	ldx     #>(_playerSpriteData)
@@ -3752,7 +3758,7 @@ L0013:	jmp     incsp2
 	jsr     _check_collision
 	sta     _orangePortalCollision
 ;
-; bluePortalCollision = check_collision(&playerSpriteData, &bluePortalSpriteData); // Checks if the player is colliding with the data for the second portal.
+; bluePortalCollision   = check_collision(&playerSpriteData, &bluePortalSpriteData);   // Checks if the player is colliding with the blue portal.
 ;
 	lda     #<(_playerSpriteData)
 	ldx     #>(_playerSpriteData)
@@ -3762,18 +3768,18 @@ L0013:	jmp     incsp2
 	jsr     _check_collision
 	sta     _bluePortalCollision
 ;
-; if (bluePortalActive == 0 || orangePortalActive == 0)
+; if(!bluePortalActive || !orangePortalActive) // If both portals aren't active, don't do anything.
 ;
 	lda     _bluePortalActive
-	beq     L0014
+	beq     L0003
 	lda     _orangePortalActive
 	bne     L0002
 ;
 ; return;
 ;
-L0014:	rts
+L0003:	rts
 ;
-; if (orangePortalCollision && lastPortalUsed != 1) // If the player is colliding with the first portal, and the previously used portal isn't the first one.
+; if(orangePortalCollision && lastPortalUsed != 1) // If the player is touching the orange portal, and hasn't just teleported into it. 
 ;
 L0002:	lda     _orangePortalCollision
 	beq     L0005
@@ -3781,62 +3787,197 @@ L0002:	lda     _orangePortalCollision
 	cmp     #$01
 	beq     L0005
 ;
-; playerSpriteData.X = bluePortalSpriteData.X; // Sets the player X data to the X location of the second portal.
+; playerSpriteData.X = bluePortalSpriteData.X; // Set the player X data to the blue portal X data.
 ;
 	lda     _bluePortalSpriteData
 	sta     _playerSpriteData
 ;
-; playerSpriteData.Y = bluePortalSpriteData.Y; // Sets the player Y data to the Y location of the second portal.
+; playerSpriteData.Y = bluePortalSpriteData.Y; // Set the player Y data to the blue portal Y data.
 ;
 	lda     _bluePortalSpriteData+1
 	sta     _playerSpriteData+1
 ;
-; lastPortalUsed = 2; // Sets the last used portal as the first portal, or arrived at portal two.
+; lastPortalUsed = 2;  // Set the last used portal to 2, meaning they have just arrived at the blue portal.
 ;
 	lda     #$02
+	sta     _lastPortalUsed
 ;
-; else if (bluePortalCollision && lastPortalUsed != 2) // If the player is colliding with the second portal, and the previously used portal isn't the second one.
+; if(playerWallCollision(&playerSpriteData)) // If the user is now stuck in a wall after teleporting.
 ;
-	jmp     L0013
-L0005:	lda     _bluePortalCollision
-	beq     L000A
-	lda     _lastPortalUsed
-	cmp     #$02
-	beq     L000A
-;
-; playerSpriteData.X = orangePortalSpriteData.X; // Sets the player X data to the X location of the first portal. 
-;
-	lda     _orangePortalSpriteData
-	sta     _playerSpriteData
-;
-; playerSpriteData.Y = orangePortalSpriteData.Y; // Sets the player Y data to the Y location of the first portal.
-;
-	lda     _orangePortalSpriteData+1
-	sta     _playerSpriteData+1
-;
-; lastPortalUsed = 1; // Sets the last used portal as the second portal, or arrived at portal one.
-;
-	lda     #$01
-;
-; else
-;
-	jmp     L0013
-;
-; if (!orangePortalCollision && !bluePortalCollision) // If the player is not touching any portals.
-;
-L000A:	lda     _orangePortalCollision
-	bne     L001B
-	lda     _bluePortalCollision
-	beq     L0013
-L001B:	rts
-;
-; lastPortalUsed = 0; // Sets the last used portal as 0, also means the player can now use any portal.
-;
-L0013:	sta     _lastPortalUsed
+	lda     #<(_playerSpriteData)
+	ldx     #>(_playerSpriteData)
+	jsr     _playerWallCollision
+	tax
+	bne     L0032
 ;
 ; }
 ;
 	rts
+;
+; switch(bluePortalOrientation) // Change based on what orientation the portal was shot from.
+;
+L0032:	lda     _bluePortalOrientation
+;
+; }
+;
+	beq     L0024
+	cmp     #$01
+	beq     L0025
+	cmp     #$02
+	beq     L0026
+	cmp     #$03
+	beq     L0027
+	rts
+;
+; playerSpriteData.Y += 8; // Move the player down.
+;
+L0024:	lda     #$08
+	clc
+	adc     _playerSpriteData+1
+	sta     _playerSpriteData+1
+;
+; break;
+;
+	rts
+;
+; playerSpriteData.X -= 8; // Move the player left.
+;
+L0025:	lda     _playerSpriteData
+	sec
+	sbc     #$08
+	sta     _playerSpriteData
+;
+; break;
+;
+	rts
+;
+; playerSpriteData.Y -= 8; // Move the player up.
+;
+L0026:	lda     _playerSpriteData+1
+	sec
+	sbc     #$08
+	sta     _playerSpriteData+1
+;
+; break;
+;
+	rts
+;
+; playerSpriteData.X += 8; // Move the player right.
+;
+L0027:	lda     #$08
+	clc
+	adc     _playerSpriteData
+	sta     _playerSpriteData
+;
+; break;
+;
+	rts
+;
+; else if(bluePortalCollision && lastPortalUsed != 2) // If the player is touching the blue portal, and hasn't just teleported into it.
+;
+L0005:	lda     _bluePortalCollision
+	beq     L0011
+	lda     _lastPortalUsed
+	cmp     #$02
+	beq     L0011
+;
+; playerSpriteData.X = orangePortalSpriteData.X; // Sets the player X data to the orange X data.
+;
+	lda     _orangePortalSpriteData
+	sta     _playerSpriteData
+;
+; playerSpriteData.Y = orangePortalSpriteData.Y; // Sets the player Y data to the orange Y data.
+;
+	lda     _orangePortalSpriteData+1
+	sta     _playerSpriteData+1
+;
+; lastPortalUsed = 1;  // Sets the last portal used to 1, meaning they have just arrived at the orange portal.
+;
+	lda     #$01
+	sta     _lastPortalUsed
+;
+; if(playerWallCollision(&playerSpriteData)) // If the user is now stuck in a wall after teleporting.
+;
+	lda     #<(_playerSpriteData)
+	ldx     #>(_playerSpriteData)
+	jsr     _playerWallCollision
+	tax
+	beq     L001D
+;
+; switch(orangePortalOrientation) // Change based on what orientation the portal was shot from.
+;
+	lda     _orangePortalOrientation
+;
+; }
+;
+	beq     L002B
+	cmp     #$01
+	beq     L002C
+	cmp     #$02
+	beq     L002D
+	cmp     #$03
+	beq     L002E
+	rts
+;
+; playerSpriteData.Y += 8; // Move the player down.
+;
+L002B:	lda     #$08
+	clc
+	adc     _playerSpriteData+1
+	sta     _playerSpriteData+1
+;
+; break;
+;
+	rts
+;
+; playerSpriteData.X -= 8; // Move the player left.
+;
+L002C:	lda     _playerSpriteData
+	sec
+	sbc     #$08
+	sta     _playerSpriteData
+;
+; break;
+;
+	rts
+;
+; playerSpriteData.Y -= 8; // Move the player up.
+;
+L002D:	lda     _playerSpriteData+1
+	sec
+	sbc     #$08
+	sta     _playerSpriteData+1
+;
+; break;
+;
+	rts
+;
+; playerSpriteData.X += 8; // Move the player right.
+;
+L002E:	lda     #$08
+	clc
+	adc     _playerSpriteData
+	sta     _playerSpriteData
+;
+; break;
+;
+	rts
+;
+; if(!orangePortalCollision && !bluePortalCollision) // If the player is not touching any portal.
+;
+L0011:	lda     _orangePortalCollision
+	bne     L002F
+	lda     _bluePortalCollision
+	beq     L0031
+L002F:	rts
+;
+; lastPortalUsed = 0; // Set the last portal used to 0, meaning the player can now use any portal.
+;
+L0031:	sta     _lastPortalUsed
+;
+; }
+;
+L001D:	rts
 
 .endproc
 
@@ -3855,7 +3996,7 @@ L0013:	sta     _lastPortalUsed
 ;
 	jsr     pusha
 ;
-; if (x >= 32 || y >= 30) // Checks if the player is out of the screen area somehow.
+; if(x >= 32 || y >= 30) // Checks if the tile is out of the screen area
 ;
 	ldy     #$01
 	lda     (sp),y
@@ -3868,13 +4009,13 @@ L0013:	sta     _lastPortalUsed
 	ldx     #$00
 	jmp     L000A
 ;
-; return 1; // Returns a 1 to represent collision.
+; return 1; // Return a 1 to say the player is hitting a wall.
 ;
 L0009:	ldx     #$00
 	lda     #$01
 	jmp     incsp2
 ;
-; switch (currentLevel)
+; switch(currentLevel) // Changes based on the current level.
 ;
 L000A:	lda     _currentLevel
 ;
@@ -3882,7 +4023,7 @@ L000A:	lda     _currentLevel
 ;
 	bne     L0006
 ;
-; return levelOneCollision[y * 32 + x];
+; return levelOneCollision[y * 32 + x]; // Returns the value for the tile at X and Y of the collision table.
 ;
 	lda     (sp),y
 	jsr     shlax4
@@ -3927,7 +4068,7 @@ L0006:	jmp     incsp2
 ;
 	jsr     pushax
 ;
-; unsigned char leftTile   = spr->X >> 3; // Converts the pixel location of the left side of the player into a tile location, which makes overlapping easier to detect.
+; unsigned char leftTile   = spr->X >> 3; // Gets the tile left of the player.
 ;
 	ldy     #$01
 	lda     (sp),y
@@ -3941,7 +4082,7 @@ L0006:	jmp     incsp2
 	lsr     a
 	jsr     pusha
 ;
-; unsigned char rightTile  = (spr->X + spr->width) >> 3; // Converts the pixel location of right side of the player into a tile location, which makes overlapping easier to detect.
+; unsigned char rightTile  = (spr->X + spr->width) >> 3; // Gets the tile to the right of the player.
 ;
 	ldy     #$02
 	lda     (sp),y
@@ -3967,7 +4108,7 @@ L0006:	jmp     incsp2
 	lsr     a
 	jsr     pusha
 ;
-; unsigned char topTile    = spr->Y >> 3; // Converts the pixel location of the top half of the player into a tile location, which makes overlapping easier to detect.
+; unsigned char topTile    = spr->Y >> 3; // Gets the tile above the player.
 ;
 	ldy     #$03
 	lda     (sp),y
@@ -3982,7 +4123,7 @@ L0006:	jmp     incsp2
 	lsr     a
 	jsr     pusha
 ;
-; unsigned char bottomTile = (spr->Y + spr->height) >> 3; // Converts the pixel location of the bottom half of the player into a tile location, which makes overlapping easier to detect.
+; unsigned char bottomTile = (spr->Y + spr->height) >> 3; // Gets the tile below the player.
 ;
 	ldy     #$04
 	lda     (sp),y
@@ -4008,7 +4149,7 @@ L0006:	jmp     incsp2
 	lsr     a
 	jsr     pusha
 ;
-; if (wallDetection(leftTile, topTile)  || wallDetection(rightTile, topTile) || wallDetection(leftTile, bottomTile) || wallDetection(rightTile, bottomTile)) // This checks if any of the tiles are a wall.
+; if(wallDetection(leftTile, topTile) || wallDetection(rightTile, topTile) || wallDetection(leftTile, bottomTile) || wallDetection(rightTile, bottomTile)) // If any of the tiles are a wall.
 ;
 	ldy     #$03
 	lda     (sp),y
@@ -4043,7 +4184,7 @@ L0006:	jmp     incsp2
 	tax
 	beq     L0005
 ;
-; return 1; // Returns a 1 to represent collision.
+; return 1; // Return a 1, meaning thats a wall.
 ;
 L0003:	ldx     #$00
 	lda     #$01
@@ -4065,32 +4206,32 @@ L0005:	jmp     incsp6
 .segment	"CODE"
 
 ;
-; orangeBulletSpriteData.X = playerSpriteData.X; // Sets the orange bullet X data to the Players X data.
+; orangeBulletSpriteData.X = playerSpriteData.X; // Sets the orange bullet X data to the player's X data.
 ;
 	lda     _playerSpriteData
 	sta     _orangeBulletSpriteData
 ;
-; orangeBulletSpriteData.Y = playerSpriteData.Y; // Sets the orange bullet Y data to the Players Y data.
+; orangeBulletSpriteData.Y = playerSpriteData.Y; // Sets the orange bullet Y data to the player's Y data.
 ;
 	lda     _playerSpriteData+1
 	sta     _orangeBulletSpriteData+1
 ;
-; orangeBulletActive = 1; // Sets the bullet active to 1, to indicate it is a orange bullet.
+; orangeBulletActive = 1; // Sets that the orange bullet is now active.
 ;
 	lda     #$01
 	sta     _orangeBulletActive
 ;
-; orangeBulletDirectionX = aimDirectionX; // Takes the X bullet direction from the X aiming direction.
+; orangeBulletDirectionX = aimDirectionX; // Sets the orange bullets X direction to the X direction the player was aiming.
 ;
 	lda     _aimDirectionX
 	sta     _orangeBulletDirectionX
 ;
-; orangeBulletDirectionY = aimDirectionY; // Takes the Y bullet direction from the Y aiming direction.
+; orangeBulletDirectionY = aimDirectionY; // Sets the orange bullets Y direction to the Y direction the player was aiming.
 ;
 	lda     _aimDirectionY
 	sta     _orangeBulletDirectionY
 ;
-; if (orangeBulletDirectionX == 0 && orangeBulletDirectionY == 0) // If the user hasn't pressed any aiming buttons.
+; if(orangeBulletDirectionX == 0 && orangeBulletDirectionY == 0) // If the player didn't touch the DPAD to provide any aiming.
 ;
 	lda     _orangeBulletDirectionX
 	bne     L0006
@@ -4098,7 +4239,7 @@ L0005:	jmp     incsp6
 	beq     L0008
 L0006:	rts
 ;
-; orangeBulletDirectionY = -1; // Default to shooting up.
+; orangeBulletDirectionY = -1; // Default to aiming up.
 ;
 L0008:	lda     #$FF
 	sta     _orangeBulletDirectionY
@@ -4120,32 +4261,32 @@ L0008:	lda     #$FF
 .segment	"CODE"
 
 ;
-; blueBulletSpriteData.X = playerSpriteData.X; // Sets the blue bullet X data to the Players X data.
+; blueBulletSpriteData.X = playerSpriteData.X; // Sets the blue bullet X data to the player's X data.
 ;
 	lda     _playerSpriteData
 	sta     _blueBulletSpriteData
 ;
-; blueBulletSpriteData.Y = playerSpriteData.Y; // Sets the blue bullet Y data to the Players Y data.
+; blueBulletSpriteData.Y = playerSpriteData.Y; // Sets the blue bullet Y data to the player's Y data.
 ;
 	lda     _playerSpriteData+1
 	sta     _blueBulletSpriteData+1
 ;
-; blueBulletActive = 1; // Sets the bullet active to 2, to indicate it's a blue bullet.
+; blueBulletActive = 1; // Sets that the blue bullet is now active.
 ;
 	lda     #$01
 	sta     _blueBulletActive
 ;
-; blueBulletDirectionX = aimDirectionX; // Takes the X bullet direction from the X aiming direction.
+; blueBulletDirectionX = aimDirectionX; // Sets the blue bullets X direction to the X direction the player was aiming.
 ;
 	lda     _aimDirectionX
 	sta     _blueBulletDirectionX
 ;
-; blueBulletDirectionY = aimDirectionY; // Takes the Y bullet direction from the Y aiming direction.
+; blueBulletDirectionY = aimDirectionY; // Sets the blue bullets Y direction to the Y direction the player was aiming.
 ;
 	lda     _aimDirectionY
 	sta     _blueBulletDirectionY
 ;
-; if (blueBulletDirectionX == 0 && blueBulletDirectionY == 0) // If the user hasn't pressed any aiming buttons.
+; if(blueBulletDirectionX == 0 && blueBulletDirectionY == 0)  // If the player didn't touch the DPAD to provide any aiming.
 ;
 	lda     _blueBulletDirectionX
 	bne     L0006
@@ -4153,7 +4294,7 @@ L0008:	lda     #$FF
 	beq     L0008
 L0006:	rts
 ;
-; blueBulletDirectionY = -1; // Default to shooting up.
+; blueBulletDirectionY = -1; // Default to aiming up.
 ;
 L0008:	lda     #$FF
 	sta     _blueBulletDirectionY
@@ -4175,27 +4316,27 @@ L0008:	lda     #$FF
 .segment	"CODE"
 
 ;
-; if (orangeBulletActive)
+; if(orangeBulletActive) // If the orange bullet is active.
 ;
-	jsr     decsp2
+	jsr     decsp3
 	lda     _orangeBulletActive
-	jeq     L001A
+	jeq     L0018
 ;
-; orangeBulletSpriteData.X += orangeBulletDirectionX;
+; orangeBulletSpriteData.X += orangeBulletDirectionX; // Moves the orange bullet in the X direction that the player was aiming when it was shot.
 ;
 	lda     _orangeBulletDirectionX
 	clc
 	adc     _orangeBulletSpriteData
 	sta     _orangeBulletSpriteData
 ;
-; orangeBulletSpriteData.Y += orangeBulletDirectionY;
+; orangeBulletSpriteData.Y += orangeBulletDirectionY; // Moves the orange bullet in the Y direction that the player was aiming when it was shot.
 ;
 	lda     _orangeBulletDirectionY
 	clc
 	adc     _orangeBulletSpriteData+1
 	sta     _orangeBulletSpriteData+1
 ;
-; tileX = (orangeBulletSpriteData.X + 4) >> 3;
+; tileX = (orangeBulletSpriteData.X + 4) >> 3; // Sets the X tile value to the tile the bullet collided with.
 ;
 	ldx     #$00
 	lda     _orangeBulletSpriteData
@@ -4204,10 +4345,10 @@ L0008:	lda     #$FF
 	bcc     L0005
 	inx
 L0005:	jsr     asrax3
-	ldy     #$01
+	ldy     #$02
 	sta     (sp),y
 ;
-; tileY = (orangeBulletSpriteData.Y + 4) >> 3;
+; tileY = (orangeBulletSpriteData.Y + 4) >> 3; // Sets the Y tile value to the tile the bullet collided with.
 ;
 	ldx     #$00
 	lda     _orangeBulletSpriteData+1
@@ -4219,104 +4360,119 @@ L0006:	jsr     asrax3
 	dey
 	sta     (sp),y
 ;
-; if (getCollisionValue(tileX, tileY) == 2)
+; collision = getCollisionValue(tileX, tileY); // Gets the collision value for that tile, from the collision map.
 ;
 	iny
 	lda     (sp),y
 	jsr     pusha
-	ldy     #$01
+	ldy     #$02
 	lda     (sp),y
 	jsr     _getCollisionValue
-	cmp     #$02
-	jne     L0007
+	ldy     #$00
+	sta     (sp),y
 ;
-; if (orangeBulletDirectionX > 0 && tileX > 0) 
+; if(collision == 2) // If the tile has a collision value of 2, meaning it can hold a portal.
+;
+	cmp     #$02
+	jne     L003F
+;
+; if(orangeBulletDirectionX > 0) // If the orange bullet was shot to the right.
 ;
 	lda     _orangeBulletDirectionX
 	sec
 	sbc     #$01
 	bvs     L000A
 	eor     #$80
-L000A:	bpl     L003D
-	ldy     #$01
-	lda     (sp),y
-	beq     L003D
+L000A:	bpl     L003A
 ;
-; tileX--;
+; orangePortalOrientation = 1; // Set the portal orientaion to right, so the player gets spit out to the left
 ;
+	lda     #$01
+;
+; else if(orangeBulletDirectionX < 0) // If the orange bullet was shot to the left.  
+;
+	jmp     L0030
+L003A:	lda     _orangeBulletDirectionX
+	asl     a
+	bcc     L003B
+;
+; orangePortalOrientation = 3; // Set the portal orientaion to left, so the player gets spit out to the right.
+;
+	lda     #$03
+;
+; else if(orangeBulletDirectionY > 0) // If the orange bullet was shot down.
+;
+	jmp     L0030
+L003B:	lda     _orangeBulletDirectionY
 	sec
 	sbc     #$01
-	sta     (sp),y
-;
-; if (orangeBulletDirectionY > 0 && tileY > 0)
-;
-L003D:	lda     _orangeBulletDirectionY
-	sec
-	sbc     #$01
-	bvs     L0010
+	bvs     L0011
 	eor     #$80
-L0010:	bpl     L000E
-	ldy     #$00
-	lda     (sp),y
-	beq     L000E
+L0011:	asl     a
+	tya
+	bcc     L0030
 ;
-; tileY--;
+; orangePortalOrientation = 2; // Set the portal orientaion to down, so the player gets spit out up.
 ;
-	sec
-	sbc     #$01
-	sta     (sp),y
+	lda     #$02
 ;
-; if (bluePortalActive)
+; orangePortalOrientation = 0; // Set the portal orientaion to up, so the player gets spit out down.
 ;
-L000E:	lda     _bluePortalActive
-	beq     L0014
+L0030:	sta     _orangePortalOrientation
 ;
-; unsigned char bluePortalTileX = bluePortalSpriteData.X >> 3;
+; if(orangePortalOrientation == 1) // If the portal was shot to the right.
 ;
-	lda     _bluePortalSpriteData
-	lsr     a
-	lsr     a
-	lsr     a
-	jsr     pusha
+	cmp     #$01
+	bne     L003D
 ;
-; unsigned char bluePortalTileY = bluePortalSpriteData.Y >> 3;
+; orangePortalSpriteData.X = (tileX << 3) + (8 - PORTAL_WIDTH); // Shift the portal to the left, so it's not stuck fully in the wall and can be entered.
 ;
-	lda     _bluePortalSpriteData+1
-	lsr     a
-	lsr     a
-	lsr     a
-	jsr     pusha
-;
-; if (bluePortalTileX == tileX && bluePortalTileY == tileY)
-;
-	ldy     #$01
-	lda     (sp),y
-	ldy     #$03
-	cmp     (sp),y
-	bne     L0015
-	ldy     #$00
-	lda     (sp),y
 	ldy     #$02
-	cmp     (sp),y
+	ldx     #$00
+	lda     (sp),y
+	jsr     aslax3
+	clc
+	adc     #$F8
+	sta     _orangePortalSpriteData
+	txa
+	adc     #$FF
+;
+; else if(orangePortalOrientation == 2) // If the portal was shot down.
+;
+	jmp     L0054
+L003D:	lda     _orangePortalOrientation
+	cmp     #$02
 	bne     L0015
 ;
-; orangeBulletActive = 0;
+; orangePortalSpriteData.X = tileX << 3; // Shift the portal up.
 ;
-	lda     #$00
-	sta     _orangeBulletActive
+	tay
+	lda     (sp),y
+	asl     a
+	asl     a
+	asl     a
+	sta     _orangePortalSpriteData
 ;
-; return;
+; orangePortalSpriteData.Y = (tileY << 3) + (8 - PORTAL_HEIGHT);
 ;
-	jsr     incsp2
-	jmp     incsp2
+	dey
+	ldx     #$00
+	lda     (sp),y
+	jsr     aslax3
+	clc
+	adc     #$F8
+	pha
+	txa
+	adc     #$FF
+	pla
 ;
-; }
+; else // If the portal was shot left or up, just place the portal normally.
 ;
-L0015:	jsr     incsp2
+	jmp     L0031
 ;
 ; orangePortalSpriteData.X = tileX << 3;
 ;
-L0014:	ldy     #$01
+L0015:	ldy     #$02
 	lda     (sp),y
 	asl     a
 	asl     a
@@ -4325,176 +4481,185 @@ L0014:	ldy     #$01
 ;
 ; orangePortalSpriteData.Y = tileY << 3;
 ;
-	dey
+L0054:	dey
 	lda     (sp),y
 	asl     a
 	asl     a
 	asl     a
-	sta     _orangePortalSpriteData+1
+L0031:	sta     _orangePortalSpriteData+1
 ;
-; orangePortalActive = 1;
+; orangePortalActive = 1; // Set the orange portal as active.
 ;
-	lda     #$01
-	sta     _orangePortalActive
+	sty     _orangePortalActive
 ;
-; else if (getCollisionValue(tileX, tileY) == 1)
+; else if(collision == 1) // If the bullet hits a normal wall.
 ;
-	jmp     L0050
-L0007:	ldy     #$01
-	lda     (sp),y
-	jsr     pusha
-	ldy     #$01
-	lda     (sp),y
-	jsr     _getCollisionValue
+	jmp     L004B
+L003F:	lda     (sp),y
 	cmp     #$01
-	bne     L001A
+	bne     L0018
 ;
-; orangeBulletActive = 0;
+; orangeBulletActive = 0; // Set the orange bullet as not active, so it stops getting drawn.
 ;
-L0050:	lda     #$00
+L004B:	lda     #$00
 	sta     _orangeBulletActive
 ;
-; if (blueBulletActive)
+; if(blueBulletActive) // If the blue bullet is active.
 ;
-L001A:	lda     _blueBulletActive
-	jeq     L0033
+L0018:	lda     _blueBulletActive
+	jeq     L002F
 ;
-; blueBulletSpriteData.X += blueBulletDirectionX;
+; blueBulletSpriteData.X += blueBulletDirectionX; // Move the bullet in the X direction the player was aiming when it was shot.
 ;
 	lda     _blueBulletDirectionX
 	clc
 	adc     _blueBulletSpriteData
 	sta     _blueBulletSpriteData
 ;
-; blueBulletSpriteData.Y += blueBulletDirectionY;
+; blueBulletSpriteData.Y += blueBulletDirectionY; // Move the bullet in the Y direction the player was aiming when it was shot.
 ;
 	lda     _blueBulletDirectionY
 	clc
 	adc     _blueBulletSpriteData+1
 	sta     _blueBulletSpriteData+1
 ;
-; tileX = (blueBulletSpriteData.X + 4) >> 3;
+; tileX = (blueBulletSpriteData.X + 4) >> 3; // Sets the X tile value to the tile the bullet collided with.
 ;
 	ldx     #$00
 	lda     _blueBulletSpriteData
 	clc
 	adc     #$04
-	bcc     L001E
+	bcc     L001C
 	inx
-L001E:	jsr     asrax3
-	ldy     #$01
+L001C:	jsr     asrax3
+	ldy     #$02
 	sta     (sp),y
 ;
-; tileY = (blueBulletSpriteData.Y + 4) >> 3;
+; tileY = (blueBulletSpriteData.Y + 4) >> 3; // Sets the Y tile value to the tile the bullet collided with.
 ;
 	ldx     #$00
 	lda     _blueBulletSpriteData+1
 	clc
 	adc     #$04
-	bcc     L001F
+	bcc     L001D
 	inx
-L001F:	jsr     asrax3
+L001D:	jsr     asrax3
 	dey
 	sta     (sp),y
 ;
-; if (getCollisionValue(tileX, tileY) == 2)
+; collision = getCollisionValue(tileX, tileY); // Sets the collision value to the value of the tile in the collision map.
 ;
 	iny
 	lda     (sp),y
 	jsr     pusha
-	ldy     #$01
+	ldy     #$02
 	lda     (sp),y
 	jsr     _getCollisionValue
-	cmp     #$02
-	jne     L0020
+	ldy     #$00
+	sta     (sp),y
 ;
-; if (blueBulletDirectionX > 0 && tileX > 0) 
+; if(collision == 2) // If the tile has a collision of 2, meaning it can hold a portal.
+;
+	cmp     #$02
+	jne     L0049
+;
+; if (blueBulletDirectionX > 0) // If the bullet was shot to the right.
 ;
 	lda     _blueBulletDirectionX
 	sec
 	sbc     #$01
-	bvs     L0023
+	bvs     L0021
 	eor     #$80
-L0023:	bpl     L004A
-	ldy     #$01
-	lda     (sp),y
-	beq     L004A
+L0021:	bpl     L0044
 ;
-; tileX--;
+; bluePortalOrientation = 1; // Set the portal orientation to the right, so the player gets spit out to the left.
 ;
+	lda     #$01
+;
+; else if (blueBulletDirectionX < 0) // If the bullet was shot to the left.
+;
+	jmp     L0033
+L0044:	lda     _blueBulletDirectionX
+	asl     a
+	bcc     L0045
+;
+; bluePortalOrientation = 3; // Set the portal orientation to the left, so the player gets spit out to the right.
+;
+	lda     #$03
+;
+; else if (blueBulletDirectionY > 0) // If the bullet was shot down.
+;
+	jmp     L0033
+L0045:	lda     _blueBulletDirectionY
 	sec
 	sbc     #$01
-	sta     (sp),y
-;
-; if (blueBulletDirectionY > 0 && tileY > 0)
-;
-L004A:	lda     _blueBulletDirectionY
-	sec
-	sbc     #$01
-	bvs     L0029
+	bvs     L0028
 	eor     #$80
-L0029:	bpl     L0027
-	ldy     #$00
-	lda     (sp),y
-	beq     L0027
+L0028:	asl     a
+	tya
+	bcc     L0033
 ;
-; tileY--;
+; bluePortalOrientation = 2; // Set the portal orientation to down, so the player gets spit out up.
 ;
-	sec
-	sbc     #$01
-	sta     (sp),y
+	lda     #$02
 ;
-; if (orangePortalActive)
+; bluePortalOrientation = 0; // Set the portal orientation to up, so the player gets spit out down.
 ;
-L0027:	lda     _orangePortalActive
-	beq     L002D
+L0033:	sta     _bluePortalOrientation
 ;
-; unsigned char orangePortalTileX = orangePortalSpriteData.X >> 3;
+; if (bluePortalOrientation == 1) // If the portal was shot to the right.
 ;
-	lda     _orangePortalSpriteData
-	lsr     a
-	lsr     a
-	lsr     a
-	jsr     pusha
+	cmp     #$01
+	bne     L0047
 ;
-; unsigned char orangePortalTileY = orangePortalSpriteData.Y >> 3;
+; bluePortalSpriteData.X = (tileX << 3) + (8 - PORTAL_WIDTH); // Shift the portal to the left, so it's not stuck fully in the wall and can be entered.
 ;
-	lda     _orangePortalSpriteData+1
-	lsr     a
-	lsr     a
-	lsr     a
-	jsr     pusha
-;
-; if (orangePortalTileX == tileX && orangePortalTileY == tileY)
-;
-	ldy     #$01
-	lda     (sp),y
-	ldy     #$03
-	cmp     (sp),y
-	bne     L002E
-	ldy     #$00
-	lda     (sp),y
 	ldy     #$02
-	cmp     (sp),y
-	bne     L002E
+	ldx     #$00
+	lda     (sp),y
+	jsr     aslax3
+	clc
+	adc     #$F8
+	sta     _bluePortalSpriteData
+	txa
+	adc     #$FF
 ;
-; blueBulletActive = 0;
+; else if (bluePortalOrientation == 2) // If the portal was shot down.
 ;
-	lda     #$00
-	sta     _blueBulletActive
+	jmp     L0055
+L0047:	lda     _bluePortalOrientation
+	cmp     #$02
+	bne     L002C
 ;
-; return;
+; bluePortalSpriteData.X = tileX << 3; // Shift the portal up.
 ;
-	jsr     incsp2
-	jmp     incsp2
+	tay
+	lda     (sp),y
+	asl     a
+	asl     a
+	asl     a
+	sta     _bluePortalSpriteData
 ;
-; }
+; bluePortalSpriteData.Y = (tileY << 3) + (8 - PORTAL_HEIGHT);
 ;
-L002E:	jsr     incsp2
+	dey
+	ldx     #$00
+	lda     (sp),y
+	jsr     aslax3
+	clc
+	adc     #$F8
+	pha
+	txa
+	adc     #$FF
+	pla
+;
+; else // If the portal was shot left or up, just place the portal normally.
+;
+	jmp     L0034
 ;
 ; bluePortalSpriteData.X = tileX << 3;
 ;
-L002D:	ldy     #$01
+L002C:	ldy     #$02
 	lda     (sp),y
 	asl     a
 	asl     a
@@ -4503,38 +4668,32 @@ L002D:	ldy     #$01
 ;
 ; bluePortalSpriteData.Y = tileY << 3;
 ;
-	dey
+L0055:	dey
 	lda     (sp),y
 	asl     a
 	asl     a
 	asl     a
-	sta     _bluePortalSpriteData+1
+L0034:	sta     _bluePortalSpriteData+1
 ;
-; bluePortalActive = 1;
+; bluePortalActive = 1; // Set the blue portal to active.
 ;
-	lda     #$01
-	sta     _bluePortalActive
+	sty     _bluePortalActive
 ;
-; else if (getCollisionValue(tileX, tileY) == 1)
+; else if (collision == 1) // If the bullet hits a wall that can't hold a portal.
 ;
-	jmp     L0051
-L0020:	ldy     #$01
-	lda     (sp),y
-	jsr     pusha
-	ldy     #$01
-	lda     (sp),y
-	jsr     _getCollisionValue
+	jmp     L004D
+L0049:	lda     (sp),y
 	cmp     #$01
-	bne     L0033
+	bne     L002F
 ;
-; blueBulletActive = 0;
+; blueBulletActive = 0;// Set the blue bullet to not active so it can be shot again.
 ;
-L0051:	lda     #$00
+L004D:	lda     #$00
 	sta     _blueBulletActive
 ;
 ; }
 ;
-L0033:	jmp     incsp2
+L002F:	jmp     incsp3
 
 .endproc
 
@@ -4602,7 +4761,7 @@ L0003:	rts
 .segment	"CODE"
 
 ;
-; unsigned char footY = (playerSpriteData.Y + playerSpriteData.height + 1) >> 3;
+; unsigned char footY     = (playerSpriteData.Y + playerSpriteData.height + 1) >> 3; // Gets the tile directly below the sprite.
 ;
 	ldx     #$00
 	lda     _playerSpriteData+1
@@ -4617,7 +4776,7 @@ L0008:	adc     #$01
 L0002:	jsr     asrax3
 	jsr     pusha
 ;
-; unsigned char footXLeft = playerSpriteData.X >> 3;
+; unsigned char footXLeft = playerSpriteData.X >> 3; // Gets the tile that the "left foot", AKA, the left half of the sprite is touching.
 ;
 	lda     _playerSpriteData
 	lsr     a
@@ -4625,7 +4784,7 @@ L0002:	jsr     asrax3
 	lsr     a
 	jsr     pusha
 ;
-; unsigned char footXRight = (playerSpriteData.X + playerSpriteData.width) >> 3;
+; unsigned char footXRight= (playerSpriteData.X + playerSpriteData.width) >> 3; // Gets the tile that the "right foot", AKA the left half of the player sprite is touching.
 ;
 	ldx     #$00
 	lda     _playerSpriteData
@@ -4636,7 +4795,7 @@ L0002:	jsr     asrax3
 L0007:	jsr     asrax3
 	jsr     pusha
 ;
-; if (wallDetection(footXLeft, footY) || wallDetection(footXRight, footY))
+; if(wallDetection(footXLeft, footY) || wallDetection(footXRight, footY)) // If either "foot" is touching a wall tile, or there's a wall tile directly below the player.
 ;
 	ldy     #$01
 	lda     (sp),y
@@ -4654,7 +4813,7 @@ L0007:	jsr     asrax3
 	tax
 	beq     L0001
 ;
-; return 1;
+; return 1; // Return a 1, to show that they're on the floor.
 ;
 L0004:	ldx     #$00
 	lda     #$01
@@ -4676,17 +4835,17 @@ L0001:	jmp     incsp3
 .segment	"CODE"
 
 ;
-; if (!onGround()) // If the player is not touching the ground.
+; if(!onGround()) // If the player is not on the ground
 ;
 	jsr     _onGround
 	tax
 	bne     L0002
 ;
-; playerVelocity += GRAVITY; // Add gravity to the players velocity.
+; playerVelocity += GRAVITY; // Add the gravity value to the player velocity.
 ;
 	inc     _playerVelocity
 ;
-; if (playerVelocity > MAX_FALL_SPEED) // If the players max velocity is more than the max fall speed.
+; if (playerVelocity > MAX_FALL_SPEED) // If the player has more velocity than the max fall speed.
 ;
 	lda     _playerVelocity
 	sec
@@ -4695,15 +4854,15 @@ L0001:	jmp     incsp3
 	eor     #$80
 L0006:	bpl     L0010
 ;
-; playerVelocity = MAX_FALL_SPEED; // Sets the velocity to the max fall speed.
+; playerVelocity = MAX_FALL_SPEED; // Set the velocity to the max fall speed.
 ;
 	lda     #$04
 ;
-; else // If the player is touching the ground.
+; else  // If the player is on the floor.
 ;
 	jmp     L000E
 ;
-; if (playerVelocity > 0) // If the player still has velocity.
+; if (playerVelocity > 0) // Check if the player has an remaining velocity, 
 ;
 L0002:	lda     _playerVelocity
 	sec
@@ -4717,18 +4876,18 @@ L000A:	bpl     L0010
 	lda     #$00
 L000E:	sta     _playerVelocity
 ;
-; if (playerVelocity != 0) // If the player has any velocity.
+; if(playerVelocity != 0) // If the player has velocity, and is falling. 
 ;
 L0010:	lda     _playerVelocity
 	beq     L0013
 ;
-; playerSpriteData.Y += playerVelocity; // Move the player down the screen at the speed of the velocity.
+; playerSpriteData.Y += playerVelocity; // Move the player down.
 ;
 	clc
 	adc     _playerSpriteData+1
 	sta     _playerSpriteData+1
 ;
-; playerVelocity = 0;
+; playerVelocity = 0; 
 ;
 	lda     #$00
 L0013:	sta     _playerVelocity
@@ -4750,7 +4909,7 @@ L0013:	sta     _playerVelocity
 .segment	"CODE"
 
 ;
-; if (mode == 0) // If the player is in move mode.
+; if(mode == 0) // If the player is in move mode.
 ;
 	lda     _mode
 	bne     L0034
@@ -4761,7 +4920,7 @@ L0013:	sta     _playerVelocity
 	ldx     #>(_playerSprite)
 	rts
 ;
-; if (aimDirectionX == 0 && aimDirectionY == -1) // If the player is aiming up.
+; if(aimDirectionX == 0 && aimDirectionY == -1) 
 ;
 L0034:	lda     _aimDirectionX
 	bne     L0035
@@ -4769,7 +4928,7 @@ L0034:	lda     _aimDirectionX
 	cmp     #$FF
 	jeq     L002D
 ;
-; if (aimDirectionX == 0 && aimDirectionY == 1) // If the player is aiming down.
+; if(aimDirectionX == 0 && aimDirectionY == 1) 
 ;
 L0035:	lda     _aimDirectionX
 	bne     L0036
@@ -4777,13 +4936,13 @@ L0035:	lda     _aimDirectionX
 	cmp     #$01
 	bne     L0036
 ;
-; return playerShootDownSprite; // Return the player aiming down sprite.
+; return playerShootDownSprite;
 ;
 	lda     #<(_playerShootDownSprite)
 	ldx     #>(_playerShootDownSprite)
 	rts
 ;
-; if (aimDirectionX == -1 && aimDirectionY == 0) // If the player is aiming left.
+; if(aimDirectionX == -1 && aimDirectionY == 0) 
 ;
 L0036:	lda     _aimDirectionX
 	cmp     #$FF
@@ -4791,13 +4950,13 @@ L0036:	lda     _aimDirectionX
 	lda     _aimDirectionY
 	bne     L0037
 ;
-; return playerShootLeftSprite; // Return the player aiming left sprite.
+; return playerShootLeftSprite;
 ;
 	lda     #<(_playerShootLeftSprite)
 	ldx     #>(_playerShootLeftSprite)
 	rts
 ;
-; if (aimDirectionX == 1 && aimDirectionY == 0) // If the player is aiming right.
+; if(aimDirectionX == 1 && aimDirectionY == 0) 
 ;
 L0037:	lda     _aimDirectionX
 	cmp     #$01
@@ -4805,13 +4964,13 @@ L0037:	lda     _aimDirectionX
 	lda     _aimDirectionY
 	bne     L0038
 ;
-; return playerShootRightSprite; // Return the player aiming right sprite.
+; return playerShootRightSprite;
 ;
 	lda     #<(_playerShootRightSprite)
 	ldx     #>(_playerShootRightSprite)
 	rts
 ;
-; if (aimDirectionX == -1 && aimDirectionY == -1) // If the player is aiming up and left.
+; if(aimDirectionX == -1 && aimDirectionY == -1) 
 ;
 L0038:	lda     _aimDirectionX
 	cmp     #$FF
@@ -4820,13 +4979,13 @@ L0038:	lda     _aimDirectionX
 	cmp     #$FF
 	bne     L0039
 ;
-; return playerShootTopLeftSprite; // Return the player aiming up and left sprite.
+; return playerShootTopLeftSprite;
 ;
 	lda     #<(_playerShootTopLeftSprite)
 	ldx     #>(_playerShootTopLeftSprite)
 	rts
 ;
-; if (aimDirectionX == 1 && aimDirectionY == -1) // If the player is aiming up and right.
+; if(aimDirectionX == 1 && aimDirectionY == -1) 
 ;
 L0039:	lda     _aimDirectionX
 	cmp     #$01
@@ -4835,13 +4994,13 @@ L0039:	lda     _aimDirectionX
 	cmp     #$FF
 	bne     L003A
 ;
-; return playerShootTopRightSprite; // Return the player aiming up and right sprite.
+; return playerShootTopRightSprite;
 ;
 	lda     #<(_playerShootTopRightSprite)
 	ldx     #>(_playerShootTopRightSprite)
 	rts
 ;
-; if (aimDirectionX == -1 && aimDirectionY == 1) // If the player is aiming down and left.
+; if(aimDirectionX == -1 && aimDirectionY == 1) 
 ;
 L003A:	lda     _aimDirectionX
 	cmp     #$FF
@@ -4850,13 +5009,13 @@ L003A:	lda     _aimDirectionX
 	cmp     #$01
 	bne     L003B
 ;
-; return playerShootBottomLeftSprite; // Return the player aiming down and left sprite.
+; return playerShootBottomLeftSprite;
 ;
 	lda     #<(_playerShootBottomLeftSprite)
 	ldx     #>(_playerShootBottomLeftSprite)
 	rts
 ;
-; if (aimDirectionX == 1 && aimDirectionY == 1) // If the player is aiming down and right.
+; if(aimDirectionX == 1 && aimDirectionY == 1) 
 ;
 L003B:	lda     _aimDirectionX
 	cmp     #$01
@@ -4865,13 +5024,13 @@ L003B:	lda     _aimDirectionX
 	cmp     #$01
 	bne     L002D
 ;
-; return playerShootBottomRightSprite; // Return the player aiming down and right sprite.
+; return playerShootBottomRightSprite;
 ;
 	lda     #<(_playerShootBottomRightSprite)
 	ldx     #>(_playerShootBottomRightSprite)
 	rts
 ;
-; return playerShootUpSprite; // If the player isn't aiming anywhere, return the aiming up sprite as that's where the bullets go by default.
+; return playerShootUpSprite; // Return the aiming up sprite, if no directions have pressed.
 ;
 L002D:	lda     #<(_playerShootUpSprite)
 	ldx     #>(_playerShootUpSprite)
@@ -4893,12 +5052,12 @@ L002D:	lda     #<(_playerShootUpSprite)
 .segment	"CODE"
 
 ;
-; const unsigned char* currentSprite = getPlayerSprite();
+; const unsigned char* currentSprite = getPlayerSprite(); // Holds the current player sprite. 
 ;
 	jsr     _getPlayerSprite
 	jsr     pushax
 ;
-; oam_meta_spr(playerSpriteData.X, playerSpriteData.Y, currentSprite); // Draws the metasprite at x pos 64, y pos 80 and using the playerSprite data. Nes Screen is 256 x 240 in pixels, so max range for sprite drawing is 255, 239.
+; oam_meta_spr(playerSpriteData.X, playerSpriteData.Y, currentSprite); // Draw the current sprite at the player's X and Y data.
 ;
 	jsr     decsp2
 	lda     _playerSpriteData
@@ -4939,21 +5098,21 @@ L002D:	lda     #<(_playerShootUpSprite)
 ;
 	jsr     _ppu_off
 ;
-; switch(lvl) // Switches on level passed through when function is called.
+; switch(lvl) // Switch on the current level.
 ;
 	ldy     #$00
 	lda     (sp),y
 ;
-; } 
+; }
 ;
 	bne     L0005
 ;
-; vram_adr(NAMETABLE_A); // Sets the VRAM address to nametable A.
+; vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
 ;
 	ldx     #$20
 	jsr     _vram_adr
 ;
-; vram_write(levelOneData, 1024); // Writes all the data from levelOneData to nametable A, including the attribute table.
+; vram_write(levelOneData, 1024); // Fill NameTableA with all 1024 bytes from the levelOneData array, which includes the attribute table.
 ;
 	lda     #<(_levelOneData)
 	ldx     #>(_levelOneData)
@@ -4962,34 +5121,34 @@ L002D:	lda     #<(_playerShootUpSprite)
 	lda     #$00
 	jsr     _vram_write
 ;
-; playerSpriteData.X = 136; // Sets the player to the bottom left tile, AKA, the starting point.
+; playerSpriteData.X = 136; // Sets the player location to the starting location for level 1.
 ;
 	lda     #$88
 	sta     _playerSpriteData
 ;
-; playerSpriteData.Y = 216; // Sets the player to the bottom left tile, AKA, the starting point.
+; playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
 ;
 	lda     #$D8
 	sta     _playerSpriteData+1
 ;
-; bluePortalActive = 0; // Disables the Blue portal.
+; bluePortalActive   = 0; // Reset the blue portal active.
 ;
 L0005:	lda     #$00
 	sta     _bluePortalActive
 ;
-; orangePortalActive = 0; // Disables the Orange portal.
+; orangePortalActive = 0; // Reset the orange portal active.
 ;
 	sta     _orangePortalActive
 ;
-; blueBulletActive = 0; // Disables any bullets still on screen.
+; blueBulletActive   = 0; // Reset the blue bullet being active.
 ;
 	sta     _blueBulletActive
 ;
-; orangeBulletActive = 0;
+; orangeBulletActive = 0; // Reset the orange bullet being active.
 ;
 	sta     _orangeBulletActive
 ;
-; lastPortalUsed = 0; // Allows the user to enter any portal.
+; lastPortalUsed     = 0; // Reset the last portal used.
 ;
 	sta     _lastPortalUsed
 ;
@@ -5018,13 +5177,13 @@ L0005:	lda     #$00
 ;
 	jsr     _ppu_off
 ;
-; vram_adr(NAMETABLE_A); // Sets the VRAM address to the location of NAMETABLE_A.
+; vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
 ;
 	ldx     #$20
 	lda     #$00
 	jsr     _vram_adr
 ;
-; vram_write(menu, 1024); // Writes all the data from the menu array to NAMETABLE_A, including the attribute table.
+; vram_write(menu, 1024); // Fill NameTableA with all 1024 bytes from the menu array, which includes the attribute table.
 ;
 	lda     #<(_menu)
 	ldx     #>(_menu)
@@ -5033,7 +5192,7 @@ L0005:	lda     #$00
 	lda     #$00
 	jsr     _vram_write
 ;
-; ppu_on_all(); // Turns the screen back on.
+; ppu_on_all(); // Turns the screen on.
 ;
 	jmp     _ppu_on_all
 
@@ -5050,37 +5209,37 @@ L0005:	lda     #$00
 .segment	"CODE"
 
 ;
-; flashTimer++;
+; flashTimer++; // Increments the flash timer.
 ;
 	inc     M0001
 ;
-; if (flashTimer >= 30)
+; if(flashTimer >= 30) // If the flash timer has gone for 30 frames.
 ;
 	lda     M0001
 	cmp     #$1E
 	bcc     L0002
 ;
-; flashTimer = 0;
+; flashTimer = 0; // Reset the flash timer.
 ;
 	lda     #$00
 	sta     M0001
 ;
-; ppu_off();
+; ppu_off(); // Turn the screen off.
 ;
 	jsr     _ppu_off
 ;
-; vram_adr(NAMETABLE_A + (17 * 32) + 10);
+; vram_adr(NAMETABLE_A + (17 * 32) + 10); // Sets the VRAM address to the start of NametableA, and then moves to the location of the 17th row and 10th col to the exact location the PRESS START! tiles are.
 ;
 	ldx     #$22
 	lda     #$2A
 	jsr     _vram_adr
 ;
-; if (showPressStartText)
+; if(showPressStartText) // If the text is visible.
 ;
 	lda     M0002
 	beq     L0003
 ;
-; vram_write(blankTiles, 12);
+; vram_write(blankTiles, 12); // Change the text tiles to blank tiles.
 ;
 	lda     #<(_blankTiles)
 	ldx     #>(_blankTiles)
@@ -5089,7 +5248,7 @@ L0005:	lda     #$00
 	lda     #$0C
 	jsr     _vram_write
 ;
-; showPressStartText = 0;
+; showPressStartText = 0; // Set that the text is not visible anymore.
 ;
 	lda     #$00
 ;
@@ -5097,7 +5256,7 @@ L0005:	lda     #$00
 ;
 	jmp     L0005
 ;
-; vram_write(pressStartTiles, 12);
+; vram_write(pressStartTiles, 12); // Change the blank tiles to the text tiles.
 ;
 L0003:	lda     #<(_pressStartTiles)
 	ldx     #>(_pressStartTiles)
@@ -5106,12 +5265,12 @@ L0003:	lda     #<(_pressStartTiles)
 	lda     #$0C
 	jsr     _vram_write
 ;
-; showPressStartText = 1;
+; showPressStartText = 1; // Set that the text is now visible.
 ;
 	lda     #$01
 L0005:	sta     M0002
 ;
-; ppu_on_all();
+; ppu_on_all(); // Turn the screen on.
 ;
 	jmp     _ppu_on_all
 ;
@@ -5139,7 +5298,7 @@ M0002:
 .segment	"CODE"
 
 ;
-; if (orangePortalActive)
+; if(orangePortalActive)
 ;
 	lda     _orangePortalActive
 	beq     L0002
@@ -5174,7 +5333,7 @@ L0002:	rts
 .segment	"CODE"
 
 ;
-; if (bluePortalActive)
+; if(bluePortalActive)
 ;
 	lda     _bluePortalActive
 	beq     L0002
@@ -5213,31 +5372,49 @@ L0002:	rts
 ;
 	jsr     pusha
 ;
-; switch (currentLevel)
+; if(x >= 32 || y >= 30) // If the tile is out of bounds.
 ;
+	ldy     #$01
+	lda     (sp),y
+	cmp     #$20
+	bcs     L0009
+	dey
+	lda     (sp),y
+	cmp     #$1E
+	bcs     L0009
 	ldx     #$00
-	lda     _currentLevel
+	jmp     L000A
+;
+; return 1; // Return a 1 to say it's a wall.
+;
+L0009:	ldx     #$00
+	lda     #$01
+	jmp     incsp2
+;
+; switch(currentLevel) // Changes based on the current level.
+;
+L000A:	lda     _currentLevel
 ;
 ; }
 ;
-	bne     L0003
+	bne     L0006
 ;
-; return levelOneCollision[y * 32 + x];
+; return levelOneCollision[y * 32 + x]; // Returns the collision value for the tile at X and Y of the collision table for the level.
 ;
-	lda     (sp,x)
+	lda     (sp),y
 	jsr     shlax4
 	stx     tmp1
 	asl     a
 	rol     tmp1
 	sta     ptr1
-	ldy     #$01
+	iny
 	lda     (sp),y
 	clc
 	adc     ptr1
 	ldx     tmp1
-	bcc     L0005
+	bcc     L0008
 	inx
-L0005:	sta     ptr1
+L0008:	sta     ptr1
 	txa
 	clc
 	adc     #>(_levelOneCollision)
@@ -5248,7 +5425,7 @@ L0005:	sta     ptr1
 ;
 ; }
 ;
-L0003:	jmp     incsp2
+L0006:	jmp     incsp2
 
 .endproc
 
@@ -5290,11 +5467,11 @@ L0003:	jmp     incsp2
 	lda     #$00
 	sta     _gameState
 ;
-; drawMainMenu();
+; drawMainMenu(); // Displays the main menu.
 ;
 	jsr     _drawMainMenu
 ;
-; bank_spr(1); // Tells the program to use the second batch of tiles from the bank for the sprite. Both background and sprite uses 0 by default, however Alpha3 has the sprite tiles on 2.
+; bank_spr(1); // Tells the program that the sprites are located on the 2nd side of the chr file.
 ;
 	lda     #$01
 	jsr     _bank_spr
@@ -5307,89 +5484,89 @@ L0003:	jmp     incsp2
 ;
 L0002:	jsr     _ppu_wait_nmi
 ;
-; pad1 = pad_poll(0);  // read the first controller
+; pad1 = pad_poll(0); // read the first controller
 ;
 	lda     #$00
 	jsr     _pad_poll
 	sta     _pad1
 ;
-; if (gameState == 0)
+; if(gameState == 0) // If the game is at the main menu.
 ;
 	lda     _gameState
 	bne     L000C
 ;
-; if (pad1 & PAD_START) 
+; if(pad1 & PAD_START) // Check if the player has pressed start.
 ;
 	lda     _pad1
 	and     #$10
 	beq     L0006
 ;
-; currentLevel = 0; 
+; currentLevel = 0; // Set current level to 0, meaning the first level.
 ;
 	lda     #$00
 	sta     _currentLevel
 ;
-; loadLevel(currentLevel);
+; loadLevel(currentLevel); // Loads the current level.
 ;
 	jsr     _loadLevel
 ;
-; gameState = 1;
+; gameState = 1; // Sets the game state to 1, meaning in game.
 ;
 	lda     #$01
 	sta     _gameState
 ;
-; animatePressStartText();
+; animatePressStartText(); // Animates the PRESS START! text if start isn't pressed.
 ;
 L0006:	jsr     _animatePressStartText
 ;
-; else if (gameState == 1)
+; else if(gameState == 1) // If the game has started and is not on the menu.
 ;
 	jmp     L0002
 L000C:	lda     _gameState
 	cmp     #$01
 	bne     L0002
 ;
-; modeToggle();
+; modeToggle(); // Call the mode toggle function to check what mode the player is in.
 ;
 	jsr     _modeToggle
 ;
-; if (mode == 0)
+; if(mode == 0) // If the user is in walk mode.
 ;
 	lda     _mode
 	bne     L000D
 ;
-; walkMode();
+; walkMode(); // Call the walk mode function.
 ;
 	jsr     _walkMode
 ;
-; else if (mode == 1)
+; else if(mode == 1) // If the is in shoot mode.
 ;
 	jmp     L000B
 L000D:	lda     _mode
 	cmp     #$01
 	bne     L000B
 ;
-; shootMode();
+; shootMode(); // Call the shoot mode function.
 ;
 	jsr     _shootMode
 ;
-; applyGravity();
+; applyGravity(); // Applies gravity to the player.
 ;
 L000B:	jsr     _applyGravity
 ;
-; updateBullet(); // Moves Bullet.
+; updateBullet(); // Updates bullet location and logic, if any are on the screen.
 ;
 	jsr     _updateBullet
 ;
-; portalPlayerCollision(); // Handle Portal Collision with the Player. 
+; portalPlayerCollision(); // Check if the player is colliding with any portals.
 ;
 	jsr     _portalPlayerCollision
 ;
-; oam_clear(); // Clears the OAM buffer.
+; oam_clear(); // Clear the OAM buffer/
 ;
 	jsr     _oam_clear
 ;
-; drawSprite(); // Draws the player sprite. 
+; drawSprite(); // Draws the player sprite.
 ;
 	jsr     _drawSprite
 ;
@@ -5397,15 +5574,15 @@ L000B:	jsr     _applyGravity
 ;
 	jsr     _drawBullet
 ;
-; drawBluePortalSprite();
+; drawBluePortalSprite(); // Draws the blue portal sprite.
 ;
 	jsr     _drawBluePortalSprite
 ;
-; drawOrangePortalSprite();
+; drawOrangePortalSprite(); // Draws the orange portal sprite.
 ;
 	jsr     _drawOrangePortalSprite
 ;
-; while (1){
+; while(1) {
 ;
 	jmp     L0002
 
