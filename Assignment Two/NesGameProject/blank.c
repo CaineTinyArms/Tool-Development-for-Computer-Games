@@ -502,11 +502,11 @@ void loadLevel(unsigned char lvl)
 		case 0: // If the level is 0, or the first level in the game.
 		vram_adr(NAMETABLE_A); // Sets the VRAM address to nametable A.
 		vram_write(levelOneData, 1024); // Writes all the data from levelOneData to nametable A, including the attribute table.
+		playerSpriteData.X = 136; // Sets the player to the bottom left tile, AKA, the starting point.
+		playerSpriteData.Y = 216; // Sets the player to the bottom left tile, AKA, the starting point.
 		break; // Breaks the switch statement.
 	}	
 
-	playerSpriteData.X = 16; // Sets the player to the bottom left tile, AKA, the starting point.
-	playerSpriteData.Y = 200; // Sets the player to the bottom left tile, AKA, the starting point.
 	bluePortalActive = 0; // Disables the Blue portal.
 	orangePortalActive = 0; // Disables the Orange portal.
 	blueBulletActive = 0; // Disables any bullets still on screen.

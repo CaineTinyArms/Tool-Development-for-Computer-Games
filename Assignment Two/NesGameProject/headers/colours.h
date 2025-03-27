@@ -11,14 +11,14 @@
 #define PURPLE 0x14
 #define BLUE 0x12
 #define DK_GREEN 0x09
-#define DK_BLUE 0x01
+#define DK_BLUE 0x11
 #define SKIN 0x36
 
 const unsigned char paletteBackground[]=
 {
 BLACK, DK_BLUE, LT_GY, WHITE, // Sub-Palette 0 
 BLACK,BLACK,BLACK,ORANGE, // Sub-Palette 1
-BLACK,BLACK,BLACK,BLACK, // Sub-Palette 2
+BLACK,DK_GY,LT_GY,WHITE, // Sub-Palette 2
 BLACK,BLACK,BLACK,BLACK // Sub-Palette 3
 }; 
 
