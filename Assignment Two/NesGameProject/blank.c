@@ -13,21 +13,24 @@ unsigned char pad1; // Variable for the controller.
 unsigned char orangePortalCollision; // Variable for if the player is touching the orange portal.
 unsigned char bluePortalCollision; // Variable for if the player is touching the blue portal.
 unsigned char lastPortalUsed = 0; // 0 for none, 1 for orange, 2 for blue.
-unsigned char bulletActive = 0; // 0 for none, 1 for orange, 2 for blue.
 unsigned char mode = 0; // 0 for walk mode, 1 for shoot mode.
 signed char aimDirectionX = 0; // Variable for the X direction the player is aiming (left and right)
 signed char aimDirectionY = 0; // Variable for the Y direction the player is aiming (up and down)
-signed char bulletDirectionX = 0; // Variable for the X direction of the bullet (left and right)
-signed char bulletDirectionY = 0; // Variable for the Y direction of the bullet (up and down)
 signed char playerVelocity = 0; // Variable for the players velocity, used for making them fall.
 #define GRAVITY 1 // Defines the speed of gravity that is added while the player is falling.
 #define MAX_FALL_SPEED 4 // Defines the max fall speed of the player.
 unsigned char currentLevel; // Variable to track what level the player is currently on.
 unsigned char gameState; // Variable to track the current game state, 0 = main menu, 1 = in game etc.
-unsigned char blankTiles[12] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-unsigned char pressStartTiles[12] = {0x50, 0x52, 0x45, 0x53, 0x53, 0x00, 0x53, 0x54, 0x41, 0x52, 0x54, 0x21};
-
-
+unsigned char blankTiles[12] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; // Array of 12 blank tiles, used to simulate the flashing "PRESS START!" text.
+unsigned char pressStartTiles[12] = {0x50, 0x52, 0x45, 0x53, 0x53, 0x00, 0x53, 0x54, 0x41, 0x52, 0x54, 0x21}; // Array of 12 tile addresses, used to display "PRESS START!".
+unsigned char bluePortalActive = 0;
+unsigned char orangePortalActive = 0;
+unsigned char orangeBulletActive = 0;
+unsigned char blueBulletActive = 0;
+signed char orangeBulletDirectionX = 0;
+signed char orangeBulletDirectionY = 0;
+signed char blueBulletDirectionX = 0;
+signed char blueBulletDirectionY = 0;
 
 // FUNCTION PROTOTYPES.
 // -================================-
@@ -48,6 +51,8 @@ void drawSprite(void);
 void loadLevel(unsigned char level);
 void drawMainMenu(void);
 void animatePressStartText(void);
+void drawOrangePortalSprite(void);
+void drawBluePortalSprite(void);
 
 // MAIN GAME LOOP
 // -=========================================-
@@ -181,13 +186,14 @@ void spawnOrangeBullet(void)
 {
 	orangeBulletSpriteData.X = playerSpriteData.X; // Sets the orange bullet X data to the Players X data.
 	orangeBulletSpriteData.Y = playerSpriteData.Y; // Sets the orange bullet Y data to the Players Y data.
-	bulletActive = 1; // Sets the bullet active to 1, to indicate it is a orange bullet.
+	orangeBulletActive = 1; // Sets the bullet active to 1, to indicate it is a orange bullet.
 
-	bulletDirectionX = aimDirectionX; // Takes the X bullet direction from the X aiming direction.
-	bulletDirectionY = aimDirectionY; // Takes the Y bullet direction from the Y aiming direction.
-	if (bulletDirectionX == 0 && bulletDirectionY == 0) // If the user hasn't pressed any aiming buttons.
+	orangeBulletDirectionX = aimDirectionX; // Takes the X bullet direction from the X aiming direction.
+	orangeBulletDirectionY = aimDirectionY; // Takes the Y bullet direction from the Y aiming direction.
+
+	if (orangeBulletDirectionX == 0 && orangeBulletDirectionY == 0) // If the user hasn't pressed any aiming buttons.
 	{
-		bulletDirectionY = -1; // Default to shooting up.
+		orangeBulletDirectionY = -1; // Default to shooting up.
 	}
 
 }
@@ -196,126 +202,104 @@ void spawnBlueBullet(void)
 {
 	blueBulletSpriteData.X = playerSpriteData.X; // Sets the blue bullet X data to the Players X data.
 	blueBulletSpriteData.Y = playerSpriteData.Y; // Sets the blue bullet Y data to the Players Y data.
-	bulletActive = 2; // Sets the bullet active to 2, to indicate it's a blue bullet.
+	blueBulletActive = 1; // Sets the bullet active to 2, to indicate it's a blue bullet.
 
-	bulletDirectionX = aimDirectionX; // Takes the X bullet direction from the X aiming direction.
-	bulletDirectionY = aimDirectionY; // Takes the Y bullet direction from the Y aiming direction.
-	if (bulletDirectionX == 0 && bulletDirectionY == 0) // If the user hasn't pressed any aiming buttons.
+	blueBulletDirectionX = aimDirectionX; // Takes the X bullet direction from the X aiming direction.
+	blueBulletDirectionY = aimDirectionY; // Takes the Y bullet direction from the Y aiming direction.
+	if (blueBulletDirectionX == 0 && blueBulletDirectionY == 0) // If the user hasn't pressed any aiming buttons.
 	{
-		bulletDirectionY = -1; // Default to shooting up.
+		blueBulletDirectionY = -1; // Default to shooting up.
 	}
 }
 
 void updateBullet(void)
 {
-    if (bulletActive == 0) // If there is no bullet on the screen.
-        return; // Do nothing.
+    if (orangeBulletActive)
+	{
+		orangeBulletSpriteData.X += orangeBulletDirectionX;
+		orangeBulletSpriteData.Y += orangeBulletDirectionY;
 
-    if (bulletActive == 1) // If there is an orange bullet on the screen.
-    {
-        orangeBulletSpriteData.X += bulletDirectionX; // Move the bullet across the screen.
-		orangeBulletSpriteData.Y += bulletDirectionY;
+		if (playerWallCollision(&orangeBulletSpriteData))
+		{
+			unsigned char tileX = (orangeBulletSpriteData.X + 4) >> 3;
+			unsigned char tileY = (orangeBulletSpriteData.Y + 4) >> 3;
 
-        if (orangeBulletSpriteData.X > 250) // IF the bullet goes too far off the screen.
-        {
-            bulletActive = 0; // Remove the bullet from being active.
-            return; 
-        }
-
-        if (playerWallCollision(&orangeBulletSpriteData)) // If the orange bullet hits a wall.
-        {
-
-            unsigned char tileX = (orangeBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
-            unsigned char tileY = (orangeBulletSpriteData.Y + 4) >> 3; // Get the Y tile from the centre of the billet.
-
-			if (bulletDirectionX > 0 && tileX > 0) 
+			if (orangeBulletDirectionX > 0 && tileX > 0) 
 			{
-   				tileX--;
+				tileX--;
+			}	
+			if (orangeBulletDirectionY > 0 && tileY > 0)
+			{
+				tileY--;
 			}
 
-
-			if (bulletDirectionY > 0 && tileY > 0) 
+			if (bluePortalActive)
 			{
-   				tileY--;
+				unsigned char bluePortalTileX = bluePortalSpriteData.X >> 3;
+				unsigned char bluePortalTileY = bluePortalSpriteData.Y >> 3;
+				if (bluePortalTileX == tileX && bluePortalTileY == tileY)
+				{
+					orangeBulletActive = 0;
+					return;
+				}
 			}
 
-            if (bluePortalActive) // If there is a blue portal active.
-            {
-                unsigned char pTileX = bluePortalSpriteData.X >> 3; // Get the X tile from the blue portal.
-                unsigned char pTileY = bluePortalSpriteData.Y >> 3; // Get the Y tile from the blue portal.
-                
-                if (pTileX == tileX && pTileY == tileY) // If the tiles are the same for both portals.
-                {
-                    bulletActive = 0; // Remove the bullet and do nothing.
-                    return;
-                }
-            }
+			orangePortalSpriteData.X = tileX << 3;
+			orangePortalSpriteData.Y = tileY << 3;
+			orangePortalActive = 1;
+			orangeBulletActive = 0;
+		}
+	}
 
-            orangePortalSpriteData.X = tileX << 3; // Sets the orange portal X data to Tile X, if there is no portal there already.
-            orangePortalSpriteData.Y = tileY << 3; // Sets the orange portal Y data to Tile Y, if there is no portal there already.
-            orangePortalActive = 1; // Sets the orange portal as active.
-            bulletActive = 0; // Removes the bullet, allowing for more shots.
-        }
-    }
-   
+	if (blueBulletActive)
+	{
+		blueBulletSpriteData.X += blueBulletDirectionX;
+		blueBulletSpriteData.Y += blueBulletDirectionY;
 
-    else if (bulletActive == 2) // If the bullet is a blue bullet.
-    {
-        blueBulletSpriteData.X += bulletDirectionX; // Move the blue bullet sprite across the screen, in the direction of the X aiming variable, I.E, -1 to go left, +1 to go right.
-		blueBulletSpriteData.Y += bulletDirectionY; // Move the blue bullet sprite across the screen, in the direction of the Y aiming variable, I.E, -1 to go up, +1 to go down.
+		
 
-        if (blueBulletSpriteData.X > 240) // If the bullet goes too far off the screen.
-        { 
-            bulletActive = 0; // Remove the bullet.
-            return;
-        }
+		if (playerWallCollision(&blueBulletSpriteData))
+		{
+			unsigned char tileX = (blueBulletSpriteData.X + 4) >> 3;
+			unsigned char tileY = (blueBulletSpriteData.Y + 4) >> 3;
 
-        if (playerWallCollision(&blueBulletSpriteData)) // If the blue bullet hits a wall.
-        {
-            unsigned char tileX = (blueBulletSpriteData.X + 4) >> 3; // Get the X tile from the centre of the bullet.
-            unsigned char tileY = (blueBulletSpriteData.Y + 4) >> 3; // Get the Y tile from the centre of the bullet.
-
-			if (bulletDirectionX > 0 && tileX > 0) 
+			if (blueBulletDirectionX > 0 && tileX > 0) 
 			{
-   				tileX--;
+				tileX--;
+			}
+			if (blueBulletDirectionY > 0 && tileY > 0)
+			{
+				tileY--;
 			}
 
-
-			if (bulletDirectionY > 0 && tileY > 0) 
+			if (orangePortalActive)
 			{
-   				tileY--;
+				unsigned char orangePortalTileX = orangePortalSpriteData.X >> 3;
+				unsigned char orangePortalTileY = orangePortalSpriteData.Y >> 3;
+				if (orangePortalTileX == tileX && orangePortalTileY == tileY)
+				{
+					blueBulletActive = 0;
+					return;
+				}
 			}
 
-            if (orangePortalActive) // If there is an orange portal active.
-            {
-                unsigned char pTileX = orangePortalSpriteData.X >> 3; // Get the X tile from the Orange Portal.
-                unsigned char pTileY = orangePortalSpriteData.Y >> 3; // Get the Y tile from the Orange Portal.
-
-                if (pTileX == tileX && pTileY == tileY) // IF the tiles are the same for both portals.
-                {
-                    bulletActive = 0; // Remove the bullet and do nothing.
-                    return;
-                }
-            }
-
-            bluePortalSpriteData.X = tileX << 3; // Sets the blue portal X data to Tile X, if there is no portal there already.
-            bluePortalSpriteData.Y = tileY << 3; // Sets the blue portal Y data to Tile Y, if there is no portal there already.
-            bluePortalActive = 1; // Sets the blue portal to active. 
-
-            bulletActive = 0; // Removes the bullet, allowing for more shots.
-        }
-    }
+			bluePortalSpriteData.X = tileX << 3;
+			bluePortalSpriteData.Y = tileY << 3;
+			bluePortalActive = 1;
+			blueBulletActive = 0;
+		}
+	}
 }
 
 
 void drawBullet(void)
 {
-	if (bulletActive == 1) // If the bullet active is orange.
+	if (orangeBulletActive) // If the bullet active is orange.
 	{
 		oam_meta_spr(orangeBulletSpriteData.X, orangeBulletSpriteData.Y, orangeBulletSprite); // Draw the orange sprite.
 	}
 
-	else if (bulletActive == 2) // If the bullet active is blue.
+	if (blueBulletActive) // If the bullet active is blue.
 	{
 		oam_meta_spr(blueBulletSpriteData.X, blueBulletSpriteData.Y, blueBulletSprite); // Draw the blue sprite.
 	}
@@ -391,16 +375,14 @@ void shootMode(void)
 		aimDirectionY = newDirectionY; // Set the aiming direction Y to the new direction.
 	}
 
-	if (!bulletActive) // If there is no bullet on the screen currently.
+	if (!orangeBulletActive && (pad1 & PAD_A))
 	{
-		if (pad1 & PAD_A) // If the A button is pressed.
-		{
-			spawnOrangeBullet(); // Shoot an orange bullet.
-		}
-		else if (pad1 & PAD_B) // If the B button is pressed.
-		{
-			spawnBlueBullet(); // Shoot a blue bullet.
-		}
+		spawnOrangeBullet();
+	}
+
+	if (!blueBulletActive && (pad1 & PAD_B))
+	{
+		spawnBlueBullet();
 	}
 }
 
@@ -527,7 +509,8 @@ void loadLevel(unsigned char lvl)
 	playerSpriteData.Y = 200; // Sets the player to the bottom left tile, AKA, the starting point.
 	bluePortalActive = 0; // Disables the Blue portal.
 	orangePortalActive = 0; // Disables the Orange portal.
-	bulletActive = 0; // Disables any bullets still on screen.
+	blueBulletActive = 0; // Disables any bullets still on screen.
+	orangeBulletActive = 0;
 	lastPortalUsed = 0; // Allows the user to enter any portal.
 
 	ppu_on_all(); // Turn the screen back on.
@@ -572,4 +555,20 @@ void animatePressStartText(void)
 
 		ppu_on_all();
 	}
+}
+
+void drawOrangePortalSprite(void)
+{
+    if (orangePortalActive)
+    {
+        oam_meta_spr(orangePortalSpriteData.X, orangePortalSpriteData.Y, orangePortal);
+    }
+}
+
+void drawBluePortalSprite(void)
+{
+    if (bluePortalActive)
+    {
+        oam_meta_spr(bluePortalSpriteData.X, bluePortalSpriteData.Y, bluePortal);
+    }
 }

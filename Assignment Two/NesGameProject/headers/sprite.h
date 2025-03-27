@@ -128,27 +128,6 @@ struct spriteData orangeBulletSpriteData = {0, 0, 7, 7};
 
 struct spriteData blueBulletSpriteData = {0, 0, 7 ,7};
 
-
-unsigned char bluePortalActive = 0;
-unsigned char orangePortalActive = 0;
-
-
 // FUNCTION PROTOTYPES
-void drawOrangePortalSprite(void);
-void drawBluePortalSprite(void);
 
-void drawOrangePortalSprite(void)
-{
-    if (orangePortalActive)
-    {
-        oam_meta_spr(orangePortalSpriteData.X, orangePortalSpriteData.Y, orangePortal);
-    }
-}
 
-void drawBluePortalSprite(void)
-{
-    if (bluePortalActive)
-    {
-        oam_meta_spr(bluePortalSpriteData.X, bluePortalSpriteData.Y, bluePortal);
-    }
-}
