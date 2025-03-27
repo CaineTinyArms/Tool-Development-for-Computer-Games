@@ -4,6 +4,10 @@
 #include "headers/colours.h"
 #include "headers/levelOneData.h"
 #include "headers/levelOneCollision.h"
+#include "headers/levelTwoData.h"
+#include "headers/levelTwoCollision.h"
+#include "headers/levelThreeData.h"
+#include "headers/levelThreeCollision.h"
 #include "headers/menu.h"
 #pragma bss-name(push, "ZEROPAGE")
 
@@ -97,13 +101,14 @@ void main(void) {
 			{
                 walkMode(); // Call the walk mode function.
             }
-            else if(mode == 1) // If the is in shoot mode.
+            else if(mode == 1) // If the user is in shoot mode.
 			{
                 shootMode(); // Call the shoot mode function.
             }
 			applyGravity(); // Applies gravity to the player.
 			updateBullet(); // Updates bullet location and logic, if any are on the screen.
             portalPlayerCollision(); // Check if the player is colliding with any portals.
+			doorPlayerCollision();
             oam_clear(); // Clear the OAM buffer/
             drawSprite(); // Draws the player sprite.
             drawBullet(); // Draws the bullet sprites.
@@ -196,7 +201,11 @@ unsigned char wallDetection(unsigned char x, unsigned char y)
     switch(currentLevel) // Changes based on the current level.
 	{
         case 0:
-            return levelOneCollision[y * 32 + x]; // Returns the value for the tile at X and Y of the collision table.
+            return levelOneCollision[y * 32 + x];
+        case 1:
+            return levelTwoCollision[y * 32 + x];
+        case 2:
+            return levelThreeCollision[y * 32 + x]; // Returns the value for the tile at X and Y of the collision table.
     }
 }
 
@@ -226,8 +235,12 @@ unsigned char getCollisionValue(unsigned char x, unsigned char y)
 
     switch(currentLevel) // Changes based on the current level.
 	{
-        case 0: 
-            return levelOneCollision[y * 32 + x]; // Returns the collision value for the tile at X and Y of the collision table for the level.
+        case 0:
+            return levelOneCollision[y * 32 + x];
+        case 1:
+            return levelTwoCollision[y * 32 + x];
+        case 2: 
+            return levelThreeCollision[y * 32 + x]; // Returns the collision value for the tile at X and Y of the collision table for the level.
     }
 }
 
@@ -591,9 +604,25 @@ void loadLevel(unsigned char lvl)
 
     switch(lvl) // Switch on the current level.
     {
-        case 0: 
+        case 0:
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
-            vram_write(levelOneData, 1024); // Fill NameTableA with all 1024 bytes from the levelOneData array, which includes the attribute table.
+            vram_write(levelOneData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+            playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
+            playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
+			doorSpriteData.X = 200;
+			doorSpriteData.Y = 216;
+            break;
+        case 1:
+            vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
+            vram_write(levelTwoData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+            playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
+            playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
+			doorSpriteData.X = 200;
+			doorSpriteData.Y = 216;
+            break;
+        case 2: 
+            vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
+            vram_write(levelThreeData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
             playerSpriteData.X = 136; // Sets the player location to the starting location for level 1.
             playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
 			doorSpriteData.X = 200;
