@@ -38,14 +38,6 @@
 	.export		_orangeBulletSprite
 	.export		_blueBulletSprite
 	.export		_doorSprite
-	.export		_gunTopLeftSprite
-	.export		_gunTopRightSprite
-	.export		_gunBottomRightSprite
-	.export		_gunBottomLeftSprite
-	.export		_gunUpSprite
-	.export		_gunDownSprite
-	.export		_gunRightSprite
-	.export		_gunLeftSprite
 	.export		_playerSpriteData
 	.export		_orangePortalSpriteData
 	.export		_bluePortalSpriteData
@@ -428,118 +420,6 @@ _doorSprite:
 	.byte	$32
 	.byte	$41
 	.byte	$80
-_gunTopLeftSprite:
-	.byte	$00
-	.byte	$00
-	.byte	$29
-	.byte	$00
-	.byte	$00
-	.byte	$08
-	.byte	$39
-	.byte	$00
-	.byte	$08
-	.byte	$00
-	.byte	$2A
-	.byte	$00
-	.byte	$08
-	.byte	$08
-	.byte	$3A
-	.byte	$00
-	.byte	$80
-_gunTopRightSprite:
-	.byte	$00
-	.byte	$00
-	.byte	$27
-	.byte	$03
-	.byte	$00
-	.byte	$08
-	.byte	$37
-	.byte	$03
-	.byte	$08
-	.byte	$00
-	.byte	$28
-	.byte	$03
-	.byte	$08
-	.byte	$08
-	.byte	$38
-	.byte	$03
-	.byte	$80
-_gunBottomRightSprite:
-	.byte	$00
-	.byte	$00
-	.byte	$2E
-	.byte	$03
-	.byte	$00
-	.byte	$08
-	.byte	$3E
-	.byte	$03
-	.byte	$08
-	.byte	$00
-	.byte	$2F
-	.byte	$03
-	.byte	$08
-	.byte	$08
-	.byte	$3F
-	.byte	$03
-	.byte	$80
-_gunBottomLeftSprite:
-	.byte	$00
-	.byte	$00
-	.byte	$2B
-	.byte	$03
-	.byte	$00
-	.byte	$08
-	.byte	$3B
-	.byte	$03
-	.byte	$08
-	.byte	$00
-	.byte	$2C
-	.byte	$03
-	.byte	$08
-	.byte	$08
-	.byte	$3C
-	.byte	$03
-	.byte	$80
-_gunUpSprite:
-	.byte	$00
-	.byte	$00
-	.byte	$26
-	.byte	$03
-	.byte	$00
-	.byte	$08
-	.byte	$36
-	.byte	$03
-	.byte	$80
-_gunDownSprite:
-	.byte	$00
-	.byte	$00
-	.byte	$25
-	.byte	$03
-	.byte	$00
-	.byte	$08
-	.byte	$35
-	.byte	$03
-	.byte	$80
-_gunRightSprite:
-	.byte	$00
-	.byte	$00
-	.byte	$24
-	.byte	$03
-	.byte	$00
-	.byte	$08
-	.byte	$23
-	.byte	$03
-	.byte	$80
-_gunLeftSprite:
-	.byte	$00
-	.byte	$00
-	.byte	$33
-	.byte	$03
-	.byte	$00
-	.byte	$08
-	.byte	$34
-	.byte	$03
-	.byte	$80
 _paletteBackground:
 	.byte	$0F
 	.byte	$11
@@ -559,7 +439,7 @@ _paletteBackground:
 	.byte	$0F
 _paletteSprite:
 	.byte	$2C
-	.byte	$0F
+	.byte	$36
 	.byte	$30
 	.byte	$27
 	.byte	$2C
@@ -570,10 +450,10 @@ _paletteSprite:
 	.byte	$27
 	.byte	$10
 	.byte	$11
-	.byte	$2C
-	.byte	$0F
-	.byte	$11
-	.byte	$30
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
 _levelPaletteBackground:
 	.byte	$21
 	.byte	$11
