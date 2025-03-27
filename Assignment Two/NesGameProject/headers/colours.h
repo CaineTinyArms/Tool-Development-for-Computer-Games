@@ -25,10 +25,10 @@ BLACK,BLACK,BLACK,BLACK // Sub-Palette 3
 
 const char paletteSprite[] = 
 {
-TEAL, SKIN, WHITE, ORANGE, // Sub-Palette 0
+TEAL, BLACK, WHITE, ORANGE, // Sub-Palette 0
 TEAL, BLACK, LT_BLUE, LT_GY, // Sub-Palette 1
 TEAL, ORANGE, LT_GY, DK_BLUE, // Sub Palette 2
-0,0,0,0 // Sub Palette 3
+TEAL,BLACK,DK_BLUE,WHITE // Sub Palette 3
 };
 
 const unsigned char levelPaletteBackground[]=

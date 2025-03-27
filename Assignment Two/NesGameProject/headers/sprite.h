@@ -119,6 +119,72 @@ const unsigned char doorSprite[] =
     128 // Ends the sprite.
 };
 
+
+const unsigned char gunTopLeftSprite[] = 
+{
+    0, 0, 0x29, 0,  
+    0, 8, 0x39, 0,  
+    8, 0, 0x2A, 0,
+    8, 8, 0x3A, 0,
+    128 
+};
+
+const unsigned char gunTopRightSprite[] = 
+{
+    0, 0, 0x27, 3,  
+    0, 8, 0x37, 3,  
+    8, 0, 0x28, 3, 
+    8, 8, 0x38, 3,
+    128 
+};
+
+const unsigned char gunBottomRightSprite[] = 
+{
+    0, 0, 0x2E, 3,  
+    0, 8, 0x3E, 3,  
+    8, 0, 0x2F, 3, 
+    8, 8, 0x3F, 3,
+    128 
+};
+
+const unsigned char gunBottomLeftSprite[] = 
+{
+    0, 0, 0x2B, 3,  
+    0, 8, 0x3B, 3,  
+    8, 0, 0x2C, 3, 
+    8, 8, 0x3C, 3,
+    128 
+};
+
+const unsigned char gunUpSprite[] =
+{
+    0, 0, 0x26, 3,
+    0, 8, 0x36, 3,
+    128
+};
+
+const unsigned char gunDownSprite[] =
+{
+    0, 0, 0x25, 3,
+    0, 8, 0x35, 3,
+    128
+};
+
+const unsigned char gunRightSprite[] =
+{
+    0, 0, 0x24, 3,
+    0, 8, 0x23, 3,
+    128
+};
+
+const unsigned char gunLeftSprite[] =
+{
+    0, 0, 0x33, 3,
+    0, 8, 0x34, 3,
+    128
+};
+
+
 struct spriteData // Struct to hold the Sprite Format that every sprite will follow.
 {
     unsigned char X;
