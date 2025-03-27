@@ -82,10 +82,10 @@ const unsigned char playerShootTopLeftSprite[] =
 
 const unsigned char orangePortal[] =
 {
-    0, 0, 0xEF, 1, // Relative X, Relative Y, Tile Index, Tells it to use Pallete 1.
-    0, 8, 0xEF, 1|OAM_FLIP_V, // Exact same tile as above, just flipped vertically to make the illusion of a portal.
-    8,  0, 0xEF, 1|OAM_FLIP_H, // Same tile, just off set on the X instead of the Y, and flipped horizontally.
-    8,  8, 0xEF, 1|OAM_FLIP_H|OAM_FLIP_V, // Same tile, offset on both the X and Y now, and flipped both vertically and horizontally.
+    0, 0, 0xEF, 0, // Relative X, Relative Y, Tile Index, Tells it to use Pallete 1.
+    0, 8, 0xEF, 0|OAM_FLIP_V, // Exact same tile as above, just flipped vertically to make the illusion of a portal.
+    8,  0, 0xEF, 0|OAM_FLIP_H, // Same tile, just off set on the X instead of the Y, and flipped horizontally.
+    8,  8, 0xEF, 0|OAM_FLIP_H|OAM_FLIP_V, // Same tile, offset on both the X and Y now, and flipped both vertically and horizontally.
     128 // Ends the sprite.
 };
 
@@ -100,7 +100,7 @@ const unsigned char bluePortal[] =
 
 const unsigned char orangeBulletSprite[] =
 {
-    0, 0, 0xFF, 1,
+    0, 0, 0xFF, 0,
     128
 };
 

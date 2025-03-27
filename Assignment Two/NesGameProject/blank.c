@@ -560,6 +560,8 @@ void loadLevel(unsigned char lvl)
 {
     ppu_off(); // Turn the screen off.
 
+	pal_bg(levelPaletteBackground); // Sets the Background Palette.
+
     switch(lvl) // Switch on the current level.
     {
         case 0: 

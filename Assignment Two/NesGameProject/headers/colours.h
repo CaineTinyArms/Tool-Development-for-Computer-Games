@@ -13,6 +13,7 @@
 #define DK_GREEN 0x09
 #define DK_BLUE 0x11
 #define SKIN 0x36
+#define LT_BLUE 0x21
 
 const unsigned char paletteBackground[]=
 {
@@ -24,8 +25,16 @@ BLACK,BLACK,BLACK,BLACK // Sub-Palette 3
 
 const char paletteSprite[] = 
 {
-BLACK, SKIN, WHITE, ORANGE, // Sub-Palette 0
-BLACK, ORANGE, LT_GY, ORANGE, // Sub-Palette 1
-BLACK, ORANGE, LT_GY, DK_BLUE, // Sub Palette 2
+TEAL, SKIN, WHITE, ORANGE, // Sub-Palette 0
+TEAL, BLACK, LT_BLUE, LT_GY, // Sub-Palette 1
+TEAL, ORANGE, LT_GY, DK_BLUE, // Sub Palette 2
 0,0,0,0 // Sub Palette 3
 };
+
+const unsigned char levelPaletteBackground[]=
+{
+LT_BLUE, DK_BLUE, LT_GY, WHITE, // Sub-Palette 0 
+LT_BLUE,BLACK,BLACK,ORANGE, // Sub-Palette 1
+LT_BLUE,DK_GY,LT_GY,WHITE, // Sub-Palette 2
+LT_BLUE,BLACK,BLACK,BLACK // Sub-Palette 3
+}; 

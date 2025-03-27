@@ -44,6 +44,7 @@
 	.export		_blueBulletSpriteData
 	.export		_paletteBackground
 	.export		_paletteSprite
+	.export		_levelPaletteBackground
 	.export		_levelOneData
 	.export		_levelOneCollision
 	.export		_menu
@@ -343,19 +344,19 @@ _orangePortal:
 	.byte	$00
 	.byte	$00
 	.byte	$EF
-	.byte	$01
+	.byte	$00
 	.byte	$00
 	.byte	$08
 	.byte	$EF
-	.byte	$81
+	.byte	$80
 	.byte	$08
 	.byte	$00
 	.byte	$EF
-	.byte	$41
+	.byte	$40
 	.byte	$08
 	.byte	$08
 	.byte	$EF
-	.byte	$C1
+	.byte	$C0
 	.byte	$80
 _bluePortal:
 	.byte	$00
@@ -379,7 +380,7 @@ _orangeBulletSprite:
 	.byte	$00
 	.byte	$00
 	.byte	$FF
-	.byte	$01
+	.byte	$00
 	.byte	$80
 _blueBulletSprite:
 	.byte	$00
@@ -405,15 +406,15 @@ _paletteBackground:
 	.byte	$0F
 	.byte	$0F
 _paletteSprite:
-	.byte	$0F
+	.byte	$2C
 	.byte	$36
 	.byte	$30
 	.byte	$27
+	.byte	$2C
 	.byte	$0F
-	.byte	$27
+	.byte	$21
 	.byte	$10
-	.byte	$27
-	.byte	$0F
+	.byte	$2C
 	.byte	$27
 	.byte	$10
 	.byte	$11
@@ -421,6 +422,23 @@ _paletteSprite:
 	.byte	$00
 	.byte	$00
 	.byte	$00
+_levelPaletteBackground:
+	.byte	$21
+	.byte	$11
+	.byte	$10
+	.byte	$30
+	.byte	$21
+	.byte	$0F
+	.byte	$0F
+	.byte	$27
+	.byte	$21
+	.byte	$00
+	.byte	$10
+	.byte	$30
+	.byte	$21
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
 _levelOneData:
 	.byte	$01
 	.byte	$02
@@ -5097,6 +5115,12 @@ L002D:	lda     #<(_playerShootUpSprite)
 ; ppu_off(); // Turn the screen off.
 ;
 	jsr     _ppu_off
+;
+; pal_bg(levelPaletteBackground); // Sets the Background Palette.
+;
+	lda     #<(_levelPaletteBackground)
+	ldx     #>(_levelPaletteBackground)
+	jsr     _pal_bg
 ;
 ; switch(lvl) // Switch on the current level.
 ;
