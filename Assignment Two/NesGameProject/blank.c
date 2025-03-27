@@ -53,6 +53,7 @@ void drawMainMenu(void);
 void animatePressStartText(void);
 void drawOrangePortalSprite(void);
 void drawBluePortalSprite(void);
+unsigned char getCollisionValue(unsigned char x, unsigned char y);
 
 // MAIN GAME LOOP
 // -=========================================-
@@ -178,7 +179,14 @@ unsigned char playerWallCollision(struct spriteData *spr)
     }
 }
 
-
+unsigned char getCollisionValue(unsigned char x, unsigned char y)
+{
+	switch (currentLevel)
+	{
+		case 0:
+		return levelOneCollision[y * 32 + x];
+	}
+}
 
 // PORTAL BULLET FUNCTIONS 
 // -===============================================================-
@@ -214,16 +222,18 @@ void spawnBlueBullet(void)
 
 void updateBullet(void)
 {
+	unsigned char tileX;
+	unsigned char tileY;
+
     if (orangeBulletActive)
 	{
 		orangeBulletSpriteData.X += orangeBulletDirectionX;
 		orangeBulletSpriteData.Y += orangeBulletDirectionY;
+		tileX = (orangeBulletSpriteData.X + 4) >> 3;
+		tileY = (orangeBulletSpriteData.Y + 4) >> 3;
 
-		if (playerWallCollision(&orangeBulletSpriteData))
+		if (getCollisionValue(tileX, tileY) == 2)
 		{
-			unsigned char tileX = (orangeBulletSpriteData.X + 4) >> 3;
-			unsigned char tileY = (orangeBulletSpriteData.Y + 4) >> 3;
-
 			if (orangeBulletDirectionX > 0 && tileX > 0) 
 			{
 				tileX--;
@@ -249,20 +259,21 @@ void updateBullet(void)
 			orangePortalActive = 1;
 			orangeBulletActive = 0;
 		}
+		else if (getCollisionValue(tileX, tileY) == 1)
+		{
+			orangeBulletActive = 0;
+		}
 	}
 
 	if (blueBulletActive)
 	{
 		blueBulletSpriteData.X += blueBulletDirectionX;
 		blueBulletSpriteData.Y += blueBulletDirectionY;
+		tileX = (blueBulletSpriteData.X + 4) >> 3;
+		tileY = (blueBulletSpriteData.Y + 4) >> 3;
 
-		
-
-		if (playerWallCollision(&blueBulletSpriteData))
+		if (getCollisionValue(tileX, tileY) == 2)
 		{
-			unsigned char tileX = (blueBulletSpriteData.X + 4) >> 3;
-			unsigned char tileY = (blueBulletSpriteData.Y + 4) >> 3;
-
 			if (blueBulletDirectionX > 0 && tileX > 0) 
 			{
 				tileX--;
@@ -286,6 +297,10 @@ void updateBullet(void)
 			bluePortalSpriteData.X = tileX << 3;
 			bluePortalSpriteData.Y = tileY << 3;
 			bluePortalActive = 1;
+			blueBulletActive = 0;
+		}
+		else if (getCollisionValue(tileX, tileY) == 1)
+		{
 			blueBulletActive = 0;
 		}
 	}

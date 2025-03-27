@@ -86,6 +86,7 @@
 	.export		_animatePressStartText
 	.export		_drawOrangePortalSprite
 	.export		_drawBluePortalSprite
+	.export		_getCollisionValue
 	.export		_main
 
 .segment	"DATA"
@@ -4176,8 +4177,9 @@ L0008:	lda     #$FF
 ;
 ; if (orangeBulletActive)
 ;
+	jsr     decsp2
 	lda     _orangeBulletActive
-	jeq     L0005
+	jeq     L001A
 ;
 ; orangeBulletSpriteData.X += orangeBulletDirectionX;
 ;
@@ -4193,35 +4195,40 @@ L0008:	lda     #$FF
 	adc     _orangeBulletSpriteData+1
 	sta     _orangeBulletSpriteData+1
 ;
-; if (playerWallCollision(&orangeBulletSpriteData))
-;
-	lda     #<(_orangeBulletSpriteData)
-	ldx     #>(_orangeBulletSpriteData)
-	jsr     _playerWallCollision
-	tax
-	jeq     L0005
-;
-; unsigned char tileX = (orangeBulletSpriteData.X + 4) >> 3;
+; tileX = (orangeBulletSpriteData.X + 4) >> 3;
 ;
 	ldx     #$00
 	lda     _orangeBulletSpriteData
 	clc
 	adc     #$04
-	bcc     L0006
+	bcc     L0005
 	inx
-L0006:	jsr     asrax3
-	jsr     pusha
+L0005:	jsr     asrax3
+	ldy     #$01
+	sta     (sp),y
 ;
-; unsigned char tileY = (orangeBulletSpriteData.Y + 4) >> 3;
+; tileY = (orangeBulletSpriteData.Y + 4) >> 3;
 ;
 	ldx     #$00
 	lda     _orangeBulletSpriteData+1
 	clc
 	adc     #$04
-	bcc     L0007
+	bcc     L0006
 	inx
-L0007:	jsr     asrax3
+L0006:	jsr     asrax3
+	dey
+	sta     (sp),y
+;
+; if (getCollisionValue(tileX, tileY) == 2)
+;
+	iny
+	lda     (sp),y
 	jsr     pusha
+	ldy     #$01
+	lda     (sp),y
+	jsr     _getCollisionValue
+	cmp     #$02
+	jne     L0007
 ;
 ; if (orangeBulletDirectionX > 0 && tileX > 0) 
 ;
@@ -4230,10 +4237,10 @@ L0007:	jsr     asrax3
 	sbc     #$01
 	bvs     L000A
 	eor     #$80
-L000A:	bpl     L0037
+L000A:	bpl     L003D
 	ldy     #$01
 	lda     (sp),y
-	beq     L0037
+	beq     L003D
 ;
 ; tileX--;
 ;
@@ -4243,7 +4250,7 @@ L000A:	bpl     L0037
 ;
 ; if (orangeBulletDirectionY > 0 && tileY > 0)
 ;
-L0037:	lda     _orangeBulletDirectionY
+L003D:	lda     _orangeBulletDirectionY
 	sec
 	sbc     #$01
 	bvs     L0010
@@ -4300,7 +4307,8 @@ L000E:	lda     _bluePortalActive
 ;
 ; return;
 ;
-	jmp     incsp4
+	jsr     incsp2
+	jmp     incsp2
 ;
 ; }
 ;
@@ -4329,26 +4337,31 @@ L0014:	ldy     #$01
 	lda     #$01
 	sta     _orangePortalActive
 ;
+; else if (getCollisionValue(tileX, tileY) == 1)
+;
+	jmp     L0050
+L0007:	ldy     #$01
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$01
+	lda     (sp),y
+	jsr     _getCollisionValue
+	cmp     #$01
+	bne     L001A
+;
 ; orangeBulletActive = 0;
 ;
-	sty     _orangeBulletActive
-;
-; }
-;
-	jsr     incsp2
+L0050:	lda     #$00
+	sta     _orangeBulletActive
 ;
 ; if (blueBulletActive)
 ;
-L0005:	lda     _blueBulletActive
-	bne     L004A
-;
-; }
-;
-	rts
+L001A:	lda     _blueBulletActive
+	jeq     L0033
 ;
 ; blueBulletSpriteData.X += blueBulletDirectionX;
 ;
-L004A:	lda     _blueBulletDirectionX
+	lda     _blueBulletDirectionX
 	clc
 	adc     _blueBulletSpriteData
 	sta     _blueBulletSpriteData
@@ -4360,51 +4373,52 @@ L004A:	lda     _blueBulletDirectionX
 	adc     _blueBulletSpriteData+1
 	sta     _blueBulletSpriteData+1
 ;
-; if (playerWallCollision(&blueBulletSpriteData))
-;
-	lda     #<(_blueBulletSpriteData)
-	ldx     #>(_blueBulletSpriteData)
-	jsr     _playerWallCollision
-	tax
-	bne     L004B
-;
-; }
-;
-	rts
-;
-; unsigned char tileX = (blueBulletSpriteData.X + 4) >> 3;
-;
-L004B:	ldx     #$00
-	lda     _blueBulletSpriteData
-	clc
-	adc     #$04
-	bcc     L001D
-	inx
-L001D:	jsr     asrax3
-	jsr     pusha
-;
-; unsigned char tileY = (blueBulletSpriteData.Y + 4) >> 3;
+; tileX = (blueBulletSpriteData.X + 4) >> 3;
 ;
 	ldx     #$00
-	lda     _blueBulletSpriteData+1
+	lda     _blueBulletSpriteData
 	clc
 	adc     #$04
 	bcc     L001E
 	inx
 L001E:	jsr     asrax3
+	ldy     #$01
+	sta     (sp),y
+;
+; tileY = (blueBulletSpriteData.Y + 4) >> 3;
+;
+	ldx     #$00
+	lda     _blueBulletSpriteData+1
+	clc
+	adc     #$04
+	bcc     L001F
+	inx
+L001F:	jsr     asrax3
+	dey
+	sta     (sp),y
+;
+; if (getCollisionValue(tileX, tileY) == 2)
+;
+	iny
+	lda     (sp),y
 	jsr     pusha
+	ldy     #$01
+	lda     (sp),y
+	jsr     _getCollisionValue
+	cmp     #$02
+	jne     L0020
 ;
 ; if (blueBulletDirectionX > 0 && tileX > 0) 
 ;
 	lda     _blueBulletDirectionX
 	sec
 	sbc     #$01
-	bvs     L0021
+	bvs     L0023
 	eor     #$80
-L0021:	bpl     L0044
+L0023:	bpl     L004A
 	ldy     #$01
 	lda     (sp),y
-	beq     L0044
+	beq     L004A
 ;
 ; tileX--;
 ;
@@ -4414,15 +4428,15 @@ L0021:	bpl     L0044
 ;
 ; if (blueBulletDirectionY > 0 && tileY > 0)
 ;
-L0044:	lda     _blueBulletDirectionY
+L004A:	lda     _blueBulletDirectionY
 	sec
 	sbc     #$01
-	bvs     L0027
+	bvs     L0029
 	eor     #$80
-L0027:	bpl     L0025
+L0029:	bpl     L0027
 	ldy     #$00
 	lda     (sp),y
-	beq     L0025
+	beq     L0027
 ;
 ; tileY--;
 ;
@@ -4432,8 +4446,8 @@ L0027:	bpl     L0025
 ;
 ; if (orangePortalActive)
 ;
-L0025:	lda     _orangePortalActive
-	beq     L002B
+L0027:	lda     _orangePortalActive
+	beq     L002D
 ;
 ; unsigned char orangePortalTileX = orangePortalSpriteData.X >> 3;
 ;
@@ -4457,12 +4471,12 @@ L0025:	lda     _orangePortalActive
 	lda     (sp),y
 	ldy     #$03
 	cmp     (sp),y
-	bne     L002C
+	bne     L002E
 	ldy     #$00
 	lda     (sp),y
 	ldy     #$02
 	cmp     (sp),y
-	bne     L002C
+	bne     L002E
 ;
 ; blueBulletActive = 0;
 ;
@@ -4471,15 +4485,16 @@ L0025:	lda     _orangePortalActive
 ;
 ; return;
 ;
-	jmp     incsp4
+	jsr     incsp2
+	jmp     incsp2
 ;
 ; }
 ;
-L002C:	jsr     incsp2
+L002E:	jsr     incsp2
 ;
 ; bluePortalSpriteData.X = tileX << 3;
 ;
-L002B:	ldy     #$01
+L002D:	ldy     #$01
 	lda     (sp),y
 	asl     a
 	asl     a
@@ -4500,13 +4515,26 @@ L002B:	ldy     #$01
 	lda     #$01
 	sta     _bluePortalActive
 ;
+; else if (getCollisionValue(tileX, tileY) == 1)
+;
+	jmp     L0051
+L0020:	ldy     #$01
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$01
+	lda     (sp),y
+	jsr     _getCollisionValue
+	cmp     #$01
+	bne     L0033
+;
 ; blueBulletActive = 0;
 ;
-	sty     _blueBulletActive
+L0051:	lda     #$00
+	sta     _blueBulletActive
 ;
 ; }
 ;
-	jmp     incsp2
+L0033:	jmp     incsp2
 
 .endproc
 
@@ -5167,6 +5195,60 @@ L0002:	rts
 ; }
 ;
 L0002:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; unsigned char __near__ getCollisionValue (unsigned char x, unsigned char y)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_getCollisionValue: near
+
+.segment	"CODE"
+
+;
+; {
+;
+	jsr     pusha
+;
+; switch (currentLevel)
+;
+	ldx     #$00
+	lda     _currentLevel
+;
+; }
+;
+	bne     L0003
+;
+; return levelOneCollision[y * 32 + x];
+;
+	lda     (sp,x)
+	jsr     shlax4
+	stx     tmp1
+	asl     a
+	rol     tmp1
+	sta     ptr1
+	ldy     #$01
+	lda     (sp),y
+	clc
+	adc     ptr1
+	ldx     tmp1
+	bcc     L0005
+	inx
+L0005:	sta     ptr1
+	txa
+	clc
+	adc     #>(_levelOneCollision)
+	sta     ptr1+1
+	ldy     #<(_levelOneCollision)
+	ldx     #$00
+	lda     (ptr1),y
+;
+; }
+;
+L0003:	jmp     incsp2
 
 .endproc
 
