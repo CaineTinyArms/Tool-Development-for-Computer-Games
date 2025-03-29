@@ -447,7 +447,7 @@ _paletteSprite:
 	.byte	$27
 	.byte	$2C
 	.byte	$0F
-	.byte	$21
+	.byte	$31
 	.byte	$10
 	.byte	$2C
 	.byte	$27
@@ -458,21 +458,21 @@ _paletteSprite:
 	.byte	$00
 	.byte	$00
 _levelPaletteBackground:
-	.byte	$21
+	.byte	$31
 	.byte	$11
 	.byte	$10
 	.byte	$30
-	.byte	$21
+	.byte	$31
 	.byte	$0F
 	.byte	$0F
 	.byte	$27
-	.byte	$21
+	.byte	$31
 	.byte	$00
 	.byte	$10
 	.byte	$30
+	.byte	$31
+	.byte	$0F
 	.byte	$21
-	.byte	$0F
-	.byte	$0F
 	.byte	$16
 _levelOneData:
 	.byte	$A0

@@ -13,7 +13,8 @@
 #define DK_GREEN 0x09
 #define DK_BLUE 0x11
 #define SKIN 0x36
-#define LT_BLUE 0x21
+#define LT_BLUE 0x31
+#define GRILL 0x21
 
 const unsigned char paletteBackground[]=
 {
@@ -36,5 +37,5 @@ const unsigned char levelPaletteBackground[]=
 LT_BLUE, DK_BLUE, LT_GY, WHITE, // Sub-Palette 0 
 LT_BLUE,BLACK,BLACK,ORANGE, // Sub-Palette 1
 LT_BLUE,DK_GY,LT_GY,WHITE, // Sub-Palette 2
-LT_BLUE,BLACK,BLACK,RED // Sub-Palette 3
+LT_BLUE,BLACK,GRILL,RED // Sub-Palette 3
 }; 
