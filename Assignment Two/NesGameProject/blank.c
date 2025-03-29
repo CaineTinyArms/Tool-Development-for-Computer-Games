@@ -2,7 +2,10 @@
 #include "LIB/nesdoug.h" 
 #include "headers/sprite.h"
 #include "headers/colours.h"
-#include "headers/levelDatas.h"
+#include "headers/levelOneData.h"
+#include "headers/levelTwoData.h"
+#include "headers/levelThreeData.h"
+#include "headers/levelFourData.h"
 #include "headers/levelCollisions.h"
 #include "headers/menu.h"
 #pragma bss-name(push, "ZEROPAGE")

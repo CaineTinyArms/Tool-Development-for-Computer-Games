@@ -447,7 +447,7 @@ _paletteSprite:
 	.byte	$27
 	.byte	$2C
 	.byte	$0F
-	.byte	$31
+	.byte	$21
 	.byte	$10
 	.byte	$2C
 	.byte	$27
@@ -458,22 +458,22 @@ _paletteSprite:
 	.byte	$00
 	.byte	$00
 _levelPaletteBackground:
-	.byte	$31
-	.byte	$11
+	.byte	$21
+	.byte	$00
 	.byte	$10
-	.byte	$30
-	.byte	$31
-	.byte	$0F
-	.byte	$0F
-	.byte	$27
-	.byte	$31
+	.byte	$16
+	.byte	$21
+	.byte	$00
+	.byte	$10
+	.byte	$2C
+	.byte	$21
 	.byte	$00
 	.byte	$10
 	.byte	$30
-	.byte	$31
-	.byte	$0F
 	.byte	$21
-	.byte	$16
+	.byte	$00
+	.byte	$10
+	.byte	$2A
 _levelOneData:
 	.byte	$A0
 	.byte	$AB
@@ -1445,10 +1445,10 @@ _levelOneData:
 	.byte	$AA
 	.byte	$AA
 	.byte	$2A
-	.byte	$0A
-	.byte	$0A
-	.byte	$0A
 	.byte	$8A
+	.byte	$AA
+	.byte	$AA
+	.byte	$AA
 	.byte	$AA
 	.byte	$AA
 	.byte	$AA
@@ -2468,14 +2468,6 @@ _levelTwoData:
 	.byte	$0A
 	.byte	$0A
 	.byte	$8A
-	.byte	$22
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$A8
 	.byte	$A2
 	.byte	$A0
 	.byte	$A0
@@ -2484,6 +2476,14 @@ _levelTwoData:
 	.byte	$A0
 	.byte	$A0
 	.byte	$A8
+	.byte	$AA
+	.byte	$AA
+	.byte	$AA
+	.byte	$AA
+	.byte	$AA
+	.byte	$AA
+	.byte	$AA
+	.byte	$AA
 	.byte	$AA
 	.byte	$AA
 	.byte	$AA
@@ -4528,7 +4528,7 @@ _levelFourData:
 	.byte	$8A
 	.byte	$22
 	.byte	$00
-	.byte	$CC
+	.byte	$00
 	.byte	$A0
 	.byte	$A0
 	.byte	$A0
