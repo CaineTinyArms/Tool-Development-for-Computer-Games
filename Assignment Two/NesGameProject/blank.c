@@ -62,6 +62,7 @@ void drawBluePortalSprite(void);
 unsigned char getCollisionValue(unsigned char x, unsigned char y);
 void drawDoorSprite();
 void doorPlayerCollision(void);
+unsigned char disablePortals(struct spriteData *spr);
 
 // MAIN GAME LOOP
 // -=========================================- 
@@ -105,6 +106,11 @@ void main(void) {
 			updateBullet(); // Updates bullet location and logic, if any are on the screen.
             portalPlayerCollision(); // Check if the player is colliding with any portals.
 			doorPlayerCollision();
+            if (disablePortals(&playerSpriteData))
+            {
+                orangePortalActive = 0;
+                bluePortalActive = 0;
+            }
             oam_clear(); // Clear the OAM buffer/
             drawSprite(); // Draws the player sprite.
             drawBullet(); // Draws the bullet sprites.
@@ -219,14 +225,27 @@ unsigned char playerWallCollision(struct spriteData *spr)
     unsigned char topTile    = spr->Y >> 3; // Gets the tile above the player.
     unsigned char bottomTile = (spr->Y + spr->height) >> 3; // Gets the tile below the player.
 
-    if(wallDetection(leftTile, topTile) || wallDetection(rightTile, topTile) || wallDetection(leftTile, bottomTile) || wallDetection(rightTile, bottomTile)) // If any of the tiles are a wall.
+    if(getCollisionValue(leftTile, topTile) == 1 || getCollisionValue(leftTile, topTile) == 2 || getCollisionValue(leftTile, topTile) == 3)
     {
-        return 1; // Return a 1, meaning thats a wall.
+        return 1;
     }
-    else 
-	{
-        return 0; // Return a 0, meaing they can move.
+
+    if(getCollisionValue(rightTile, topTile) == 1 || getCollisionValue(rightTile, topTile) == 2 || getCollisionValue(rightTile, topTile) == 3)
+    {
+        return 1;
     }
+
+    if(getCollisionValue(leftTile, bottomTile) == 1 || getCollisionValue(leftTile, bottomTile) == 2 || getCollisionValue(leftTile, bottomTile) == 3)
+    {
+        return 1;
+    }
+
+    if(getCollisionValue(rightTile, bottomTile) == 1 || getCollisionValue(rightTile, bottomTile) == 2 || getCollisionValue(rightTile, bottomTile) == 3)
+    {   
+        return 1;
+    }
+
+    return 0;
 }
 
 unsigned char getCollisionValue(unsigned char x, unsigned char y)
@@ -347,7 +366,7 @@ void updateBullet(void)
             orangePortalActive = 1; // Set the orange portal as active.
             orangeBulletActive = 0; // Set the orange bullet as not active, so it stops getting drawn.
         }
-        else if(collision == 1) // If the bullet hits a normal wall.
+        else if(collision == 1 || collision == 4)// If the bullet hits a normal wall, or the bullet touches an emancipation grid.
         {
             orangeBulletActive = 0; // Set the orange bullet as not active, so it stops getting drawn.
         }
@@ -412,7 +431,7 @@ void updateBullet(void)
             bluePortalActive = 1; // Set the blue portal to active.
             blueBulletActive = 0; // Set the blue bullet to not active so it can be shot again.
         }
-        else if (collision == 1) // If the bullet hits a wall that can't hold a portal.
+        else if (collision == 1 || collision == 4) // If the bullet hits a wall that can't hold a portal or touches an emancipation grid.
         {
             blueBulletActive = 0;// Set the blue bullet to not active so it can be shot again.
         }
@@ -719,4 +738,19 @@ void doorPlayerCollision(void)
 		currentLevel++;
 		loadLevel(currentLevel);
 	 }
+}
+
+unsigned char disablePortals(struct spriteData *spr)
+{
+    unsigned char leftTile   = spr->X >> 3;
+    unsigned char rightTile  = (spr->X + spr->width) >> 3;
+    unsigned char topTile    = spr->Y >> 3;
+    unsigned char bottomTile = (spr->Y + spr->height) >> 3;
+
+    if(getCollisionValue(leftTile, topTile) == 4 || getCollisionValue(rightTile, topTile) == 4 || getCollisionValue(leftTile, bottomTile) == 4 || getCollisionValue(rightTile, bottomTile) == 4)
+    {
+        return 1;
+    }
+
+    return 0;
 }
