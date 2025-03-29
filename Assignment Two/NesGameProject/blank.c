@@ -6,6 +6,7 @@
 #include "headers/levelTwoData.h"
 #include "headers/levelThreeData.h"
 #include "headers/levelFourData.h"
+#include "headers/levelFiveData.h"
 #include "headers/levelCollisions.h"
 #include "headers/menu.h"
 #pragma bss-name(push, "ZEROPAGE")
@@ -217,6 +218,9 @@ unsigned char wallDetection(unsigned char x, unsigned char y)
         case 3:
             return levelFourCollision[y * 32 + x];
             break;
+        case 4:
+            return levelFiveCollision[y * 32 + x];
+            break;
 
     }
 }
@@ -268,6 +272,8 @@ unsigned char getCollisionValue(unsigned char x, unsigned char y)
             return levelThreeCollision[y * 32 + x]; // Returns the collision value for the tile at X and Y of the collision table for the level.
         case 3:
             return levelFourCollision[y * 32 + x];
+        case 4:
+            return levelFiveCollision[y * 32 + x];
     }
 }
 
@@ -658,6 +664,14 @@ void loadLevel(unsigned char lvl)
         case 3:
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
             vram_write(levelFourData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+            playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
+            playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
+			doorSpriteData.X = 200;
+			doorSpriteData.Y = 216;
+            break;
+        case 4:
+            vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
+            vram_write(levelFiveData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
             playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
             playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
 			doorSpriteData.X = 200;
