@@ -121,7 +121,7 @@ _orangePortalSpriteData:
 _bluePortalSpriteData:
 	.byte	$00
 	.byte	$00
-	.byte	$10
+	.byte	$12
 	.byte	$10
 _orangeBulletSpriteData:
 	.byte	$00
@@ -5416,10 +5416,10 @@ _levelFiveData:
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$80
+	.byte	$00
+	.byte	$00
 	.byte	$81
-	.byte	$00
-	.byte	$00
-	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -5448,10 +5448,10 @@ _levelFiveData:
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$80
+	.byte	$00
+	.byte	$00
 	.byte	$81
-	.byte	$00
-	.byte	$00
-	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -5480,10 +5480,10 @@ _levelFiveData:
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$80
+	.byte	$00
+	.byte	$00
 	.byte	$81
-	.byte	$00
-	.byte	$00
-	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -5586,16 +5586,16 @@ _levelFiveData:
 	.byte	$00
 	.byte	$88
 	.byte	$2A
-	.byte	$4A
-	.byte	$89
+	.byte	$0A
+	.byte	$49
 	.byte	$00
 	.byte	$00
 	.byte	$88
 	.byte	$0A
 	.byte	$8A
 	.byte	$0A
+	.byte	$02
 	.byte	$06
-	.byte	$0A
 	.byte	$0A
 	.byte	$0A
 	.byte	$0A
@@ -10541,10 +10541,10 @@ _levelFiveCollision:
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$03
+	.byte	$00
+	.byte	$00
 	.byte	$04
-	.byte	$00
-	.byte	$00
-	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -10573,10 +10573,10 @@ _levelFiveCollision:
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$03
+	.byte	$00
+	.byte	$00
 	.byte	$04
-	.byte	$00
-	.byte	$00
-	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -10605,10 +10605,10 @@ _levelFiveCollision:
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$03
+	.byte	$00
+	.byte	$00
 	.byte	$04
-	.byte	$00
-	.byte	$00
-	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -10662,70 +10662,70 @@ _levelFiveCollision:
 	.byte	$01
 	.byte	$01
 	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
+	.byte	$2A
+	.byte	$0A
+	.byte	$8A
+	.byte	$0A
+	.byte	$0A
+	.byte	$0A
+	.byte	$0A
+	.byte	$8A
+	.byte	$22
 	.byte	$00
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
+	.byte	$88
+	.byte	$2A
+	.byte	$0A
+	.byte	$0A
+	.byte	$0A
+	.byte	$8A
+	.byte	$22
 	.byte	$00
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
+	.byte	$88
+	.byte	$A2
+	.byte	$A0
+	.byte	$A0
+	.byte	$A0
+	.byte	$A8
+	.byte	$22
 	.byte	$00
-	.byte	$01
+	.byte	$88
 	.byte	$02
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$01
-	.byte	$01
+	.byte	$88
+	.byte	$22
 	.byte	$00
-	.byte	$01
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$01
-	.byte	$01
-	.byte	$00
-	.byte	$01
+	.byte	$88
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
+	.byte	$88
+	.byte	$22
+	.byte	$00
+	.byte	$A8
 	.byte	$00
 	.byte	$00
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
-	.byte	$01
+	.byte	$00
+	.byte	$00
+	.byte	$88
+	.byte	$2A
+	.byte	$0A
+	.byte	$49
+	.byte	$00
+	.byte	$00
+	.byte	$88
+	.byte	$0A
+	.byte	$8A
+	.byte	$0A
+	.byte	$02
+	.byte	$06
+	.byte	$0A
+	.byte	$0A
+	.byte	$0A
+	.byte	$08
+	.byte	$0A
 _menu:
 	.byte	$00
 	.byte	$00
@@ -12921,7 +12921,7 @@ L004D:	lda     _orangePortalOrientation
 	lda     (sp),y
 	jsr     aslax3
 	clc
-	adc     #$F8
+	adc     #$F4
 	sta     _orangePortalSpriteData
 	txa
 	adc     #$FF
@@ -13148,7 +13148,7 @@ L005D:	lda     _bluePortalOrientation
 	lda     (sp),y
 	jsr     aslax3
 	clc
-	adc     #$F8
+	adc     #$F4
 	sta     _bluePortalSpriteData
 	txa
 	adc     #$FF
@@ -13299,10 +13299,10 @@ L0003:	rts
 	lda     _playerSpriteData+1
 	clc
 	adc     _playerSpriteData+2
-	bcc     L0008
+	bcc     L0010
 	inx
 	clc
-L0008:	adc     #$01
+L0010:	adc     #$01
 	bcc     L0002
 	inx
 L0002:	jsr     asrax3
@@ -13322,37 +13322,52 @@ L0002:	jsr     asrax3
 	lda     _playerSpriteData
 	clc
 	adc     _playerSpriteData+3
-	bcc     L0007
+	bcc     L000D
 	inx
-L0007:	jsr     asrax3
+L000D:	jsr     asrax3
 	jsr     pusha
 ;
-; if(wallDetection(footXLeft, footY) || wallDetection(footXRight, footY)) // If either "foot" is touching a wall tile, or there's a wall tile directly below the player.
+; unsigned char collisionLeft = getCollisionValue(footXLeft, footY);
 ;
 	ldy     #$01
 	lda     (sp),y
 	jsr     pusha
 	ldy     #$03
 	lda     (sp),y
-	jsr     _wallDetection
-	tax
-	bne     L0004
-	lda     (sp,x)
+	jsr     _getCollisionValue
 	jsr     pusha
-	ldy     #$03
+;
+; unsigned char collisionRight = getCollisionValue(footXRight, footY);
+;
+	ldy     #$01
 	lda     (sp),y
-	jsr     _wallDetection
-	tax
+	jsr     pusha
+	ldy     #$04
+	lda     (sp),y
+	jsr     _getCollisionValue
+	jsr     pusha
+;
+; if ((collisionLeft >= 1 && collisionLeft <= 3) || (collisionRight >= 1 && collisionRight <= 3))
+;
+	ldy     #$01
+	lda     (sp),y
+	beq     L000E
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$04
+	bcc     L0016
+L000E:	ldx     #$00
+	lda     (sp,x)
 	beq     L0001
-;
-; return 1; // Return a 1, to show that they're on the floor.
-;
-L0004:	ldx     #$00
-	lda     #$01
+	cmp     #$04
+	bcc     L0016
+	txa
+	jmp     incsp5
+L0016:	tya
 ;
 ; }
 ;
-L0001:	jmp     incsp3
+L0001:	jmp     incsp5
 
 .endproc
 

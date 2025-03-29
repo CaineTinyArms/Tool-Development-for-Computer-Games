@@ -38,7 +38,7 @@ signed char blueBulletDirectionX   = 0; // Tracks the X direction of the blue bu
 signed char blueBulletDirectionY   = 0; // Tracks the Y direction of the orange bullet, -1 for left, 1 for right.
 unsigned char orangePortalOrientation = 0; // Tracks the orientation of the orange portal, 0 = up, 1 = right, 2 = down and 3 = left.
 unsigned char bluePortalOrientation   = 0; // Tracks the orientation of the blue portal, 0 = up, 1 = right, 2 = down and 3 = left.
-#define PORTAL_WIDTH  16 // Defines the width of the portal sprite.
+#define PORTAL_WIDTH  20 // Defines the width of the portal sprite.
 #define PORTAL_HEIGHT 16 // Defines the height of the portal sprite.
 
 
@@ -541,12 +541,13 @@ unsigned char onGround(void)
     unsigned char footY     = (playerSpriteData.Y + playerSpriteData.height + 1) >> 3; // Gets the tile directly below the sprite.
     unsigned char footXLeft = playerSpriteData.X >> 3; // Gets the tile that the "left foot", AKA, the left half of the sprite is touching.
     unsigned char footXRight= (playerSpriteData.X + playerSpriteData.width) >> 3; // Gets the tile that the "right foot", AKA the left half of the player sprite is touching.
-
-    if(wallDetection(footXLeft, footY) || wallDetection(footXRight, footY)) // If either "foot" is touching a wall tile, or there's a wall tile directly below the player.
+    unsigned char collisionLeft = getCollisionValue(footXLeft, footY);
+    unsigned char collisionRight = getCollisionValue(footXRight, footY);
+    if ((collisionLeft >= 1 && collisionLeft <= 3) || (collisionRight >= 1 && collisionRight <= 3))
     {
-        return 1; // Return a 1, to show that they're on the floor.
+        return 1;
     }
-    return 0; // Return a 0, to show that they're in the air.
+    return 0;
 }
 
 void applyGravity(void) // 

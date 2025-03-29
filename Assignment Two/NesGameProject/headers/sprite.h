@@ -131,7 +131,7 @@ struct spriteData playerSpriteData = {16, 200, 15, 14}; // Sprite Data For the P
 
 struct spriteData orangePortalSpriteData = {0, 0, 16, 16}; // Sprite Data for the First Portal Sprite.
 
-struct spriteData bluePortalSpriteData = {0, 0, 16, 16}; // Sprite Data for the Second Portal Sprite.
+struct spriteData bluePortalSpriteData = {0, 0, 18, 16}; // Sprite Data for the Second Portal Sprite.
 
 struct spriteData orangeBulletSpriteData = {0, 0, 7, 7};
 
