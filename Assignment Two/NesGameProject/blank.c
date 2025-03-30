@@ -1,15 +1,10 @@
 #include "LIB/neslib.h"
 #include "LIB/nesdoug.h" 
 #include "headers/sprite.h"
-#include "headers/colours.h"
-#include "headers/levelOneData.h"
-#include "headers/levelTwoData.h"
-#include "headers/levelThreeData.h"
-#include "headers/levelFourData.h"
-#include "headers/levelFiveData.h"
+#include "headers/palettes.h"
+#include "headers/levels.h"
 #include "headers/levelCollisions.h"
 #include "headers/menu.h"
-#include "headers/end.h"
 #pragma bss-name(push, "ZEROPAGE")
 
 
@@ -254,6 +249,8 @@ unsigned char wallDetection(unsigned char x, unsigned char y)
             break;
         case 4:
             return levelFiveCollision[y * 32 + x];
+        case 5:
+            return levelSixCollision[y * 32 + x];
             break;
 
     }
@@ -308,6 +305,8 @@ unsigned char getCollisionValue(unsigned char x, unsigned char y)
             return levelFourCollision[y * 32 + x];
         case 4:
             return levelFiveCollision[y * 32 + x];
+        case 5:
+            return levelSixCollision[y * 32 + x];
     }
 }
 
@@ -720,6 +719,15 @@ void loadLevel(unsigned char lvl)
 			doorSpriteData.X = 200;
 			doorSpriteData.Y = 216;
             break;
+        case 5:
+            vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
+            vram_write(levelSixData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+            playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
+            playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
+			doorSpriteData.X = 224;
+			doorSpriteData.Y = 32;
+            break;
+
         default:
             gameState = 2;
     }
