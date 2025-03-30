@@ -21,6 +21,7 @@
 	.import		_pad_poll
 	.import		_bank_spr
 	.import		_vram_adr
+	.import		_vram_put
 	.import		_vram_write
 	.import		_check_collision
 	.import		_set_scroll_y
@@ -47,6 +48,7 @@
 	.export		_paletteBackground
 	.export		_paletteSprite
 	.export		_levelPaletteBackground
+	.export		_endingScreenPalette
 	.export		_levelOneData
 	.export		_levelTwoData
 	.export		_levelThreeData
@@ -58,6 +60,7 @@
 	.export		_levelFourCollision
 	.export		_levelFiveCollision
 	.export		_menu
+	.export		_end
 	.export		_pad1
 	.export		_orangePortalCollision
 	.export		_bluePortalCollision
@@ -81,6 +84,10 @@
 	.export		_blueBulletDirectionY
 	.export		_orangePortalOrientation
 	.export		_bluePortalOrientation
+	.export		_endScreenDrawn
+	.export		_cakeTextTimer
+	.export		_cakeIsALie
+	.export		_prevCakeisALie
 	.export		_modeToggle
 	.export		_walkMode
 	.export		_shootMode
@@ -104,6 +111,8 @@
 	.export		_drawDoorSprite
 	.export		_doorPlayerCollision
 	.export		_disablePortals
+	.export		_drawEndScreen
+	.export		_writeEndText
 	.export		_main
 
 .segment	"DATA"
@@ -194,6 +203,14 @@ _orangePortalOrientation:
 	.byte	$00
 _bluePortalOrientation:
 	.byte	$00
+_endScreenDrawn:
+	.byte	$00
+_cakeTextTimer:
+	.byte	$00
+_cakeIsALie:
+	.byte	$00
+_prevCakeisALie:
+	.byte	$FF
 
 .segment	"RODATA"
 
@@ -476,6 +493,23 @@ _levelPaletteBackground:
 	.byte	$00
 	.byte	$10
 	.byte	$2A
+_endingScreenPalette:
+	.byte	$10
+	.byte	$07
+	.byte	$30
+	.byte	$16
+	.byte	$10
+	.byte	$10
+	.byte	$00
+	.byte	$2A
+	.byte	$10
+	.byte	$0F
+	.byte	$21
+	.byte	$00
+	.byte	$10
+	.byte	$00
+	.byte	$30
+	.byte	$16
 _levelOneData:
 	.byte	$A0
 	.byte	$AB
@@ -11751,6 +11785,1052 @@ _menu:
 	.byte	$05
 	.byte	$05
 	.byte	$00
+_end:
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$00
+	.byte	$00
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$00
+	.byte	$00
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$00
+	.byte	$00
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$00
+	.byte	$00
+	.byte	$E0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$E0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F3
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F3
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$45
+	.byte	$58
+	.byte	$49
+	.byte	$54
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F3
+	.byte	$F0
+	.byte	$F3
+	.byte	$F0
+	.byte	$F3
+	.byte	$F0
+	.byte	$F3
+	.byte	$F0
+	.byte	$F3
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F2
+	.byte	$F2
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F2
+	.byte	$F2
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F2
+	.byte	$F2
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F2
+	.byte	$F2
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F2
+	.byte	$F2
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F2
+	.byte	$F2
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F2
+	.byte	$F2
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F3
+	.byte	$F3
+	.byte	$F3
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F2
+	.byte	$F2
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F2
+	.byte	$F2
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F1
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F2
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$F0
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$FC
+	.byte	$FF
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$CC
+	.byte	$FF
+	.byte	$FF
+	.byte	$00
+	.byte	$40
+	.byte	$10
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$80
+	.byte	$AA
+	.byte	$AA
+	.byte	$20
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$AA
+	.byte	$AA
+	.byte	$AA
+	.byte	$AA
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$AA
+	.byte	$AA
+	.byte	$AA
+	.byte	$AA
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$8A
+	.byte	$AA
+	.byte	$AA
+	.byte	$2A
+	.byte	$00
+	.byte	$05
+	.byte	$15
+	.byte	$05
+	.byte	$00
+	.byte	$0A
+	.byte	$0A
+	.byte	$00
+	.byte	$00
+	.byte	$04
+	.byte	$05
+	.byte	$00
+S0003:
+	.byte	$29,$28,$2A,$26,$5E,$25,$24,$23,$40,$21,$7E,$3F,$3E,$3C,$3A,$7B
+	.byte	$7D,$5D,$00
+S0006:
+	.byte	$54,$45,$53,$54,$49,$4E,$47,$20,$43,$4F,$4D,$50,$4C,$45,$54,$45
+	.byte	$2E,$00
+S0007:
+	.byte	$54,$48,$45,$20,$43,$41,$4B,$45,$20,$49,$53,$20,$41,$20,$4C,$49
+	.byte	$45,$00
+S0004:
+	.byte	$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C
+	.byte	$00
+S0005:
+	.byte	$43,$4F,$4E,$47,$52,$41,$54,$55,$4C,$41,$54,$49,$4F,$4E,$53,$2E
+	.byte	$00
+S0008:
+	.byte	$45,$4E,$4A,$4F,$59,$20,$59,$4F,$55,$52,$20,$43,$41,$4B,$45,$2E
+	.byte	$00
+S0002:
+	.byte	$21,$40,$23,$24,$25,$5E,$26,$2A,$28,$29,$5F,$2B,$3D,$2D,$5B,$5D
+	.byte	$00
 
 .segment	"BSS"
 
@@ -13664,9 +14744,9 @@ L002D:	lda     #<(_playerShootUpSprite)
 	cmp     #$02
 	beq     L0006
 	cmp     #$03
-	beq     L0007
+	jeq     L0007
 	cmp     #$04
-	beq     L0008
+	jeq     L0008
 	jmp     L000A
 ;
 ; vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
@@ -13678,10 +14758,34 @@ L0004:	ldx     #$20
 ;
 	lda     #<(_levelOneData)
 	ldx     #>(_levelOneData)
+	jsr     pushax
+	ldx     #$04
+	lda     #$00
+	jsr     _vram_write
+;
+; playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
+;
+	lda     #$10
+	sta     _playerSpriteData
+;
+; playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
+;
+	lda     #$D8
+	sta     _playerSpriteData+1
+;
+; doorSpriteData.X = 200;
+;
+	lda     #$C8
+	sta     _doorSpriteData
+;
+; doorSpriteData.Y = 216;
+;
+	lda     #$D8
+	sta     _doorSpriteData+1
 ;
 ; break;
 ;
-	jmp     L0015
+	jmp     L000B
 ;
 ; vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
 ;
@@ -13693,10 +14797,34 @@ L0005:	ldx     #$20
 ;
 	lda     #<(_levelTwoData)
 	ldx     #>(_levelTwoData)
+	jsr     pushax
+	ldx     #$04
+	lda     #$00
+	jsr     _vram_write
+;
+; playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
+;
+	lda     #$10
+	sta     _playerSpriteData
+;
+; playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
+;
+	lda     #$D8
+	sta     _playerSpriteData+1
+;
+; doorSpriteData.X = 200;
+;
+	lda     #$C8
+	sta     _doorSpriteData
+;
+; doorSpriteData.Y = 216;
+;
+	lda     #$D8
+	sta     _doorSpriteData+1
 ;
 ; break;
 ;
-	jmp     L0015
+	jmp     L000B
 ;
 ; vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
 ;
@@ -13716,45 +14844,7 @@ L0006:	ldx     #$20
 ; playerSpriteData.X = 136; // Sets the player location to the starting location for level 1.
 ;
 	lda     #$88
-;
-; break;
-;
-	jmp     L0010
-;
-; vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
-;
-L0007:	ldx     #$20
-	tya
-	jsr     _vram_adr
-;
-; vram_write(levelFourData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
-;
-	lda     #<(_levelFourData)
-	ldx     #>(_levelFourData)
-;
-; break;
-;
-	jmp     L0015
-;
-; vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
-;
-L0008:	ldx     #$20
-	tya
-	jsr     _vram_adr
-;
-; vram_write(levelFiveData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
-;
-	lda     #<(_levelFiveData)
-	ldx     #>(_levelFiveData)
-L0015:	jsr     pushax
-	ldx     #$04
-	lda     #$00
-	jsr     _vram_write
-;
-; playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
-;
-	lda     #$10
-L0010:	sta     _playerSpriteData
+	sta     _playerSpriteData
 ;
 ; playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
 ;
@@ -13771,9 +14861,96 @@ L0010:	sta     _playerSpriteData
 	lda     #$D8
 	sta     _doorSpriteData+1
 ;
+; break;
+;
+	jmp     L000B
+;
+; vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
+;
+L0007:	ldx     #$20
+	tya
+	jsr     _vram_adr
+;
+; vram_write(levelFourData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+;
+	lda     #<(_levelFourData)
+	ldx     #>(_levelFourData)
+	jsr     pushax
+	ldx     #$04
+	lda     #$00
+	jsr     _vram_write
+;
+; playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
+;
+	lda     #$10
+	sta     _playerSpriteData
+;
+; playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
+;
+	lda     #$D8
+	sta     _playerSpriteData+1
+;
+; doorSpriteData.X = 200;
+;
+	lda     #$C8
+	sta     _doorSpriteData
+;
+; doorSpriteData.Y = 216;
+;
+	lda     #$D8
+	sta     _doorSpriteData+1
+;
+; break;
+;
+	jmp     L000B
+;
+; vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
+;
+L0008:	ldx     #$20
+	tya
+	jsr     _vram_adr
+;
+; vram_write(levelFiveData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+;
+	lda     #<(_levelFiveData)
+	ldx     #>(_levelFiveData)
+	jsr     pushax
+	ldx     #$04
+	lda     #$00
+	jsr     _vram_write
+;
+; playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
+;
+	lda     #$10
+	sta     _playerSpriteData
+;
+; playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
+;
+	lda     #$D8
+	sta     _playerSpriteData+1
+;
+; doorSpriteData.X = 200;
+;
+	lda     #$C8
+	sta     _doorSpriteData
+;
+; doorSpriteData.Y = 216;
+;
+	lda     #$D8
+	sta     _doorSpriteData+1
+;
+; break;
+;
+	jmp     L000B
+;
+; gameState = 2;
+;
+L000A:	lda     #$02
+	sta     _gameState
+;
 ; bluePortalActive   = 0; // Reset the blue portal active.
 ;
-L000A:	lda     #$00
+L000B:	lda     #$00
 	sta     _bluePortalActive
 ;
 ; orangePortalActive = 0; // Reset the orange portal active.
@@ -14383,6 +15560,299 @@ L0003:	ldx     #$00
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ drawEndScreen (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_drawEndScreen: near
+
+.segment	"CODE"
+
+;
+; ppu_off();
+;
+	jsr     _ppu_off
+;
+; pal_bg(endingScreenPalette);      // Set end screen palette
+;
+	lda     #<(_endingScreenPalette)
+	ldx     #>(_endingScreenPalette)
+	jsr     _pal_bg
+;
+; pal_spr(paletteSprite);        // Use your existing sprite palette if needed
+;
+	lda     #<(_paletteSprite)
+	ldx     #>(_paletteSprite)
+	jsr     _pal_spr
+;
+; vram_adr(NAMETABLE_A);         // Set VRAM address to start of screen
+;
+	ldx     #$20
+	lda     #$00
+	jsr     _vram_adr
+;
+; vram_write(end, 1024);   // Write entire nametable (includes attribute table)
+;
+	lda     #<(_end)
+	ldx     #>(_end)
+	jsr     pushax
+	ldx     #$04
+	lda     #$00
+	jsr     _vram_write
+;
+; ppu_on_all();
+;
+	jmp     _ppu_on_all
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ writeEndText (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_writeEndText: near
+
+.segment	"CODE"
+
+;
+; cakeTextTimer++;
+;
+	jsr     decsp1
+	inc     _cakeTextTimer
+;
+; if (cakeTextTimer == 119)
+;
+	lda     _cakeTextTimer
+	cmp     #$77
+	bne     L0017
+;
+; ppu_off();
+;
+	jsr     _ppu_off
+;
+; vram_adr(NAMETABLE_A + (2 * 32) + 3); 
+;
+	ldx     #$20
+	lda     #$43
+	jsr     _vram_adr
+;
+; vram_write((const unsigned char*)"!@#$%^&*()_+=-[]", 15);
+;
+	lda     #<(S0002)
+	ldx     #>(S0002)
+	jsr     pushax
+	ldx     #$00
+	lda     #$0F
+	jsr     _vram_write
+;
+; vram_adr(NAMETABLE_A + (4 * 32) + 2);
+;
+	ldx     #$20
+	lda     #$82
+	jsr     _vram_adr
+;
+; vram_write((const unsigned char*)")(*&^%$#@!~?><:{}]", 18);
+;
+	lda     #<(S0003)
+	ldx     #>(S0003)
+	jsr     pushax
+	ldx     #$00
+	lda     #$12
+	jsr     _vram_write
+;
+; vram_adr(NAMETABLE_A + (6 * 32) + 2);
+;
+	ldx     #$20
+	lda     #$C2
+	jsr     _vram_adr
+;
+; vram_write((const unsigned char*)"/\\/\\/\\/\\/\\/\\/\\/\\", 17);
+;
+	lda     #<(S0004)
+	ldx     #>(S0004)
+	jsr     pushax
+	ldx     #$00
+	lda     #$11
+	jsr     _vram_write
+;
+; ppu_on_all();
+;
+	jsr     _ppu_on_all
+;
+; if (cakeTextTimer >= 120)
+;
+L0017:	lda     _cakeTextTimer
+	cmp     #$78
+	bcc     L0018
+;
+; cakeTextTimer = 0;
+;
+	lda     #$00
+	sta     _cakeTextTimer
+;
+; cakeIsALie = !cakeIsALie;
+;
+	lda     _cakeIsALie
+	jsr     bnega
+	sta     _cakeIsALie
+;
+; if (cakeIsALie != prevCakeisALie)
+;
+L0018:	lda     _cakeIsALie
+	cmp     _prevCakeisALie
+	jeq     L0004
+;
+; ppu_off();
+;
+	jsr     _ppu_off
+;
+; vram_adr(NAMETABLE_A + (2 * 32) + 3);
+;
+	ldx     #$20
+	lda     #$43
+	jsr     _vram_adr
+;
+; for (i = 0; i < 20; i++) vram_put(0x00);
+;
+	lda     #$00
+	tay
+L0013:	sta     (sp),y
+	cmp     #$14
+	bcs     L0006
+	tya
+	jsr     _vram_put
+	ldy     #$00
+	clc
+	lda     #$01
+	adc     (sp),y
+	jmp     L0013
+;
+; vram_adr(NAMETABLE_A + (4 * 32) + 2);
+;
+L0006:	ldx     #$20
+	lda     #$82
+	jsr     _vram_adr
+;
+; for (i = 0; i < 20; i++) vram_put(0x00);
+;
+	lda     #$00
+	tay
+L0014:	sta     (sp),y
+	cmp     #$14
+	bcs     L000A
+	tya
+	jsr     _vram_put
+	ldy     #$00
+	clc
+	lda     #$01
+	adc     (sp),y
+	jmp     L0014
+;
+; vram_adr(NAMETABLE_A + (6 * 32) + 2);
+;
+L000A:	ldx     #$20
+	lda     #$C2
+	jsr     _vram_adr
+;
+; for (i = 0; i < 20; i++) vram_put(0x00);
+;
+	lda     #$00
+	tay
+L0015:	sta     (sp),y
+	cmp     #$14
+	bcs     L000E
+	tya
+	jsr     _vram_put
+	ldy     #$00
+	clc
+	lda     #$01
+	adc     (sp),y
+	jmp     L0015
+;
+; vram_adr(NAMETABLE_A + (2 * 32) + 3); 
+;
+L000E:	ldx     #$20
+	lda     #$43
+	jsr     _vram_adr
+;
+; vram_write((const unsigned char*)"CONGRATULATIONS.", 15);
+;
+	lda     #<(S0005)
+	ldx     #>(S0005)
+	jsr     pushax
+	ldx     #$00
+	lda     #$0F
+	jsr     _vram_write
+;
+; vram_adr(NAMETABLE_A + (4 * 32) + 2);
+;
+	ldx     #$20
+	lda     #$82
+	jsr     _vram_adr
+;
+; vram_write((const unsigned char*)"TESTING COMPLETE.", 18);
+;
+	lda     #<(S0006)
+	ldx     #>(S0006)
+	jsr     pushax
+	ldx     #$00
+	lda     #$12
+	jsr     _vram_write
+;
+; if (cakeIsALie)
+;
+	lda     _cakeIsALie
+	beq     L0011
+;
+; vram_adr(NAMETABLE_A + (6 * 32) + 2);
+;
+	ldx     #$20
+	lda     #$C2
+	jsr     _vram_adr
+;
+; vram_write((const unsigned char*)"THE CAKE IS A LIE", 17);
+;
+	lda     #<(S0007)
+	ldx     #>(S0007)
+;
+; else
+;
+	jmp     L001B
+;
+; vram_adr(NAMETABLE_A + (6 * 32) + 3);
+;
+L0011:	ldx     #$20
+	lda     #$C3
+	jsr     _vram_adr
+;
+; vram_write((const unsigned char*)"ENJOY YOUR CAKE.", 17);
+;
+	lda     #<(S0008)
+	ldx     #>(S0008)
+L001B:	jsr     pushax
+	ldx     #$00
+	lda     #$11
+	jsr     _vram_write
+;
+; ppu_on_all();
+;
+	jsr     _ppu_on_all
+;
+; prevCakeisALie = cakeIsALie;
+;
+	lda     _cakeIsALie
+	sta     _prevCakeisALie
+;
+; }
+;
+L0004:	jmp     incsp1
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ main (void)
 ; ---------------------------------------------------------------
 
@@ -14415,9 +15885,9 @@ L0003:	ldx     #$00
 	lda     #$FF
 	jsr     _set_scroll_y
 ;
-; gameState = 0; // 0 means main menu.
+; gameState = 2; // 0 means main menu.
 ;
-	lda     #$00
+	lda     #$02
 	sta     _gameState
 ;
 ; drawMainMenu(); // Displays the main menu.
@@ -14445,8 +15915,9 @@ L0002:	jsr     _ppu_wait_nmi
 ;
 ; if(gameState == 0) // If the game is at the main menu.
 ;
+	ldx     #$00
 	lda     _gameState
-	bne     L000D
+	bne     L000F
 ;
 ; if(pad1 & PAD_START) // Check if the player has pressed start.
 ;
@@ -14456,7 +15927,7 @@ L0002:	jsr     _ppu_wait_nmi
 ;
 ; currentLevel = 0; // Set current level to 0, meaning the first level.
 ;
-	lda     #$00
+	txa
 	sta     _currentLevel
 ;
 ; loadLevel(currentLevel); // Loads the current level.
@@ -14472,10 +15943,40 @@ L0002:	jsr     _ppu_wait_nmi
 ;
 L0006:	jsr     _animatePressStartText
 ;
+; if (gameState == 2)
+;
+	ldx     #$00
+L000F:	lda     _gameState
+	cmp     #$02
+	bne     L0010
+;
+; if (!endScreenDrawn)
+;
+	lda     _endScreenDrawn
+	bne     L0008
+;
+; drawEndScreen();
+;
+	jsr     _drawEndScreen
+;
+; endScreenDrawn = 1;
+;
+	ldx     #$00
+	lda     #$01
+	sta     _endScreenDrawn
+;
+; writeEndText();  // ← now called every frame
+;
+L0008:	jsr     _writeEndText
+;
+; oam_clear();
+;
+	jsr     _oam_clear
+;
 ; else if(gameState == 1) // If the game has started and is not on the menu.
 ;
 	jmp     L0002
-L000D:	lda     _gameState
+L0010:	lda     _gameState
 	cmp     #$01
 	bne     L0002
 ;
@@ -14486,7 +15987,7 @@ L000D:	lda     _gameState
 ; if(mode == 0) // If the user is in walk mode.
 ;
 	lda     _mode
-	bne     L000E
+	bne     L0011
 ;
 ; walkMode(); // Call the walk mode function.
 ;
@@ -14494,10 +15995,10 @@ L000D:	lda     _gameState
 ;
 ; else if(mode == 1) // If the user is in shoot mode.
 ;
-	jmp     L000B
-L000E:	lda     _mode
+	jmp     L000D
+L0011:	lda     _mode
 	cmp     #$01
-	bne     L000B
+	bne     L000D
 ;
 ; shootMode(); // Call the shoot mode function.
 ;
@@ -14505,7 +16006,7 @@ L000E:	lda     _mode
 ;
 ; applyGravity(); // Applies gravity to the player.
 ;
-L000B:	jsr     _applyGravity
+L000D:	jsr     _applyGravity
 ;
 ; updateBullet(); // Updates bullet location and logic, if any are on the screen.
 ;
@@ -14525,7 +16026,7 @@ L000B:	jsr     _applyGravity
 	ldx     #>(_playerSpriteData)
 	jsr     _disablePortals
 	tax
-	beq     L000C
+	beq     L000E
 ;
 ; orangePortalActive = 0;
 ;
@@ -14538,7 +16039,7 @@ L000B:	jsr     _applyGravity
 ;
 ; oam_clear(); // Clear the OAM buffer/
 ;
-L000C:	jsr     _oam_clear
+L000E:	jsr     _oam_clear
 ;
 ; drawSprite(); // Draws the player sprite.
 ;

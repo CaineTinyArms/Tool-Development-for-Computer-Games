@@ -6,7 +6,6 @@
 #define YELLOW 0x28
 #define GREEN 0x2A
 #define TEAL 0x2C
-#define BROWN 0x18
 #define RED 0x16
 #define PURPLE 0x14
 #define BLUE 0x12
@@ -15,6 +14,7 @@
 #define SKIN 0x36
 #define LT_BLUE 0x21
 #define GRILL 0x2C
+#define BROWN 0x07
 
 const unsigned char paletteBackground[]=
 {
@@ -39,3 +39,11 @@ LT_BLUE,DK_GY,LT_GY,GRILL, // Sub-Palette 1
 LT_BLUE,DK_GY,LT_GY,WHITE, // Sub-Palette 2
 LT_BLUE,DK_GY,LT_GY,GREEN // Sub-Palette 3
 }; 
+
+const unsigned char endingScreenPalette[]= 
+{
+    LT_GY, BROWN, WHITE, RED,
+    LT_GY, LT_GY, DK_GY, GREEN,
+    LT_GY, BLACK, LT_BLUE, DK_GY,
+    LT_GY, DK_GY, WHITE, RED
+};

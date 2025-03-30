@@ -9,6 +9,7 @@
 #include "headers/levelFiveData.h"
 #include "headers/levelCollisions.h"
 #include "headers/menu.h"
+#include "headers/end.h"
 #pragma bss-name(push, "ZEROPAGE")
 
 // GLOBAL VARIABLES.
@@ -40,6 +41,10 @@ unsigned char orangePortalOrientation = 0; // Tracks the orientation of the oran
 unsigned char bluePortalOrientation   = 0; // Tracks the orientation of the blue portal, 0 = up, 1 = right, 2 = down and 3 = left.
 #define PORTAL_WIDTH  20 // Defines the width of the portal sprite.
 #define PORTAL_HEIGHT 16 // Defines the height of the portal sprite.
+unsigned char endScreenDrawn = 0;
+unsigned char cakeTextTimer = 0;
+unsigned char cakeIsALie = 0;
+unsigned char prevCakeisALie = 255;
 
 
 // FUNCTION PROTOTYPES.
@@ -67,6 +72,8 @@ unsigned char getCollisionValue(unsigned char x, unsigned char y);
 void drawDoorSprite();
 void doorPlayerCollision(void);
 unsigned char disablePortals(struct spriteData *spr);
+void drawEndScreen();
+void writeEndText();
 
 // MAIN GAME LOOP
 // -=========================================- 
@@ -76,7 +83,7 @@ void main(void) {
 	pal_bg(paletteBackground); // Sets the Background Palette.
     pal_spr(paletteSprite); // Sets the Sprite Palette.
     set_scroll_y(0xff); // Moves the background down by 1 pixel.
-	gameState = 0; // 0 means main menu.
+	gameState = 2; // 0 means main menu.
     drawMainMenu(); // Displays the main menu.
 	bank_spr(1); // Tells the program that the sprites are located on the 2nd side of the chr file.
     ppu_on_all(); // Turns on the Screen.
@@ -94,6 +101,19 @@ void main(void) {
             }
             animatePressStartText(); // Animates the PRESS START! text if start isn't pressed.
         }
+
+        if (gameState == 2)
+        {
+            if (!endScreenDrawn)
+            {
+                drawEndScreen();
+                endScreenDrawn = 1;
+            }
+
+            writeEndText();  // ← now called every frame
+            oam_clear();
+        }
+
         else if(gameState == 1) // If the game has started and is not on the menu.
 		{
             modeToggle(); // Call the mode toggle function to check what mode the player is in.
@@ -678,6 +698,8 @@ void loadLevel(unsigned char lvl)
 			doorSpriteData.X = 200;
 			doorSpriteData.Y = 216;
             break;
+        default:
+            gameState = 2;
     }
 
     bluePortalActive   = 0; // Reset the blue portal active.
@@ -771,4 +793,86 @@ unsigned char disablePortals(struct spriteData *spr)
     }
 
     return 0;
+}
+
+void drawEndScreen()
+{
+    ppu_off();
+
+    pal_bg(endingScreenPalette);      // Set end screen palette
+    pal_spr(paletteSprite);        // Use your existing sprite palette if needed
+
+    vram_adr(NAMETABLE_A);         // Set VRAM address to start of screen
+    vram_write(end, 1024);   // Write entire nametable (includes attribute table)
+
+    ppu_on_all();
+}
+
+void writeEndText()
+{
+    unsigned char i; // ✅ Declare at the top (no mixed declarations)
+
+    cakeTextTimer++;
+
+    // Show glitch 1 frame before toggle
+    if (cakeTextTimer == 119)
+    {
+        ppu_off();
+
+        vram_adr(NAMETABLE_A + (2 * 32) + 3); 
+        vram_write((const unsigned char*)"!@#$%^&*()_+=-[]", 15);
+
+        vram_adr(NAMETABLE_A + (4 * 32) + 2);
+        vram_write((const unsigned char*)")(*&^%$#@!~?><:{}]", 18);
+
+        vram_adr(NAMETABLE_A + (6 * 32) + 2);
+        vram_write((const unsigned char*)"/\\/\\/\\/\\/\\/\\/\\/\\", 17);
+
+        ppu_on_all();
+    }
+
+    // Toggle between messages every 2 seconds
+    if (cakeTextTimer >= 120)
+    {
+        cakeTextTimer = 0;
+        cakeIsALie = !cakeIsALie;
+    }
+
+    if (cakeIsALie != prevCakeisALie)
+    {
+        ppu_off();
+
+        // Clear top line
+        vram_adr(NAMETABLE_A + (2 * 32) + 3);
+        for (i = 0; i < 20; i++) vram_put(0x00);
+
+        // Clear middle line
+        vram_adr(NAMETABLE_A + (4 * 32) + 2);
+        for (i = 0; i < 20; i++) vram_put(0x00);
+
+        // Clear bottom line
+        vram_adr(NAMETABLE_A + (6 * 32) + 2);
+        for (i = 0; i < 20; i++) vram_put(0x00);
+
+        // Draw final message lines
+        vram_adr(NAMETABLE_A + (2 * 32) + 3); 
+        vram_write((const unsigned char*)"CONGRATULATIONS.", 15);
+
+        vram_adr(NAMETABLE_A + (4 * 32) + 2);
+        vram_write((const unsigned char*)"TESTING COMPLETE.", 18);
+
+        if (cakeIsALie)
+        {
+            vram_adr(NAMETABLE_A + (6 * 32) + 2);
+            vram_write((const unsigned char*)"THE CAKE IS A LIE", 17);
+        }
+        else
+        {
+            vram_adr(NAMETABLE_A + (6 * 32) + 3);
+            vram_write((const unsigned char*)"ENJOY YOUR CAKE.", 17);
+        }
+
+        ppu_on_all();
+        prevCakeisALie = cakeIsALie;
+    }
 }
