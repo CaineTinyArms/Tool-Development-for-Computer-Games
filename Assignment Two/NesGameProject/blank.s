@@ -18,6 +18,7 @@
 	.import		_ppu_on_all
 	.import		_oam_clear
 	.import		_oam_meta_spr
+	.import		_music_play
 	.import		_sfx_play
 	.import		_pad_poll
 	.import		_bank_spr
@@ -90,6 +91,7 @@
 	.export		_cakeIsALie
 	.export		_prevCakeisALie
 	.export		_song
+	.export		_currentSong
 	.export		_modeToggle
 	.export		_walkMode
 	.export		_shootMode
@@ -215,6 +217,8 @@ _prevCakeisALie:
 	.byte	$FF
 _song:
 	.byte	$00
+_currentSong:
+	.byte	$FF
 
 .segment	"RODATA"
 
@@ -14795,6 +14799,11 @@ L002D:	lda     #<(_playerShootUpSprite)
 ;
 	jsr     _ppu_off
 ;
+; song = 2;
+;
+	lda     #$02
+	sta     _song
+;
 ; pal_bg(levelPaletteBackground); // Sets the Background Palette.
 ;
 	lda     #<(_levelPaletteBackground)
@@ -15651,6 +15660,11 @@ L0003:	ldx     #$00
 ;
 	jsr     _ppu_off
 ;
+; song = 0;
+;
+	lda     #$00
+	sta     _song
+;
 ; pal_bg(endingScreenPalette);      // Set end screen palette
 ;
 	lda     #<(_endingScreenPalette)
@@ -15980,13 +15994,43 @@ L0004:	jmp     incsp1
 ;
 	jsr     _ppu_on_all
 ;
+; song = 1;
+;
+	lda     #$01
+	sta     _song
+;
+; currentSong = 1;
+;
+	sta     _currentSong
+;
+; music_play(song);
+;
+	lda     _song
+	jsr     _music_play
+;
 ; ppu_wait_nmi();
 ;
 L0002:	jsr     _ppu_wait_nmi
 ;
+; if (currentSong != song)
+;
+	lda     _currentSong
+	cmp     _song
+	beq     L0010
+;
+; music_play(song);
+;
+	lda     _song
+	jsr     _music_play
+;
+; currentSong = song;
+;
+	lda     _song
+	sta     _currentSong
+;
 ; pad1 = pad_poll(0); // read the first controller
 ;
-	lda     #$00
+L0010:	lda     #$00
 	jsr     _pad_poll
 	sta     _pad1
 ;
@@ -15994,13 +16038,13 @@ L0002:	jsr     _ppu_wait_nmi
 ;
 	ldx     #$00
 	lda     _gameState
-	bne     L000F
+	bne     L0011
 ;
 ; if(pad1 & PAD_START) // Check if the player has pressed start.
 ;
 	lda     _pad1
 	and     #$10
-	beq     L0006
+	beq     L0007
 ;
 ; currentLevel = 0; // Set current level to 0, meaning the first level.
 ;
@@ -16018,19 +16062,19 @@ L0002:	jsr     _ppu_wait_nmi
 ;
 ; animatePressStartText(); // Animates the PRESS START! text if start isn't pressed.
 ;
-L0006:	jsr     _animatePressStartText
+L0007:	jsr     _animatePressStartText
 ;
 ; if (gameState == 2)
 ;
 	ldx     #$00
-L000F:	lda     _gameState
+L0011:	lda     _gameState
 	cmp     #$02
-	bne     L0010
+	bne     L0012
 ;
 ; if (!endScreenDrawn)
 ;
 	lda     _endScreenDrawn
-	bne     L0008
+	bne     L0009
 ;
 ; drawEndScreen();
 ;
@@ -16044,7 +16088,7 @@ L000F:	lda     _gameState
 ;
 ; writeEndText();  // ← now called every frame
 ;
-L0008:	jsr     _writeEndText
+L0009:	jsr     _writeEndText
 ;
 ; oam_clear();
 ;
@@ -16053,7 +16097,7 @@ L0008:	jsr     _writeEndText
 ; else if(gameState == 1) // If the game has started and is not on the menu.
 ;
 	jmp     L0002
-L0010:	lda     _gameState
+L0012:	lda     _gameState
 	cmp     #$01
 	bne     L0002
 ;
@@ -16064,7 +16108,7 @@ L0010:	lda     _gameState
 ; if(mode == 0) // If the user is in walk mode.
 ;
 	lda     _mode
-	bne     L0011
+	bne     L0013
 ;
 ; walkMode(); // Call the walk mode function.
 ;
@@ -16072,10 +16116,10 @@ L0010:	lda     _gameState
 ;
 ; else if(mode == 1) // If the user is in shoot mode.
 ;
-	jmp     L000D
-L0011:	lda     _mode
+	jmp     L000E
+L0013:	lda     _mode
 	cmp     #$01
-	bne     L000D
+	bne     L000E
 ;
 ; shootMode(); // Call the shoot mode function.
 ;
@@ -16083,7 +16127,7 @@ L0011:	lda     _mode
 ;
 ; applyGravity(); // Applies gravity to the player.
 ;
-L000D:	jsr     _applyGravity
+L000E:	jsr     _applyGravity
 ;
 ; updateBullet(); // Updates bullet location and logic, if any are on the screen.
 ;
@@ -16103,7 +16147,7 @@ L000D:	jsr     _applyGravity
 	ldx     #>(_playerSpriteData)
 	jsr     _disablePortals
 	tax
-	beq     L000E
+	beq     L000F
 ;
 ; orangePortalActive = 0;
 ;
@@ -16116,7 +16160,7 @@ L000D:	jsr     _applyGravity
 ;
 ; oam_clear(); // Clear the OAM buffer/
 ;
-L000E:	jsr     _oam_clear
+L000F:	jsr     _oam_clear
 ;
 ; drawSprite(); // Draws the player sprite.
 ;

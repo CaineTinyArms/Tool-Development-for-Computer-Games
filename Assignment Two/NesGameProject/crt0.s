@@ -260,7 +260,7 @@ detectNTSC:
 .segment "RODATA"
 
 music_data:
-	.include "music/FamiTrackerEndSong.s"
+	.include "music/FamiTrackerSongs.s"
 
 
 

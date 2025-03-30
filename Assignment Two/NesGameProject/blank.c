@@ -46,7 +46,8 @@ unsigned char endScreenDrawn = 0;
 unsigned char cakeTextTimer = 0;
 unsigned char cakeIsALie = 0;
 unsigned char prevCakeisALie = 255;
-unsigned char song = 0;
+unsigned char song = 0; // 1 is main menu. // 0 is end screen // 2 is in game.
+unsigned char currentSong = 255;
 
 
 // FUNCTION PROTOTYPES.
@@ -90,8 +91,19 @@ void main(void) {
 	bank_spr(1); // Tells the program that the sprites are located on the 2nd side of the chr file.
     ppu_on_all(); // Turns on the Screen.
 
+    song = 1;
+    currentSong = 1;
+    music_play(song);
+
     while(1) {
         ppu_wait_nmi();
+
+        if (currentSong != song)
+        {
+            music_play(song);
+            currentSong = song;
+        }
+
         pad1 = pad_poll(0); // read the first controller
 	    if(gameState == 0) // If the game is at the main menu.
 		{
@@ -663,7 +675,7 @@ const unsigned char* getPlayerSprite(void)
 void loadLevel(unsigned char lvl)
 {
     ppu_off(); // Turn the screen off.
-
+    song = 2;
 	pal_bg(levelPaletteBackground); // Sets the Background Palette.
 
     switch(lvl) // Switch on the current level.
@@ -809,7 +821,7 @@ unsigned char disablePortals(struct spriteData *spr)
 void drawEndScreen()
 {
     ppu_off();
-
+    song = 0;
     pal_bg(endingScreenPalette);      // Set end screen palette
     pal_spr(paletteSprite);        // Use your existing sprite palette if needed
 
