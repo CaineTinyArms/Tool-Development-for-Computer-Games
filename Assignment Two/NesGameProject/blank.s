@@ -18,13 +18,12 @@
 	.import		_ppu_on_all
 	.import		_oam_clear
 	.import		_oam_meta_spr
-	.import		_music_play
+	.import		_sfx_play
 	.import		_pad_poll
 	.import		_bank_spr
 	.import		_vram_adr
 	.import		_vram_put
 	.import		_vram_write
-	.import		_set_music_speed
 	.import		_check_collision
 	.import		_set_scroll_y
 	.export		_playerSprite
@@ -13061,6 +13060,13 @@ L0008:	lda     _orangeBulletActive
 ;
 	jsr     _spawnOrangeBullet
 ;
+; sfx_play(1, 0);
+;
+	lda     #$01
+	jsr     pusha
+	lda     #$00
+	jsr     _sfx_play
+;
 ; if(!blueBulletActive && (pad1 & PAD_B)) // If there is not a blue bullet, and B is pressed.
 ;
 L000F:	lda     _blueBulletActive
@@ -13072,6 +13078,12 @@ L000F:	lda     _blueBulletActive
 ; spawnBlueBullet(); // Spawn a blue bullet.
 ;
 	jsr     _spawnBlueBullet
+;
+; sfx_play(0,0);
+;
+	lda     #$00
+	jsr     pusha
+	jsr     _sfx_play
 ;
 ; }
 ;
@@ -13902,7 +13914,7 @@ L0006:	jsr     asrax3
 ; if(collision == 2) // If the tile has a collision value of 2, meaning it can hold a portal.
 ;
 	cmp     #$02
-	jne     L0050
+	jne     L004F
 ;
 ; if(orangeBulletDirectionX > 0) // If the orange bullet was shot to the right.
 ;
@@ -13911,7 +13923,7 @@ L0006:	jsr     asrax3
 	sbc     #$01
 	bvs     L000A
 	eor     #$80
-L000A:	bpl     L0048
+L000A:	bpl     L0047
 ;
 ; orangePortalOrientation = 1; // Set the portal orientaion to right, so the player gets spit out to the left
 ;
@@ -13920,9 +13932,9 @@ L000A:	bpl     L0048
 ; else if(orangeBulletDirectionX < 0) // If the orange bullet was shot to the left.  
 ;
 	jmp     L003E
-L0048:	lda     _orangeBulletDirectionX
+L0047:	lda     _orangeBulletDirectionX
 	asl     a
-	bcc     L0049
+	bcc     L0048
 ;
 ; orangePortalOrientation = 3; // Set the portal orientaion to left, so the player gets spit out to the right.
 ;
@@ -13931,7 +13943,7 @@ L0048:	lda     _orangeBulletDirectionX
 ; else if(orangeBulletDirectionY > 0) // If the orange bullet was shot down.
 ;
 	jmp     L003E
-L0049:	lda     _orangeBulletDirectionY
+L0048:	lda     _orangeBulletDirectionY
 	sec
 	sbc     #$01
 	bvs     L0011
@@ -13951,7 +13963,7 @@ L003E:	sta     _orangePortalOrientation
 ; if (bluePortalActive) // If the blue portal is active.
 ;
 	lda     _bluePortalActive
-	beq     L004D
+	beq     L004C
 ;
 ; otherPortalTileX = bluePortalSpriteData.X >> 3; // Get the X tile that the blue portal is located on.
 ;
@@ -13977,17 +13989,24 @@ L003E:	sta     _orangePortalOrientation
 	lda     (sp),y
 	ldy     #$04
 	cmp     (sp),y
-	bne     L004D
+	bne     L004C
 	ldy     #$00
 	lda     (sp),y
 	ldy     #$03
 	cmp     (sp),y
-	bne     L004D
+	bne     L004C
 ;
 ; orangeBulletActive = 0; // Disable the orange bullet if true.
 ;
 	lda     #$00
 	sta     _orangeBulletActive
+;
+; sfx_play(5,0);
+;
+	lda     #$05
+	jsr     pusha
+	lda     #$00
+	jsr     _sfx_play
 ;
 ; return;
 ;
@@ -13995,9 +14014,9 @@ L003E:	sta     _orangePortalOrientation
 ;
 ; if(orangePortalOrientation == 1) // If the portal was shot to the right.
 ;
-L004D:	lda     _orangePortalOrientation
+L004C:	lda     _orangePortalOrientation
 	cmp     #$01
-	bne     L004E
+	bne     L004D
 ;
 ; orangePortalSpriteData.X = (tileX << 3) + (8 - PORTAL_WIDTH); // Shift the portal to the left, so it's not stuck fully in the wall and can be entered.
 ;
@@ -14013,8 +14032,8 @@ L004D:	lda     _orangePortalOrientation
 ;
 ; else if(orangePortalOrientation == 2) // If the portal was shot down.
 ;
-	jmp     L006C
-L004E:	lda     _orangePortalOrientation
+	jmp     L006F
+L004D:	lda     _orangePortalOrientation
 	cmp     #$02
 	bne     L001A
 ;
@@ -14055,7 +14074,7 @@ L001A:	ldy     #$04
 ;
 ; orangePortalSpriteData.Y = tileY << 3;
 ;
-L006C:	dey
+L006F:	dey
 	lda     (sp),y
 	asl     a
 	asl     a
@@ -14067,19 +14086,38 @@ L003F:	sta     _orangePortalSpriteData+1
 	lda     #$01
 	sta     _orangePortalActive
 ;
+; sfx_play(3,0);
+;
+	tya
+	jsr     pusha
+	lda     #$00
+	jsr     _sfx_play
+;
+; orangeBulletActive = 0; // Set the orange bullet as not active, so it stops getting drawn.
+;
+	lda     #$00
+	sta     _orangeBulletActive
+;
 ; else if(collision == 1 || collision == 4)// If the bullet hits a normal wall, or the bullet touches an emancipation grid.
 ;
-	jmp     L0053
-L0050:	lda     (sp),y
+	jmp     L001D
+L004F:	lda     (sp),y
 	cmp     #$01
-	beq     L0053
+	beq     L0052
 	cmp     #$04
 	bne     L001D
 ;
 ; orangeBulletActive = 0; // Set the orange bullet as not active, so it stops getting drawn.
 ;
-L0053:	lda     #$00
+L0052:	lda     #$00
 	sta     _orangeBulletActive
+;
+; sfx_play(5,0);
+;
+	lda     #$05
+	jsr     pusha
+	lda     #$00
+	jsr     _sfx_play
 ;
 ; if(blueBulletActive) // If the blue bullet is active.
 ;
@@ -14138,7 +14176,7 @@ L0024:	jsr     asrax3
 ; if(collision == 2) // If the tile has a collision of 2, meaning it can hold a portal.
 ;
 	cmp     #$02
-	jne     L0060
+	jne     L005F
 ;
 ; if (blueBulletDirectionX > 0) // If the bullet was shot to the right.
 ;
@@ -14147,7 +14185,7 @@ L0024:	jsr     asrax3
 	sbc     #$01
 	bvs     L0028
 	eor     #$80
-L0028:	bpl     L0058
+L0028:	bpl     L0057
 ;
 ; bluePortalOrientation = 1; // Set the portal orientation to the right, so the player gets spit out to the left.
 ;
@@ -14155,10 +14193,10 @@ L0028:	bpl     L0058
 ;
 ; else if (blueBulletDirectionX < 0) // If the bullet was shot to the left.
 ;
-	jmp     L0041
-L0058:	lda     _blueBulletDirectionX
+	jmp     L0040
+L0057:	lda     _blueBulletDirectionX
 	asl     a
-	bcc     L0059
+	bcc     L0058
 ;
 ; bluePortalOrientation = 3; // Set the portal orientation to the left, so the player gets spit out to the right.
 ;
@@ -14166,15 +14204,15 @@ L0058:	lda     _blueBulletDirectionX
 ;
 ; else if (blueBulletDirectionY > 0) // If the bullet was shot down.
 ;
-	jmp     L0041
-L0059:	lda     _blueBulletDirectionY
+	jmp     L0040
+L0058:	lda     _blueBulletDirectionY
 	sec
 	sbc     #$01
 	bvs     L002F
 	eor     #$80
 L002F:	asl     a
 	lda     #$00
-	bcc     L0041
+	bcc     L0040
 ;
 ; bluePortalOrientation = 2; // Set the portal orientation to down, so the player gets spit out up.
 ;
@@ -14182,12 +14220,12 @@ L002F:	asl     a
 ;
 ; bluePortalOrientation = 0; // Set the portal orientation to up, so the player gets spit out down.
 ;
-L0041:	sta     _bluePortalOrientation
+L0040:	sta     _bluePortalOrientation
 ;
 ; if (orangePortalActive) // If the orange portal is active.
 ;
 	lda     _orangePortalActive
-	beq     L005D
+	beq     L005C
 ;
 ; otherPortalTileX = orangePortalSpriteData.X >> 3; // Get the X tile that the orange portal is located at.
 ;
@@ -14213,18 +14251,34 @@ L0041:	sta     _bluePortalOrientation
 	lda     (sp),y
 	ldy     #$04
 	cmp     (sp),y
-	bne     L005D
+	bne     L005C
 	ldy     #$00
 	lda     (sp),y
 	ldy     #$03
 	cmp     (sp),y
-	beq     L0063
+	bne     L005C
+;
+; blueBulletActive = 0; // Disable the blue bullet if true.
+;
+	lda     #$00
+	sta     _blueBulletActive
+;
+; sfx_play(4,0);
+;
+	lda     #$04
+	jsr     pusha
+	lda     #$00
+	jsr     _sfx_play
+;
+; return;
+;
+	jmp     incsp5
 ;
 ; if (bluePortalOrientation == 1) // If the portal was shot to the right.
 ;
-L005D:	lda     _bluePortalOrientation
+L005C:	lda     _bluePortalOrientation
 	cmp     #$01
-	bne     L005E
+	bne     L005D
 ;
 ; bluePortalSpriteData.X = (tileX << 3) + (8 - PORTAL_WIDTH); // Shift the portal to the left, so it's not stuck fully in the wall and can be entered.
 ;
@@ -14240,8 +14294,8 @@ L005D:	lda     _bluePortalOrientation
 ;
 ; else if (bluePortalOrientation == 2) // If the portal was shot down.
 ;
-	jmp     L006D
-L005E:	lda     _bluePortalOrientation
+	jmp     L0070
+L005D:	lda     _bluePortalOrientation
 	cmp     #$02
 	bne     L0038
 ;
@@ -14269,7 +14323,7 @@ L005E:	lda     _bluePortalOrientation
 ;
 ; else // If the portal was shot left or up, just place the portal normally.
 ;
-	jmp     L0043
+	jmp     L0041
 ;
 ; bluePortalSpriteData.X = tileX << 3;
 ;
@@ -14282,30 +14336,41 @@ L0038:	ldy     #$04
 ;
 ; bluePortalSpriteData.Y = tileY << 3;
 ;
-L006D:	dey
+L0070:	dey
 	lda     (sp),y
 	asl     a
 	asl     a
 	asl     a
-L0043:	sta     _bluePortalSpriteData+1
+L0041:	sta     _bluePortalSpriteData+1
 ;
 ; bluePortalActive = 1; // Set the blue portal to active.
 ;
 	lda     #$01
 	sta     _bluePortalActive
 ;
+; sfx_play(2,0);
+;
+	lda     #$02
+;
 ; else if (collision == 1 || collision == 4) // If the bullet hits a wall that can't hold a portal or touches an emancipation grid.
 ;
-	jmp     L0063
-L0060:	lda     (sp),y
+	jmp     L006E
+L005F:	lda     (sp),y
 	cmp     #$01
-	beq     L0063
+	beq     L0062
 	cmp     #$04
 	bne     L003B
 ;
+; sfx_play(4,0);
+;
+L0062:	lda     #$04
+L006E:	jsr     pusha
+	lda     #$00
+	jsr     _sfx_play
+;
 ; blueBulletActive = 0;// Set the blue bullet to not active so it can be shot again.
 ;
-L0063:	lda     #$00
+	lda     #$00
 	sta     _blueBulletActive
 ;
 ; }
@@ -15404,6 +15469,13 @@ L001E:	ldx     #$00
 	lda     _doorCollision
 	beq     L0002
 ;
+; sfx_play(6, 0);
+;
+	lda     #$06
+	jsr     pusha
+	lda     #$00
+	jsr     _sfx_play
+;
 ; currentLevel++;
 ;
 	inc     _currentLevel
@@ -15890,9 +15962,9 @@ L0004:	jmp     incsp1
 	lda     #$FF
 	jsr     _set_scroll_y
 ;
-; gameState = 2; // 0 means main menu.
+; gameState = 0; // 0 means main menu.
 ;
-	lda     #$02
+	lda     #$00
 	sta     _gameState
 ;
 ; drawMainMenu(); // Displays the main menu.
@@ -15908,19 +15980,9 @@ L0004:	jmp     incsp1
 ;
 	jsr     _ppu_on_all
 ;
-; music_play(song);
-;
-	lda     _song
-	jsr     _music_play
-;
 ; ppu_wait_nmi();
 ;
 L0002:	jsr     _ppu_wait_nmi
-;
-; set_music_speed(6);
-;
-	lda     #$06
-	jsr     _set_music_speed
 ;
 ; pad1 = pad_poll(0); // read the first controller
 ;

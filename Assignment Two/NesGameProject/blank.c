@@ -85,16 +85,13 @@ void main(void) {
 	pal_bg(paletteBackground); // Sets the Background Palette.
     pal_spr(paletteSprite); // Sets the Sprite Palette.
     set_scroll_y(0xff); // Moves the background down by 1 pixel.
-	gameState = 2; // 0 means main menu.
+	gameState = 0; // 0 means main menu.
     drawMainMenu(); // Displays the main menu.
 	bank_spr(1); // Tells the program that the sprites are located on the 2nd side of the chr file.
     ppu_on_all(); // Turns on the Screen.
-    music_play(song);
-
 
     while(1) {
         ppu_wait_nmi();
-        set_music_speed(6);
         pad1 = pad_poll(0); // read the first controller
 	    if(gameState == 0) // If the game is at the main menu.
 		{
@@ -377,6 +374,7 @@ void updateBullet(void)
 				if (otherPortalTileX == tileX && otherPortalTileY == tileY) // Check if the orange portal is trying to be placed at the same location as the blue portal.
 				{
 					orangeBulletActive = 0; // Disable the orange bullet if true.
+                    sfx_play(5,0);
 					return;
 				}
 			}
@@ -398,11 +396,13 @@ void updateBullet(void)
             }
 
             orangePortalActive = 1; // Set the orange portal as active.
+            sfx_play(3,0);
             orangeBulletActive = 0; // Set the orange bullet as not active, so it stops getting drawn.
         }
         else if(collision == 1 || collision == 4)// If the bullet hits a normal wall, or the bullet touches an emancipation grid.
         {
             orangeBulletActive = 0; // Set the orange bullet as not active, so it stops getting drawn.
+            sfx_play(5,0);
         }
     }
 
@@ -442,6 +442,7 @@ void updateBullet(void)
 				if (otherPortalTileX == tileX && otherPortalTileY == tileY) // Check if the blue portal is trying to be placed at the same location of the orange portal.
 				{
 					blueBulletActive = 0; // Disable the blue bullet if true.
+                    sfx_play(4,0);
 					return;
 				}
 			}
@@ -463,10 +464,12 @@ void updateBullet(void)
             }
 
             bluePortalActive = 1; // Set the blue portal to active.
+            sfx_play(2,0);
             blueBulletActive = 0; // Set the blue bullet to not active so it can be shot again.
         }
         else if (collision == 1 || collision == 4) // If the bullet hits a wall that can't hold a portal or touches an emancipation grid.
         {
+            sfx_play(4,0);
             blueBulletActive = 0;// Set the blue bullet to not active so it can be shot again.
         }
     }
@@ -552,10 +555,12 @@ void shootMode(void)
     if(!orangeBulletActive && (pad1 & PAD_A)) // If there is not a orange bullet, and A is pressed.
     {
         spawnOrangeBullet(); // Spawn an orange bullet.
+        sfx_play(1, 0);
     }
     if(!blueBulletActive && (pad1 & PAD_B)) // If there is not a blue bullet, and B is pressed.
     {
         spawnBlueBullet(); // Spawn a blue bullet.
+        sfx_play(0,0);
     }
 }
 
@@ -780,6 +785,7 @@ void doorPlayerCollision(void)
 
 	 if (doorCollision)
 	 {
+        sfx_play(6, 0);
 		currentLevel++;
 		loadLevel(currentLevel);
 	 }
