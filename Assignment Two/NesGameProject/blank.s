@@ -18,11 +18,13 @@
 	.import		_ppu_on_all
 	.import		_oam_clear
 	.import		_oam_meta_spr
+	.import		_music_play
 	.import		_pad_poll
 	.import		_bank_spr
 	.import		_vram_adr
 	.import		_vram_put
 	.import		_vram_write
+	.import		_set_music_speed
 	.import		_check_collision
 	.import		_set_scroll_y
 	.export		_playerSprite
@@ -88,6 +90,7 @@
 	.export		_cakeTextTimer
 	.export		_cakeIsALie
 	.export		_prevCakeisALie
+	.export		_song
 	.export		_modeToggle
 	.export		_walkMode
 	.export		_shootMode
@@ -211,6 +214,8 @@ _cakeIsALie:
 	.byte	$00
 _prevCakeisALie:
 	.byte	$FF
+_song:
+	.byte	$00
 
 .segment	"RODATA"
 
@@ -15903,9 +15908,19 @@ L0004:	jmp     incsp1
 ;
 	jsr     _ppu_on_all
 ;
+; music_play(song);
+;
+	lda     _song
+	jsr     _music_play
+;
 ; ppu_wait_nmi();
 ;
 L0002:	jsr     _ppu_wait_nmi
+;
+; set_music_speed(6);
+;
+	lda     #$06
+	jsr     _set_music_speed
 ;
 ; pad1 = pad_poll(0); // read the first controller
 ;

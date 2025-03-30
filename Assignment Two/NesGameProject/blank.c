@@ -12,6 +12,7 @@
 #include "headers/end.h"
 #pragma bss-name(push, "ZEROPAGE")
 
+
 // GLOBAL VARIABLES.
 // -====================================-
 unsigned char pad1; // Variable for the controller.
@@ -45,6 +46,7 @@ unsigned char endScreenDrawn = 0;
 unsigned char cakeTextTimer = 0;
 unsigned char cakeIsALie = 0;
 unsigned char prevCakeisALie = 255;
+unsigned char song = 0;
 
 
 // FUNCTION PROTOTYPES.
@@ -87,9 +89,12 @@ void main(void) {
     drawMainMenu(); // Displays the main menu.
 	bank_spr(1); // Tells the program that the sprites are located on the 2nd side of the chr file.
     ppu_on_all(); // Turns on the Screen.
+    music_play(song);
+
 
     while(1) {
         ppu_wait_nmi();
+        set_music_speed(6);
         pad1 = pad_poll(0); // read the first controller
 	    if(gameState == 0) // If the game is at the main menu.
 		{
@@ -804,13 +809,12 @@ void drawEndScreen()
 
     vram_adr(NAMETABLE_A);         // Set VRAM address to start of screen
     vram_write(end, 1024);   // Write entire nametable (includes attribute table)
-
     ppu_on_all();
 }
 
 void writeEndText()
 {
-    unsigned char i; // ✅ Declare at the top (no mixed declarations)
+    unsigned char i; 
 
     cakeTextTimer++;
 
