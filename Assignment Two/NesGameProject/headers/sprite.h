@@ -110,15 +110,6 @@ const unsigned char blueBulletSprite[] =
     128
 };
 
-const unsigned char doorSprite[] = 
-{
-    0, 0, 0x22, 1, 
-    0, 8, 0x32, 1,
-    8, 0, 0x22, 1|OAM_FLIP_H,
-    8, 8, 0x32, 1|OAM_FLIP_H,
-    128 // Ends the sprite.
-};
-
 struct spriteData // Struct to hold the Sprite Format that every sprite will follow.
 {
     unsigned char X;
@@ -137,7 +128,6 @@ struct spriteData orangeBulletSpriteData = {0, 0, 7, 7};
 
 struct spriteData blueBulletSpriteData = {0, 0, 7 ,7};
 
-struct spriteData doorSpriteData = {0, 0, 16, 16};
 
 // FUNCTION PROTOTYPES
 

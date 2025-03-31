@@ -12,7 +12,7 @@
 #define DK_GREEN 0x09
 #define DK_BLUE 0x11
 #define SKIN 0x36
-#define LT_BLUE 0x21
+#define LT_BLUE 0x31
 #define GRILL 0x2C
 #define BROWN 0x07
 
@@ -29,7 +29,7 @@ const char paletteSprite[] =
 TEAL, SKIN, WHITE, ORANGE, // Sub-Palette 0
 TEAL, BLACK, LT_BLUE, LT_GY, // Sub-Palette 1
 TEAL, ORANGE, LT_GY, DK_BLUE, // Sub Palette 2
-0,0,0,0 // Sub Palette 3
+TEAL,LT_GY,DK_GY,0X21 // Sub Palette 3
 };
 
 const unsigned char levelPaletteBackground[]=
@@ -37,7 +37,7 @@ const unsigned char levelPaletteBackground[]=
 LT_BLUE, DK_GY, LT_GY, RED, // Sub-Palette 0 
 LT_BLUE,DK_GY,LT_GY,GRILL, // Sub-Palette 1
 LT_BLUE,DK_GY,LT_GY,WHITE, // Sub-Palette 2
-LT_BLUE,DK_GY,LT_GY,GREEN // Sub-Palette 3
+LT_BLUE,BLACK,0x21,DK_GY // Sub-Palette 3
 }; 
 
 const unsigned char endingScreenPalette[]= 

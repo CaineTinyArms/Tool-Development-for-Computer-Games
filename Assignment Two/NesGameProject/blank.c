@@ -62,6 +62,10 @@ signed char orangeBulletDirectionY = 0; // Tracks the Y direction of the orange 
 signed char blueBulletDirectionX   = 0; // Tracks the X direction of the blue bullet, -1 for left, 1 for right.
 signed char blueBulletDirectionY   = 0; // Tracks the Y direction of the orange bullet, -1 for left, 1 for right.
 
+
+// COLLISION NUMBERS AND THEIR MEANINGS - 0 MEANS AIR, 1 MEANS NO PORTAL WALL, 2 MEANS PORTAL WALL, 3 MEANS RED GRID, 4 MEANS BLUE GRID, 5 MEANS OPEN DOOR, 6 MEANS BUTTON.
+
+
 // FUNCTION PROTOTYPES.
 // -================================-
 void modeToggle(void); 
@@ -84,7 +88,6 @@ void animatePressStartText(void);
 void drawOrangePortalSprite(void);
 void drawBluePortalSprite(void);
 unsigned char getCollisionValue(unsigned char x, unsigned char y);
-void drawDoorSprite();
 void doorPlayerCollision(void);
 unsigned char disablePortals(struct spriteData *spr);
 void drawEndScreen();
@@ -166,7 +169,6 @@ void main(void) {
             drawBullet(); // Draws the bullet sprites.
             drawBluePortalSprite(); // Draws the blue portal sprite.
             drawOrangePortalSprite(); // Draws the orange portal sprite.
-			drawDoorSprite();
         }
     }
 }
@@ -329,15 +331,20 @@ unsigned char getCollisionValue(unsigned char x, unsigned char y)
 
 void doorPlayerCollision(void)
 {
-	 doorCollision = check_collision(&playerSpriteData, &doorSpriteData);
+    unsigned char leftTile   = playerSpriteData.X >> 3;
+    unsigned char rightTile  = (playerSpriteData.X + playerSpriteData.width) >> 3;
+    unsigned char topTile    = playerSpriteData.Y >> 3;
+    unsigned char bottomTile = (playerSpriteData.Y + playerSpriteData.height) >> 3;
 
-	 if (doorCollision)
-	 {
-        sfx_play(6, 0);
-		currentLevel++;
-		loadLevel(currentLevel);
-	 }
+    if (getCollisionValue(leftTile, topTile) == 5 || getCollisionValue(rightTile, topTile) == 5 ||
+        getCollisionValue(leftTile, bottomTile) == 5 || getCollisionValue(rightTile, bottomTile) == 5)
+    {
+        sfx_play(6, 0);           // Play door sound effect
+        currentLevel++;           // Advance to next level
+        loadLevel(currentLevel);  // Load the next level
+    }
 }
+
 
 // PORTAL BULLET FUNCTIONS 
 // -===============================================================-
@@ -712,49 +719,37 @@ void loadLevel(unsigned char lvl)
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
             vram_write(levelOneData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
             playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
-            playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
-			doorSpriteData.X = 200;
-			doorSpriteData.Y = 216;
+            playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
             break;
         case 1:
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
             vram_write(levelTwoData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
             playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
-            playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
-			doorSpriteData.X = 200;
-			doorSpriteData.Y = 216;
+            playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
             break;
         case 2: 
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
             vram_write(levelThreeData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
-            playerSpriteData.X = 136; // Sets the player location to the starting location for level 1.
-            playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
-			doorSpriteData.X = 200;
-			doorSpriteData.Y = 216;
+            playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
+            playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
             break;
         case 3:
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
             vram_write(levelFourData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
-            playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
-            playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
-			doorSpriteData.X = 200;
-			doorSpriteData.Y = 216;
+            playerSpriteData.X = 16; // Sets the player location to the  starting location for level 1.
+            playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
             break;
         case 4:
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
             vram_write(levelFiveData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
             playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
-            playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
-			doorSpriteData.X = 200;
-			doorSpriteData.Y = 216;
+            playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
             break;
         case 5:
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
             vram_write(levelSixData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
             playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
-            playerSpriteData.Y = 216; // Sets the player location to the starting location for level 1.
-			doorSpriteData.X = 224;
-			doorSpriteData.Y = 32;
+            playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
             break;
 
         default:
@@ -911,12 +906,6 @@ void drawBluePortalSprite(void)
         oam_meta_spr(bluePortalSpriteData.X, bluePortalSpriteData.Y, bluePortal);
     }
 }
-
-void drawDoorSprite(void)
-{
-	oam_meta_spr(doorSpriteData.X, doorSpriteData.Y, doorSprite);
-}
-
 
 // Misc Portal Functions
 // -==============================-
