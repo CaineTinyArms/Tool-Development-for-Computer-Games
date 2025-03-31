@@ -11,38 +11,57 @@
 // GLOBAL VARIABLES.
 // -====================================-
 unsigned char pad1; // Variable for the controller.
+
+// Portal Variables
+// -====================================-
+unsigned char lastPortalUsed = 0; // 0 for none, 1 for orange, 2 for blue.
+unsigned char bluePortalActive = 0; // Tracks if the blue portal is active, 0 = no, 1 = yes.
+unsigned char orangePortalActive = 0; // Tracks if the orange portal is active, 0 = no, 1 = yes.
+unsigned char orangePortalOrientation = 0; // Tracks the orientation of the orange portal, 0 = up, 1 = right, 2 = down and 3 = left.
+unsigned char bluePortalOrientation   = 0; // Tracks the orientation of the blue portal, 0 = up, 1 = right, 2 = down and 3 = left.
+#define PORTAL_WIDTH  20 // Defines the width of the portal sprite.
+#define PORTAL_HEIGHT 16 // Defines the height of the portal sprite.
+
+// Player Variables
+// -====================================-
 unsigned char orangePortalCollision; // Variable for if the player is touching the orange portal.
 unsigned char bluePortalCollision; // Variable for if the player is touching the blue portal.
-unsigned char doorCollision; 
-unsigned char lastPortalUsed = 0; // 0 for none, 1 for orange, 2 for blue.
+unsigned char doorCollision; // Variable for if the player is touching the door.
 unsigned char mode = 0; // 0 for walk mode, 1 for shoot mode.
 signed char aimDirectionX = 0; // Variable for the X direction the player is aiming (left and right)
 signed char aimDirectionY = 0; // Variable for the Y direction the player is aiming (up and down)
 signed char playerVelocity = 0; // Variable for the players velocity, used for making them fall.
+
+// Gravity Variables 
+// -====================================-
 #define GRAVITY 1 // Defines the speed of gravity that is added while the player is falling.
 #define MAX_FALL_SPEED 4 // Defines the max fall speed of the player.
+
+// Game State Variables
+// -====================================-
 unsigned char currentLevel; // Variable to track what level the player is currently on.
 unsigned char gameState; // Variable to track the current game state, 0 = main menu, 1 = in game etc.
+unsigned char song = 0; // 1 is main menu. // 0 is end screen // 2 is in game.
+unsigned char currentSong = 255;
+
+// Menu Variables
+// -====================================-
 unsigned char blankTiles[12] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; // Array of 12 blank tiles, used to simulate the flashing "PRESS START!" text.
 unsigned char pressStartTiles[12] = {0x50, 0x52, 0x45, 0x53,0x53, 0x00, 0x53, 0x54,0x41, 0x52, 0x54, 0x21}; // Array of 12 tile addresses, used to display "PRESS START!".
-unsigned char bluePortalActive = 0; // Tracks if the blue portal is active, 0 = no, 1 = yes.
-unsigned char orangePortalActive = 0; // Tracks if the orange portal is active, 0 = no, 1 = yes.
+unsigned char endScreenDrawn = 0;
+unsigned char cakeTextTimer = 0;
+unsigned char cakeIsALie = 0;
+unsigned char prevCakeisALie = 255;
+
+// Portal Bullet Variables
+// -====================================-
 unsigned char orangeBulletActive = 0; // Tracks if the orange bullet is active, 0 = no, 1 = yes.
 unsigned char blueBulletActive   = 0; // Tracks if the blue bullet is active, 0 = no, 1 = yes.
 signed char orangeBulletDirectionX = 0; // Tracks the X direction of the orange bullet, -1 for left, 1 for right.
 signed char orangeBulletDirectionY = 0; // Tracks the Y direction of the orange bullet, -1 for up, 1 for down.
 signed char blueBulletDirectionX   = 0; // Tracks the X direction of the blue bullet, -1 for left, 1 for right.
 signed char blueBulletDirectionY   = 0; // Tracks the Y direction of the orange bullet, -1 for left, 1 for right.
-unsigned char orangePortalOrientation = 0; // Tracks the orientation of the orange portal, 0 = up, 1 = right, 2 = down and 3 = left.
-unsigned char bluePortalOrientation   = 0; // Tracks the orientation of the blue portal, 0 = up, 1 = right, 2 = down and 3 = left.
-#define PORTAL_WIDTH  20 // Defines the width of the portal sprite.
-#define PORTAL_HEIGHT 16 // Defines the height of the portal sprite.
-unsigned char endScreenDrawn = 0;
-unsigned char cakeTextTimer = 0;
-unsigned char cakeIsALie = 0;
-unsigned char prevCakeisALie = 255;
-unsigned char song = 0; // 1 is main menu. // 0 is end screen // 2 is in game.
-unsigned char currentSong = 255;
+
 
 
 // FUNCTION PROTOTYPES.

@@ -66,34 +66,34 @@
 	.export		_menu
 	.export		_end
 	.export		_pad1
+	.export		_lastPortalUsed
+	.export		_bluePortalActive
+	.export		_orangePortalActive
+	.export		_orangePortalOrientation
+	.export		_bluePortalOrientation
 	.export		_orangePortalCollision
 	.export		_bluePortalCollision
 	.export		_doorCollision
-	.export		_lastPortalUsed
 	.export		_mode
 	.export		_aimDirectionX
 	.export		_aimDirectionY
 	.export		_playerVelocity
 	.export		_currentLevel
 	.export		_gameState
+	.export		_song
+	.export		_currentSong
 	.export		_blankTiles
 	.export		_pressStartTiles
-	.export		_bluePortalActive
-	.export		_orangePortalActive
+	.export		_endScreenDrawn
+	.export		_cakeTextTimer
+	.export		_cakeIsALie
+	.export		_prevCakeisALie
 	.export		_orangeBulletActive
 	.export		_blueBulletActive
 	.export		_orangeBulletDirectionX
 	.export		_orangeBulletDirectionY
 	.export		_blueBulletDirectionX
 	.export		_blueBulletDirectionY
-	.export		_orangePortalOrientation
-	.export		_bluePortalOrientation
-	.export		_endScreenDrawn
-	.export		_cakeTextTimer
-	.export		_cakeIsALie
-	.export		_prevCakeisALie
-	.export		_song
-	.export		_currentSong
 	.export		_modeToggle
 	.export		_walkMode
 	.export		_shootMode
@@ -155,6 +155,14 @@ _doorSpriteData:
 	.byte	$10
 _lastPortalUsed:
 	.byte	$00
+_bluePortalActive:
+	.byte	$00
+_orangePortalActive:
+	.byte	$00
+_orangePortalOrientation:
+	.byte	$00
+_bluePortalOrientation:
+	.byte	$00
 _mode:
 	.byte	$00
 _aimDirectionX:
@@ -163,6 +171,10 @@ _aimDirectionY:
 	.byte	$00
 _playerVelocity:
 	.byte	$00
+_song:
+	.byte	$00
+_currentSong:
+	.byte	$FF
 _blankTiles:
 	.byte	$00
 	.byte	$00
@@ -189,10 +201,14 @@ _pressStartTiles:
 	.byte	$52
 	.byte	$54
 	.byte	$21
-_bluePortalActive:
+_endScreenDrawn:
 	.byte	$00
-_orangePortalActive:
+_cakeTextTimer:
 	.byte	$00
+_cakeIsALie:
+	.byte	$00
+_prevCakeisALie:
+	.byte	$FF
 _orangeBulletActive:
 	.byte	$00
 _blueBulletActive:
@@ -205,22 +221,6 @@ _blueBulletDirectionX:
 	.byte	$00
 _blueBulletDirectionY:
 	.byte	$00
-_orangePortalOrientation:
-	.byte	$00
-_bluePortalOrientation:
-	.byte	$00
-_endScreenDrawn:
-	.byte	$00
-_cakeTextTimer:
-	.byte	$00
-_cakeIsALie:
-	.byte	$00
-_prevCakeisALie:
-	.byte	$FF
-_song:
-	.byte	$00
-_currentSong:
-	.byte	$FF
 
 .segment	"RODATA"
 
