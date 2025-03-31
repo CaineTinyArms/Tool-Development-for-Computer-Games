@@ -25,6 +25,7 @@
 	.import		_vram_adr
 	.import		_vram_put
 	.import		_vram_write
+	.import		_memcpy
 	.import		_check_collision
 	.import		_set_scroll_y
 	.export		_playerSprite
@@ -40,11 +41,13 @@
 	.export		_bluePortal
 	.export		_orangeBulletSprite
 	.export		_blueBulletSprite
+	.export		_boxSprite
 	.export		_playerSpriteData
 	.export		_orangePortalSpriteData
 	.export		_bluePortalSpriteData
 	.export		_orangeBulletSpriteData
 	.export		_blueBulletSpriteData
+	.export		_boxSpriteData
 	.export		_paletteBackground
 	.export		_paletteSprite
 	.export		_levelPaletteBackground
@@ -64,39 +67,56 @@
 	.export		_menu
 	.export		_end
 	.export		_pad1
-	.export		_lastPortalUsed
-	.export		_bluePortalActive
-	.export		_orangePortalActive
-	.export		_orangePortalOrientation
-	.export		_bluePortalOrientation
-	.export		_orangePortalCollision
-	.export		_bluePortalCollision
-	.export		_doorCollision
+	.export		_pad1Old
 	.export		_mode
-	.export		_aimDirectionX
-	.export		_aimDirectionY
-	.export		_playerVelocity
+	.export		_aLatch
 	.export		_currentLevel
 	.export		_gameState
 	.export		_song
 	.export		_currentSong
-	.export		_blankTiles
-	.export		_pressStartTiles
-	.export		_endScreenDrawn
-	.export		_cakeTextTimer
-	.export		_cakeIsALie
-	.export		_prevCakeisALie
+	.export		_boxHeld
+	.export		_doorOpen
+	.export		_playerVelocity
+	.export		_orangePortalCollision
+	.export		_bluePortalCollision
+	.export		_bluePortalActive
+	.export		_orangePortalActive
+	.export		_lastPortalUsed
+	.export		_levelCollisionRAM
+	.export		_orangePortalOrientation
+	.export		_bluePortalOrientation
 	.export		_orangeBulletActive
 	.export		_blueBulletActive
 	.export		_orangeBulletDirectionX
 	.export		_orangeBulletDirectionY
 	.export		_blueBulletDirectionX
 	.export		_blueBulletDirectionY
+	.export		_aimDirectionX
+	.export		_aimDirectionY
+	.export		_blankTiles
+	.export		_pressStartTiles
+	.export		_endScreenDrawn
+	.export		_cakeTextTimer
+	.export		_cakeIsALie
+	.export		_prevCakeisALie
+	.export		_boxEnabled
+	.export		_boxStartX
+	.export		_boxStartY
+	.export		_buttonTileX
+	.export		_buttonTileY
+	.export		_buttonEnabled
+	.export		_doorTileX
+	.export		_doorTileY
+	.export		_buttonTileIndexLeft
+	.export		_buttonTileIndexRight
+	.export		_buttonTileIndexLeftPressed
+	.export		_buttonTileIndexRightPressed
+	.export		_levelCollisionData
+	.export		_levelCollision
 	.export		_modeToggle
 	.export		_walkMode
 	.export		_shootMode
 	.export		_portalPlayerCollision
-	.export		_wallDetection
 	.export		_playerWallCollision
 	.export		_spawnOrangeBullet
 	.export		_spawnBlueBullet
@@ -116,6 +136,7 @@
 	.export		_disablePortals
 	.export		_drawEndScreen
 	.export		_writeEndText
+	.export		_handleButtonLogic
 	.export		_main
 
 .segment	"DATA"
@@ -145,41 +166,14 @@ _blueBulletSpriteData:
 	.byte	$00
 	.byte	$07
 	.byte	$07
-_lastPortalUsed:
+_boxSpriteData:
 	.byte	$00
-_bluePortalActive:
 	.byte	$00
-_orangePortalActive:
-	.byte	$00
-_orangePortalOrientation:
-	.byte	$00
-_bluePortalOrientation:
-	.byte	$00
-_mode:
-	.byte	$00
-_aimDirectionX:
-	.byte	$00
-_aimDirectionY:
-	.byte	$00
-_playerVelocity:
-	.byte	$00
-_song:
-	.byte	$00
-_currentSong:
-	.byte	$FF
+	.byte	$10
+	.byte	$10
 _blankTiles:
 	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
+	.res	11,$00
 _pressStartTiles:
 	.byte	$50
 	.byte	$52
@@ -201,18 +195,32 @@ _cakeIsALie:
 	.byte	$00
 _prevCakeisALie:
 	.byte	$FF
-_orangeBulletActive:
+_boxEnabled:
 	.byte	$00
-_blueBulletActive:
+_boxStartX:
 	.byte	$00
-_orangeBulletDirectionX:
+_boxStartY:
 	.byte	$00
-_orangeBulletDirectionY:
+_buttonTileX:
 	.byte	$00
-_blueBulletDirectionX:
+_buttonTileY:
 	.byte	$00
-_blueBulletDirectionY:
+_buttonEnabled:
 	.byte	$00
+_doorTileX:
+	.byte	$00
+_doorTileY:
+	.byte	$00
+_buttonTileIndexLeft:
+	.byte	$FC
+_buttonTileIndexRight:
+	.byte	$FD
+_buttonTileIndexLeftPressed:
+	.byte	$FE
+_buttonTileIndexRightPressed:
+	.byte	$FF
+_levelCollision:
+	.addr	_levelCollisionRAM
 
 .segment	"RODATA"
 
@@ -425,6 +433,24 @@ _blueBulletSprite:
 	.byte	$00
 	.byte	$FF
 	.byte	$02
+	.byte	$80
+_boxSprite:
+	.byte	$00
+	.byte	$00
+	.byte	$22
+	.byte	$03
+	.byte	$00
+	.byte	$08
+	.byte	$32
+	.byte	$03
+	.byte	$08
+	.byte	$00
+	.byte	$23
+	.byte	$03
+	.byte	$08
+	.byte	$08
+	.byte	$33
+	.byte	$03
 	.byte	$80
 _paletteBackground:
 	.byte	$0F
@@ -1352,8 +1378,8 @@ _levelOneData:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$E8
-	.byte	$E9
+	.byte	$EA
+	.byte	$EB
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -1378,14 +1404,14 @@ _levelOneData:
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$FC
+	.byte	$FD
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$F8
-	.byte	$F9
+	.byte	$FA
+	.byte	$FB
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -1507,8 +1533,8 @@ _levelOneData:
 	.byte	$AA
 	.byte	$AA
 	.byte	$AA
-	.byte	$AA
-	.byte	$AA
+	.byte	$2A
+	.byte	$8A
 	.byte	$FA
 	.byte	$AA
 	.byte	$0A
@@ -7502,8 +7528,8 @@ _levelOneCollision:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$05
-	.byte	$05
+	.byte	$00
+	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -7528,14 +7554,14 @@ _levelOneCollision:
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$06
+	.byte	$06
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
-	.byte	$05
-	.byte	$05
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -14844,26 +14870,26 @@ _end:
 	.byte	$04
 	.byte	$05
 	.byte	$00
-S0003:
+S0005:
 	.byte	$29,$28,$2A,$26,$5E,$25,$24,$23,$40,$21,$7E,$3F,$3E,$3C,$3A,$7B
 	.byte	$7D,$5D,$00
-S0006:
+S0008:
 	.byte	$54,$45,$53,$54,$49,$4E,$47,$20,$43,$4F,$4D,$50,$4C,$45,$54,$45
 	.byte	$2E,$00
-S0007:
+S0009:
 	.byte	$54,$48,$45,$20,$43,$41,$4B,$45,$20,$49,$53,$20,$41,$20,$4C,$49
 	.byte	$45,$00
-S0004:
-	.byte	$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C
-	.byte	$00
-S0005:
+S0007:
 	.byte	$43,$4F,$4E,$47,$52,$41,$54,$55,$4C,$41,$54,$49,$4F,$4E,$53,$2E
 	.byte	$00
-S0008:
-	.byte	$45,$4E,$4A,$4F,$59,$20,$59,$4F,$55,$52,$20,$43,$41,$4B,$45,$2E
-	.byte	$00
-S0002:
+S0004:
 	.byte	$21,$40,$23,$24,$25,$5E,$26,$2A,$28,$29,$5F,$2B,$3D,$2D,$5B,$5D
+	.byte	$00
+S0006:
+	.byte	$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C,$2F,$5C
+	.byte	$00
+S000A:
+	.byte	$45,$4E,$4A,$4F,$59,$20,$59,$4F,$55,$52,$20,$43,$41,$4B,$45,$2E
 	.byte	$00
 
 .segment	"BSS"
@@ -14871,16 +14897,62 @@ S0002:
 .segment	"ZEROPAGE"
 _pad1:
 	.res	1,$00
-_orangePortalCollision:
+_pad1Old:
 	.res	1,$00
-_bluePortalCollision:
+_mode:
 	.res	1,$00
-_doorCollision:
+_aLatch:
 	.res	1,$00
 _currentLevel:
 	.res	1,$00
 _gameState:
 	.res	1,$00
+_song:
+	.res	1,$00
+_currentSong:
+	.res	1,$00
+_boxHeld:
+	.res	1,$00
+_doorOpen:
+	.res	1,$00
+_playerVelocity:
+	.res	1,$00
+_orangePortalCollision:
+	.res	1,$00
+_bluePortalCollision:
+	.res	1,$00
+_bluePortalActive:
+	.res	1,$00
+_orangePortalActive:
+	.res	1,$00
+_lastPortalUsed:
+	.res	1,$00
+.segment	"LEVELCOLL"
+_levelCollisionRAM:
+	.res	960,$00
+.segment	"ZEROPAGE"
+_orangePortalOrientation:
+	.res	1,$00
+_bluePortalOrientation:
+	.res	1,$00
+_orangeBulletActive:
+	.res	1,$00
+_blueBulletActive:
+	.res	1,$00
+_orangeBulletDirectionX:
+	.res	1,$00
+_orangeBulletDirectionY:
+	.res	1,$00
+_blueBulletDirectionX:
+	.res	1,$00
+_blueBulletDirectionY:
+	.res	1,$00
+_aimDirectionX:
+	.res	1,$00
+_aimDirectionY:
+	.res	1,$00
+_levelCollisionData:
+	.res	2,$00
 
 ; ---------------------------------------------------------------
 ; void __near__ modeToggle (void)
@@ -14944,7 +15016,7 @@ M0001:
 ;
 	lda     _pad1
 	and     #$02
-	beq     L0007
+	beq     L0015
 ;
 ; playerSpriteData.X--; // Move the player to the left.
 ;
@@ -14964,8 +15036,8 @@ M0001:
 ;
 ; else if (pad1 & PAD_RIGHT) // If Right on the DPAD is pressed.
 ;
-	rts
-L0007:	lda     _pad1
+	jmp     L0006
+L0015:	lda     _pad1
 	and     #$01
 	beq     L0006
 ;
@@ -14985,9 +15057,85 @@ L0007:	lda     _pad1
 ;
 	dec     _playerSpriteData
 ;
+; if (aLatch && boxEnabled) {
+;
+L0006:	lda     _aLatch
+	beq     L0017
+	lda     _boxEnabled
+	bne     L0018
+L0017:	rts
+;
+; if (!boxHeld) {
+;
+L0018:	lda     _boxHeld
+	bne     L001F
+;
+; unsigned char dx = playerSpriteData.X > boxSpriteData.X ? playerSpriteData.X - boxSpriteData.X : boxSpriteData.X - playerSpriteData.X;
+;
+	lda     _playerSpriteData
+	cmp     _boxSpriteData
+	bcc     L0019
+	beq     L0019
+	sec
+	sbc     _boxSpriteData
+	jmp     L001A
+L0019:	lda     _boxSpriteData
+	sec
+	sbc     _playerSpriteData
+L001A:	jsr     pusha
+;
+; unsigned char dy = playerSpriteData.Y > boxSpriteData.Y ? playerSpriteData.Y - boxSpriteData.Y : boxSpriteData.Y - playerSpriteData.Y;
+;
+	lda     _playerSpriteData+1
+	cmp     _boxSpriteData+1
+	bcc     L001B
+	beq     L001B
+	sec
+	sbc     _boxSpriteData+1
+	jmp     L001C
+L001B:	lda     _boxSpriteData+1
+	sec
+	sbc     _playerSpriteData+1
+L001C:	jsr     pusha
+;
+; if (dx < 16 && dy < 16) {
+;
+	ldy     #$01
+	lda     (sp),y
+	cmp     #$10
+	bcs     L0010
+	dey
+	lda     (sp),y
+	cmp     #$10
+	bcs     L0010
+;
+; boxHeld = 1;
+;
+	lda     #$01
+	sta     _boxHeld
+;
+; } else {
+;
+L0010:	jmp     incsp2
+;
+; boxSpriteData.X = playerSpriteData.X;
+;
+L001F:	lda     _playerSpriteData
+	sta     _boxSpriteData
+;
+; boxSpriteData.Y = playerSpriteData.Y; // dropped just above the ground
+;
+	lda     _playerSpriteData+1
+	sta     _boxSpriteData+1
+;
+; boxHeld = 0;
+;
+	lda     #$00
+	sta     _boxHeld
+;
 ; }
 ;
-L0006:	rts
+	rts
 
 .endproc
 
@@ -15362,204 +15510,6 @@ L0031:	sta     _lastPortalUsed
 ; }
 ;
 L001D:	rts
-
-.endproc
-
-; ---------------------------------------------------------------
-; unsigned char __near__ wallDetection (unsigned char x, unsigned char y)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_wallDetection: near
-
-.segment	"CODE"
-
-;
-; {
-;
-	jsr     pusha
-;
-; if(x >= 32 || y >= 30) // Checks if the tile is out of the screen area
-;
-	ldy     #$01
-	lda     (sp),y
-	cmp     #$20
-	bcs     L0013
-	dey
-	lda     (sp),y
-	cmp     #$1E
-	bcs     L0013
-	ldx     #$00
-	jmp     L0014
-;
-; return 1; // Return a 1 to say the player is hitting a wall.
-;
-L0013:	ldx     #$00
-	lda     #$01
-	jmp     incsp2
-;
-; switch(currentLevel) // Changes based on the current level.
-;
-L0014:	lda     _currentLevel
-;
-; }
-;
-	beq     L0016
-	cmp     #$01
-	beq     L0018
-	cmp     #$02
-	beq     L001A
-	cmp     #$03
-	beq     L001C
-	cmp     #$04
-	jeq     L001E
-	cmp     #$05
-	jeq     L0020
-	jmp     incsp2
-;
-; return levelOneCollision[y * 32 + x];
-;
-L0016:	lda     (sp),y
-	jsr     shlax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
-	sta     ptr1
-	iny
-	lda     (sp),y
-	clc
-	adc     ptr1
-	ldx     tmp1
-	bcc     L000D
-	inx
-L000D:	sta     ptr1
-	txa
-	clc
-	adc     #>(_levelOneCollision)
-	sta     ptr1+1
-	ldy     #<(_levelOneCollision)
-	jmp     L0022
-;
-; return levelTwoCollision[y * 32 + x];
-;
-L0018:	lda     (sp),y
-	jsr     shlax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
-	sta     ptr1
-	iny
-	lda     (sp),y
-	clc
-	adc     ptr1
-	ldx     tmp1
-	bcc     L000E
-	inx
-L000E:	sta     ptr1
-	txa
-	clc
-	adc     #>(_levelTwoCollision)
-	sta     ptr1+1
-	ldy     #<(_levelTwoCollision)
-	jmp     L0022
-;
-; return levelThreeCollision[y * 32 + x];
-;
-L001A:	lda     (sp),y
-	jsr     shlax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
-	sta     ptr1
-	iny
-	lda     (sp),y
-	clc
-	adc     ptr1
-	ldx     tmp1
-	bcc     L000F
-	inx
-L000F:	sta     ptr1
-	txa
-	clc
-	adc     #>(_levelThreeCollision)
-	sta     ptr1+1
-	ldy     #<(_levelThreeCollision)
-	jmp     L0022
-;
-; return levelFourCollision[y * 32 + x];
-;
-L001C:	lda     (sp),y
-	jsr     shlax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
-	sta     ptr1
-	iny
-	lda     (sp),y
-	clc
-	adc     ptr1
-	ldx     tmp1
-	bcc     L0010
-	inx
-L0010:	sta     ptr1
-	txa
-	clc
-	adc     #>(_levelFourCollision)
-	sta     ptr1+1
-	ldy     #<(_levelFourCollision)
-	jmp     L0022
-;
-; return levelFiveCollision[y * 32 + x];
-;
-L001E:	lda     (sp),y
-	jsr     shlax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
-	sta     ptr1
-	iny
-	lda     (sp),y
-	clc
-	adc     ptr1
-	ldx     tmp1
-	bcc     L0011
-	inx
-L0011:	sta     ptr1
-	txa
-	clc
-	adc     #>(_levelFiveCollision)
-	sta     ptr1+1
-	ldy     #<(_levelFiveCollision)
-	jmp     L0022
-;
-; return levelSixCollision[y * 32 + x];
-;
-L0020:	lda     (sp),y
-	jsr     shlax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
-	sta     ptr1
-	iny
-	lda     (sp),y
-	clc
-	adc     ptr1
-	ldx     tmp1
-	bcc     L0012
-	inx
-L0012:	sta     ptr1
-	txa
-	clc
-	adc     #>(_levelSixCollision)
-	sta     ptr1+1
-	ldy     #<(_levelSixCollision)
-L0022:	ldx     #$00
-	lda     (ptr1),y
-;
-; }
-;
-	jmp     incsp2
 
 .endproc
 
@@ -16600,11 +16550,8 @@ L0001:	jmp     incsp5
 ; if (playerVelocity > MAX_FALL_SPEED) // If the player has more velocity than the max fall speed.
 ;
 	lda     _playerVelocity
-	sec
-	sbc     #$05
-	bvs     L0006
-	eor     #$80
-L0006:	bpl     L0010
+	cmp     #$05
+	bcc     L0008
 ;
 ; playerVelocity = MAX_FALL_SPEED; // Set the velocity to the max fall speed.
 ;
@@ -16612,26 +16559,22 @@ L0006:	bpl     L0010
 ;
 ; else  // If the player is on the floor.
 ;
-	jmp     L000E
+	jmp     L0007
 ;
 ; if (playerVelocity > 0) // Check if the player has an remaining velocity, 
 ;
 L0002:	lda     _playerVelocity
-	sec
-	sbc     #$01
-	bvs     L000A
-	eor     #$80
-L000A:	bpl     L0010
+	beq     L0008
 ;
 ; playerVelocity = 0; // Set the velocity to 0.
 ;
 	lda     #$00
-L000E:	sta     _playerVelocity
+L0007:	sta     _playerVelocity
 ;
 ; if(playerVelocity != 0) // If the player has velocity, and is falling. 
 ;
-L0010:	lda     _playerVelocity
-	beq     L0013
+L0008:	lda     _playerVelocity
+	beq     L000A
 ;
 ; playerSpriteData.Y += playerVelocity; // Move the player down.
 ;
@@ -16642,7 +16585,7 @@ L0010:	lda     _playerVelocity
 ; playerVelocity = 0; 
 ;
 	lda     #$00
-L0013:	sta     _playerVelocity
+L000A:	sta     _playerVelocity
 ;
 ; }
 ;
@@ -16870,11 +16813,11 @@ L002D:	lda     #<(_playerShootUpSprite)
 ;
 	beq     L0004
 	cmp     #$01
-	beq     L0005
+	jeq     L0005
 	cmp     #$02
-	beq     L0006
+	jeq     L0006
 	cmp     #$03
-	beq     L0007
+	jeq     L0007
 	cmp     #$04
 	jeq     L0008
 	cmp     #$05
@@ -16895,6 +16838,38 @@ L0004:	ldx     #$20
 	lda     #$00
 	jsr     _vram_write
 ;
+; levelCollisionData = levelOneCollision;
+;
+	lda     #>(_levelOneCollision)
+	sta     _levelCollisionData+1
+	lda     #<(_levelOneCollision)
+	sta     _levelCollisionData
+;
+; doorTileX = 25; 
+;
+	lda     #$19
+	sta     _doorTileX
+;
+; doorTileY = 26;
+;
+	lda     #$1A
+	sta     _doorTileY
+;
+; buttonTileX = 19;
+;
+	lda     #$13
+	sta     _buttonTileX
+;
+; buttonTileY = 27;
+;
+	lda     #$1B
+	sta     _buttonTileY
+;
+; buttonEnabled = 1;
+;
+	lda     #$01
+	sta     _buttonEnabled
+;
 ; playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
 ;
 	lda     #$10
@@ -16904,6 +16879,36 @@ L0004:	ldx     #$20
 ;
 	lda     #$D0
 	sta     _playerSpriteData+1
+;
+; boxEnabled = 1;
+;
+	lda     #$01
+	sta     _boxEnabled
+;
+; boxHeld = 0;
+;
+	lda     #$00
+	sta     _boxHeld
+;
+; boxStartX = 64;
+;
+	lda     #$40
+	sta     _boxStartX
+;
+; boxStartY = 208;
+;
+	lda     #$D0
+	sta     _boxStartY
+;
+; boxSpriteData.X = boxStartX;
+;
+	lda     _boxStartX
+	sta     _boxSpriteData
+;
+; boxSpriteData.Y = boxStartY;
+;
+	lda     _boxStartY
+	sta     _boxSpriteData+1
 ;
 ; break;
 ;
@@ -16924,6 +16929,13 @@ L0005:	ldx     #$20
 	lda     #$00
 	jsr     _vram_write
 ;
+; levelCollisionData = levelTwoCollision;
+;
+	lda     #>(_levelTwoCollision)
+	sta     _levelCollisionData+1
+	lda     #<(_levelTwoCollision)
+	sta     _levelCollisionData
+;
 ; playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
 ;
 	lda     #$10
@@ -16934,9 +16946,18 @@ L0005:	ldx     #$20
 	lda     #$D0
 	sta     _playerSpriteData+1
 ;
+; boxEnabled = 0;
+;
+	lda     #$00
+	sta     _boxEnabled
+;
+; buttonEnabled = 0;
+;
+	sta     _buttonEnabled
+;
 ; break;
 ;
-	jmp     L000C
+	jmp     L000D
 ;
 ; vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
 ;
@@ -16953,6 +16974,13 @@ L0006:	ldx     #$20
 	lda     #$00
 	jsr     _vram_write
 ;
+; levelCollisionData = levelThreeCollision;
+;
+	lda     #>(_levelThreeCollision)
+	sta     _levelCollisionData+1
+	lda     #<(_levelThreeCollision)
+	sta     _levelCollisionData
+;
 ; playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
 ;
 	lda     #$10
@@ -16963,9 +16991,18 @@ L0006:	ldx     #$20
 	lda     #$D0
 	sta     _playerSpriteData+1
 ;
+; boxEnabled = 0;
+;
+	lda     #$00
+	sta     _boxEnabled
+;
+; buttonEnabled = 0;
+;
+	sta     _buttonEnabled
+;
 ; break;
 ;
-	jmp     L000C
+	jmp     L000D
 ;
 ; vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
 ;
@@ -16982,6 +17019,13 @@ L0007:	ldx     #$20
 	lda     #$00
 	jsr     _vram_write
 ;
+; levelCollisionData = levelFourCollision;
+;
+	lda     #>(_levelFourCollision)
+	sta     _levelCollisionData+1
+	lda     #<(_levelFourCollision)
+	sta     _levelCollisionData
+;
 ; playerSpriteData.X = 16; // Sets the player location to the  starting location for level 1.
 ;
 	lda     #$10
@@ -16992,9 +17036,18 @@ L0007:	ldx     #$20
 	lda     #$D0
 	sta     _playerSpriteData+1
 ;
+; boxEnabled = 0;
+;
+	lda     #$00
+	sta     _boxEnabled
+;
+; buttonEnabled = 0;
+;
+	sta     _buttonEnabled
+;
 ; break;
 ;
-	jmp     L000C
+	jmp     L000D
 ;
 ; vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
 ;
@@ -17011,6 +17064,13 @@ L0008:	ldx     #$20
 	lda     #$00
 	jsr     _vram_write
 ;
+; levelCollisionData = levelFiveCollision;
+;
+	lda     #>(_levelFiveCollision)
+	sta     _levelCollisionData+1
+	lda     #<(_levelFiveCollision)
+	sta     _levelCollisionData
+;
 ; playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
 ;
 	lda     #$10
@@ -17021,9 +17081,18 @@ L0008:	ldx     #$20
 	lda     #$D0
 	sta     _playerSpriteData+1
 ;
+; boxEnabled = 0;
+;
+	lda     #$00
+	sta     _boxEnabled
+;
+; buttonEnabled = 0;
+;
+	sta     _buttonEnabled
+;
 ; break;
 ;
-	jmp     L000C
+	jmp     L000D
 ;
 ; vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
 ;
@@ -17040,6 +17109,13 @@ L0009:	ldx     #$20
 	lda     #$00
 	jsr     _vram_write
 ;
+; levelCollisionData = levelSixCollision;
+;
+	lda     #>(_levelSixCollision)
+	sta     _levelCollisionData+1
+	lda     #<(_levelSixCollision)
+	sta     _levelCollisionData
+;
 ; playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
 ;
 	lda     #$10
@@ -17050,9 +17126,18 @@ L0009:	ldx     #$20
 	lda     #$D0
 	sta     _playerSpriteData+1
 ;
+; boxEnabled = 0;
+;
+	lda     #$00
+	sta     _boxEnabled
+;
+; buttonEnabled = 0;
+;
+	sta     _buttonEnabled
+;
 ; break;
 ;
-	jmp     L000C
+	jmp     L000D
 ;
 ; gameState = 2;
 ;
@@ -17062,7 +17147,7 @@ L000B:	lda     #$02
 ; bluePortalActive   = 0; // Reset the blue portal active.
 ;
 L000C:	lda     #$00
-	sta     _bluePortalActive
+L000D:	sta     _bluePortalActive
 ;
 ; orangePortalActive = 0; // Reset the orange portal active.
 ;
@@ -17079,6 +17164,18 @@ L000C:	lda     #$00
 ; lastPortalUsed     = 0; // Reset the last portal used.
 ;
 	sta     _lastPortalUsed
+;
+; memcpy(levelCollisionRAM, levelCollisionData, 960);
+;
+	lda     #<(_levelCollisionRAM)
+	ldx     #>(_levelCollisionRAM)
+	jsr     pushax
+	lda     _levelCollisionData
+	ldx     _levelCollisionData+1
+	jsr     pushax
+	ldx     #$03
+	lda     #$C0
+	jsr     _memcpy
 ;
 ; ppu_on_all(); // Turn the screen back on.
 ;
@@ -17300,47 +17397,27 @@ L0002:	rts
 ;
 	jsr     pusha
 ;
-; if(x >= 32 || y >= 30) // If the tile is out of bounds.
+; if(x >= 32 || y >= 30)
 ;
 	ldy     #$01
 	lda     (sp),y
 	cmp     #$20
-	bcs     L0014
+	bcs     L0007
 	dey
 	lda     (sp),y
 	cmp     #$1E
-	bcs     L0014
-	ldx     #$00
-	jmp     L0015
+	bcc     L0002
 ;
-; return 1; // Return a 1 to say it's a wall.
+; return 1;
 ;
-L0014:	ldx     #$00
+L0007:	ldx     #$00
 	lda     #$01
 	jmp     incsp2
 ;
-; switch(currentLevel) // Changes based on the current level.
+; return levelCollision[y * 32 + x];
 ;
-L0015:	lda     _currentLevel
-;
-; }
-;
-	beq     L0017
-	cmp     #$01
-	beq     L0019
-	cmp     #$02
-	beq     L001B
-	cmp     #$03
-	beq     L001D
-	cmp     #$04
-	jeq     L001F
-	cmp     #$05
-	jeq     L0021
-	jmp     incsp2
-;
-; return levelOneCollision[y * 32 + x];
-;
-L0017:	lda     (sp),y
+L0002:	ldx     #$00
+	lda     (sp),y
 	jsr     shlax4
 	stx     tmp1
 	asl     a
@@ -17351,131 +17428,16 @@ L0017:	lda     (sp),y
 	clc
 	adc     ptr1
 	ldx     tmp1
-	bcc     L000D
+	bcc     L0006
 	inx
-L000D:	sta     ptr1
-	txa
 	clc
-	adc     #>(_levelOneCollision)
-	sta     ptr1+1
-	ldy     #<(_levelOneCollision)
-	jmp     L0022
-;
-; return levelTwoCollision[y * 32 + x];
-;
-L0019:	lda     (sp),y
-	jsr     shlax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
+L0006:	adc     _levelCollision
 	sta     ptr1
-	iny
-	lda     (sp),y
-	clc
-	adc     ptr1
-	ldx     tmp1
-	bcc     L000E
-	inx
-L000E:	sta     ptr1
 	txa
-	clc
-	adc     #>(_levelTwoCollision)
+	adc     _levelCollision+1
 	sta     ptr1+1
-	ldy     #<(_levelTwoCollision)
-	jmp     L0022
-;
-; return levelThreeCollision[y * 32 + x]; // Returns the collision value for the tile at X and Y of the collision table for the level.
-;
-L001B:	lda     (sp),y
-	jsr     shlax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
-	sta     ptr1
-	iny
-	lda     (sp),y
-	clc
-	adc     ptr1
-	ldx     tmp1
-	bcc     L000F
-	inx
-L000F:	sta     ptr1
-	txa
-	clc
-	adc     #>(_levelThreeCollision)
-	sta     ptr1+1
-	ldy     #<(_levelThreeCollision)
-	jmp     L0022
-;
-; return levelFourCollision[y * 32 + x];
-;
-L001D:	lda     (sp),y
-	jsr     shlax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
-	sta     ptr1
-	iny
-	lda     (sp),y
-	clc
-	adc     ptr1
-	ldx     tmp1
-	bcc     L0010
-	inx
-L0010:	sta     ptr1
-	txa
-	clc
-	adc     #>(_levelFourCollision)
-	sta     ptr1+1
-	ldy     #<(_levelFourCollision)
-	jmp     L0022
-;
-; return levelFiveCollision[y * 32 + x];
-;
-L001F:	lda     (sp),y
-	jsr     shlax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
-	sta     ptr1
-	iny
-	lda     (sp),y
-	clc
-	adc     ptr1
-	ldx     tmp1
-	bcc     L0011
-	inx
-L0011:	sta     ptr1
-	txa
-	clc
-	adc     #>(_levelFiveCollision)
-	sta     ptr1+1
-	ldy     #<(_levelFiveCollision)
-	jmp     L0022
-;
-; return levelSixCollision[y * 32 + x];
-;
-L0021:	lda     (sp),y
-	jsr     shlax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
-	sta     ptr1
-	iny
-	lda     (sp),y
-	clc
-	adc     ptr1
-	ldx     tmp1
-	bcc     L0012
-	inx
-L0012:	sta     ptr1
-	txa
-	clc
-	adc     #>(_levelSixCollision)
-	sta     ptr1+1
-	ldy     #<(_levelSixCollision)
-L0022:	ldx     #$00
-	lda     (ptr1),y
+	ldx     #$00
+	lda     (ptr1,x)
 ;
 ; }
 ;
@@ -17824,8 +17786,8 @@ L0003:	ldx     #$00
 ;
 ; vram_write((const unsigned char*)"!@#$%^&*()_+=-[]", 15);
 ;
-	lda     #<(S0002)
-	ldx     #>(S0002)
+	lda     #<(S0004)
+	ldx     #>(S0004)
 	jsr     pushax
 	ldx     #$00
 	lda     #$0F
@@ -17839,8 +17801,8 @@ L0003:	ldx     #$00
 ;
 ; vram_write((const unsigned char*)")(*&^%$#@!~?><:{}]", 18);
 ;
-	lda     #<(S0003)
-	ldx     #>(S0003)
+	lda     #<(S0005)
+	ldx     #>(S0005)
 	jsr     pushax
 	ldx     #$00
 	lda     #$12
@@ -17854,8 +17816,8 @@ L0003:	ldx     #$00
 ;
 ; vram_write((const unsigned char*)"/\\/\\/\\/\\/\\/\\/\\/\\", 17);
 ;
-	lda     #<(S0004)
-	ldx     #>(S0004)
+	lda     #<(S0006)
+	ldx     #>(S0006)
 	jsr     pushax
 	ldx     #$00
 	lda     #$11
@@ -17963,8 +17925,8 @@ L000E:	ldx     #$20
 ;
 ; vram_write((const unsigned char*)"CONGRATULATIONS.", 15);
 ;
-	lda     #<(S0005)
-	ldx     #>(S0005)
+	lda     #<(S0007)
+	ldx     #>(S0007)
 	jsr     pushax
 	ldx     #$00
 	lda     #$0F
@@ -17978,8 +17940,8 @@ L000E:	ldx     #$20
 ;
 ; vram_write((const unsigned char*)"TESTING COMPLETE.", 18);
 ;
-	lda     #<(S0006)
-	ldx     #>(S0006)
+	lda     #<(S0008)
+	ldx     #>(S0008)
 	jsr     pushax
 	ldx     #$00
 	lda     #$12
@@ -17998,8 +17960,8 @@ L000E:	ldx     #$20
 ;
 ; vram_write((const unsigned char*)"THE CAKE IS A LIE", 17);
 ;
-	lda     #<(S0007)
-	ldx     #>(S0007)
+	lda     #<(S0009)
+	ldx     #>(S0009)
 ;
 ; else
 ;
@@ -18013,8 +17975,8 @@ L0011:	ldx     #$20
 ;
 ; vram_write((const unsigned char*)"ENJOY YOUR CAKE.", 17);
 ;
-	lda     #<(S0008)
-	ldx     #>(S0008)
+	lda     #<(S000A)
+	ldx     #>(S000A)
 L001B:	jsr     pushax
 	ldx     #$00
 	lda     #$11
@@ -18032,6 +17994,515 @@ L001B:	jsr     pushax
 ; }
 ;
 L0004:	jmp     incsp1
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ handleButtonLogic (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_handleButtonLogic: near
+
+.segment	"CODE"
+
+;
+; unsigned char playerPressed = 0;
+;
+	lda     #$00
+	jsr     pusha
+;
+; unsigned char boxPressed = 0;
+;
+	jsr     pusha
+;
+; if (!buttonEnabled) return;
+;
+	ldy     #$0A
+	jsr     subysp
+	lda     _buttonEnabled
+	jeq     L001F
+;
+; px1 = playerSpriteData.X >> 3;
+;
+	lda     _playerSpriteData
+	lsr     a
+	lsr     a
+	lsr     a
+	ldy     #$09
+	sta     (sp),y
+;
+; px2 = (playerSpriteData.X + playerSpriteData.width) >> 3;
+;
+	ldx     #$00
+	lda     _playerSpriteData
+	clc
+	adc     _playerSpriteData+3
+	bcc     L002C
+	inx
+L002C:	jsr     asrax3
+	dey
+	sta     (sp),y
+;
+; py1 = playerSpriteData.Y >> 3;
+;
+	lda     _playerSpriteData+1
+	lsr     a
+	lsr     a
+	lsr     a
+	dey
+	sta     (sp),y
+;
+; py2 = (playerSpriteData.Y + playerSpriteData.height) >> 3;
+;
+	ldx     #$00
+	lda     _playerSpriteData+1
+	clc
+	adc     _playerSpriteData+2
+	bcc     L002D
+	inx
+L002D:	jsr     asrax3
+	dey
+	sta     (sp),y
+;
+; if ((px1 <= buttonTileX + 1 && px2 >= buttonTileX) &&
+;
+	ldy     #$09
+	lda     (sp),y
+	jsr     pusha0
+	lda     _buttonTileX
+	clc
+	adc     #$01
+	bcc     L0004
+	ldx     #$01
+L0004:	jsr     tosicmp
+	beq     L0040
+	bpl     L0003
+L0040:	ldy     #$08
+	lda     (sp),y
+	cmp     _buttonTileX
+	bcc     L0003
+;
+; (py1 <= buttonTileY && py2 >= buttonTileY)) {
+;
+	dey
+	lda     (sp),y
+	cmp     _buttonTileY
+	beq     L0042
+	bcs     L0003
+L0042:	dey
+	lda     (sp),y
+	cmp     _buttonTileY
+	bcc     L0003
+	lda     #$01
+;
+; playerPressed = 1;
+;
+	ldy     #$0B
+	sta     (sp),y
+;
+; if (boxEnabled && !boxHeld) {
+;
+L0003:	lda     _boxEnabled
+	beq     L0012
+	lda     _boxHeld
+	bne     L0012
+;
+; bx1 = boxSpriteData.X >> 3;
+;
+	lda     _boxSpriteData
+	lsr     a
+	lsr     a
+	lsr     a
+	ldy     #$05
+	sta     (sp),y
+;
+; bx2 = (boxSpriteData.X + boxSpriteData.width) >> 3;
+;
+	ldx     #$00
+	lda     _boxSpriteData
+	clc
+	adc     _boxSpriteData+3
+	bcc     L002E
+	inx
+L002E:	jsr     asrax3
+	dey
+	sta     (sp),y
+;
+; by1 = boxSpriteData.Y >> 3;
+;
+	lda     _boxSpriteData+1
+	lsr     a
+	lsr     a
+	lsr     a
+	dey
+	sta     (sp),y
+;
+; by2 = (boxSpriteData.Y + boxSpriteData.height) >> 3;
+;
+	ldx     #$00
+	lda     _boxSpriteData+1
+	clc
+	adc     _boxSpriteData+2
+	bcc     L002F
+	inx
+L002F:	jsr     asrax3
+	dey
+	sta     (sp),y
+;
+; if ((bx1 <= buttonTileX + 1 && bx2 >= buttonTileX) &&
+;
+	ldy     #$05
+	lda     (sp),y
+	jsr     pusha0
+	lda     _buttonTileX
+	clc
+	adc     #$01
+	bcc     L0013
+	ldx     #$01
+L0013:	jsr     tosicmp
+	beq     L0041
+	bpl     L0012
+L0041:	ldy     #$04
+	lda     (sp),y
+	cmp     _buttonTileX
+	bcc     L0012
+;
+; (by1 <= buttonTileY && by2 >= buttonTileY)) {
+;
+	dey
+	lda     (sp),y
+	cmp     _buttonTileY
+	beq     L0043
+	bcs     L0012
+L0043:	dey
+	lda     (sp),y
+	cmp     _buttonTileY
+	bcc     L0012
+	lda     #$01
+;
+; boxPressed = 1;
+;
+	ldy     #$0A
+	sta     (sp),y
+;
+; currentState = (playerPressed || boxPressed);
+;
+L0012:	ldy     #$0B
+	lda     (sp),y
+	bne     L0059
+	dey
+	lda     (sp),y
+	beq     L005A
+L0059:	lda     #$01
+L005A:	ldy     #$01
+	sta     (sp),y
+;
+; if (currentState != previousState) {
+;
+	cmp     M0001
+	jeq     L001F
+;
+; ppu_off();
+;
+	jsr     _ppu_off
+;
+; vram_adr(NAMETABLE_A + (buttonTileY * 32 + buttonTileX));
+;
+	ldx     #$00
+	lda     _buttonTileY
+	jsr     shlax4
+	stx     tmp1
+	asl     a
+	rol     tmp1
+	ldx     tmp1
+	clc
+	adc     _buttonTileX
+	bcc     L0030
+	inx
+L0030:	pha
+	txa
+	clc
+	adc     #$20
+	tax
+	pla
+	jsr     _vram_adr
+;
+; if (currentState) {
+;
+	ldy     #$01
+	lda     (sp),y
+	beq     L0020
+;
+; vram_put(buttonTileIndexLeftPressed);
+;
+	lda     _buttonTileIndexLeftPressed
+	jsr     _vram_put
+;
+; vram_put(buttonTileIndexRightPressed);
+;
+	lda     _buttonTileIndexRightPressed
+;
+; } else {
+;
+	jmp     L0038
+;
+; vram_put(buttonTileIndexLeft);
+;
+L0020:	lda     _buttonTileIndexLeft
+	jsr     _vram_put
+;
+; vram_put(buttonTileIndexRight);
+;
+	lda     _buttonTileIndexRight
+L0038:	jsr     _vram_put
+;
+; vram_adr(NAMETABLE_A + (doorTileY * 32 + doorTileX));
+;
+	ldx     #$00
+	lda     _doorTileY
+	jsr     shlax4
+	stx     tmp1
+	asl     a
+	rol     tmp1
+	ldx     tmp1
+	clc
+	adc     _doorTileX
+	bcc     L0031
+	inx
+L0031:	pha
+	txa
+	clc
+	adc     #$20
+	tax
+	pla
+	jsr     _vram_adr
+;
+; if (currentState) {
+;
+	ldy     #$01
+	lda     (sp),y
+	beq     L0022
+;
+; vram_put(0xE8); vram_put(0xE9); // Open door
+;
+	lda     #$E8
+	jsr     _vram_put
+	lda     #$E9
+	jsr     _vram_put
+;
+; vram_adr(NAMETABLE_A + ((doorTileY + 1) * 32 + doorTileX));
+;
+	ldx     #$00
+	lda     _doorTileY
+	clc
+	adc     #$01
+	bcc     L0023
+	inx
+L0023:	jsr     aslax4
+	stx     tmp1
+	asl     a
+	rol     tmp1
+	ldx     tmp1
+	clc
+	adc     _doorTileX
+	bcc     L0032
+	inx
+L0032:	pha
+	txa
+	clc
+	adc     #$20
+	tax
+	pla
+	jsr     _vram_adr
+;
+; vram_put(0xF8); vram_put(0xF9);
+;
+	lda     #$F8
+	jsr     _vram_put
+	lda     #$F9
+;
+; } else {
+;
+	jmp     L0039
+;
+; vram_put(0xEA); vram_put(0xEB); // Closed door
+;
+L0022:	lda     #$EA
+	jsr     _vram_put
+	lda     #$EB
+	jsr     _vram_put
+;
+; vram_adr(NAMETABLE_A + ((doorTileY + 1) * 32 + doorTileX));
+;
+	ldx     #$00
+	lda     _doorTileY
+	clc
+	adc     #$01
+	bcc     L0025
+	inx
+L0025:	jsr     aslax4
+	stx     tmp1
+	asl     a
+	rol     tmp1
+	ldx     tmp1
+	clc
+	adc     _doorTileX
+	bcc     L0033
+	inx
+L0033:	pha
+	txa
+	clc
+	adc     #$20
+	tax
+	pla
+	jsr     _vram_adr
+;
+; vram_put(0xFA); vram_put(0xFB);
+;
+	lda     #$FA
+	jsr     _vram_put
+	lda     #$FB
+L0039:	jsr     _vram_put
+;
+; tileValue = currentState ? 5 : 0;
+;
+	ldy     #$01
+	lda     (sp),y
+	beq     L005B
+	lda     #$05
+L005B:	dey
+	sta     (sp),y
+;
+; levelCollision[doorTileY * 32 + doorTileX] = tileValue;
+;
+	ldx     #$00
+	lda     _doorTileY
+	jsr     shlax4
+	stx     tmp1
+	asl     a
+	rol     tmp1
+	ldx     tmp1
+	clc
+	adc     _doorTileX
+	bcc     L003A
+	inx
+	clc
+L003A:	adc     _levelCollision
+	sta     ptr1
+	txa
+	adc     _levelCollision+1
+	sta     ptr1+1
+	lda     (sp),y
+	sta     (ptr1),y
+;
+; levelCollision[doorTileY * 32 + doorTileX + 1] = tileValue;
+;
+	ldx     #$00
+	lda     _doorTileY
+	jsr     shlax4
+	stx     tmp1
+	asl     a
+	rol     tmp1
+	ldx     tmp1
+	clc
+	adc     _doorTileX
+	bcc     L003B
+	inx
+	clc
+L003B:	adc     #$01
+	bcc     L003C
+	inx
+	clc
+L003C:	adc     _levelCollision
+	sta     ptr1
+	txa
+	adc     _levelCollision+1
+	sta     ptr1+1
+	lda     (sp),y
+	sta     (ptr1),y
+;
+; levelCollision[(doorTileY + 1) * 32 + doorTileX] = tileValue;
+;
+	ldx     #$00
+	lda     _doorTileY
+	clc
+	adc     #$01
+	bcc     L0029
+	inx
+L0029:	jsr     aslax4
+	stx     tmp1
+	asl     a
+	rol     tmp1
+	ldx     tmp1
+	clc
+	adc     _doorTileX
+	bcc     L003D
+	inx
+	clc
+L003D:	adc     _levelCollision
+	sta     ptr1
+	txa
+	adc     _levelCollision+1
+	sta     ptr1+1
+	lda     (sp),y
+	sta     (ptr1),y
+;
+; levelCollision[(doorTileY + 1) * 32 + doorTileX + 1] = tileValue;
+;
+	ldx     #$00
+	lda     _doorTileY
+	clc
+	adc     #$01
+	bcc     L002A
+	inx
+L002A:	jsr     aslax4
+	stx     tmp1
+	asl     a
+	rol     tmp1
+	ldx     tmp1
+	clc
+	adc     _doorTileX
+	bcc     L003E
+	inx
+	clc
+L003E:	adc     #$01
+	bcc     L003F
+	inx
+	clc
+L003F:	adc     _levelCollision
+	sta     ptr1
+	txa
+	adc     _levelCollision+1
+	sta     ptr1+1
+	lda     (sp),y
+	sta     (ptr1),y
+;
+; doorOpen = currentState;
+;
+	iny
+	lda     (sp),y
+	sta     _doorOpen
+;
+; previousState = currentState;
+;
+	lda     (sp),y
+	sta     M0001
+;
+; ppu_on_all();
+;
+	jsr     _ppu_on_all
+;
+; }
+;
+L001F:	ldy     #$0C
+	jmp     addysp
+
+.segment	"DATA"
+
+M0001:
+	.byte	$00
 
 .endproc
 
@@ -18108,7 +18579,7 @@ L0002:	jsr     _ppu_wait_nmi
 ;
 	lda     _currentSong
 	cmp     _song
-	beq     L0010
+	beq     L0016
 ;
 ; music_play(song);
 ;
@@ -18122,7 +18593,7 @@ L0002:	jsr     _ppu_wait_nmi
 ;
 ; pad1 = pad_poll(0); // read the first controller
 ;
-L0010:	lda     #$00
+L0016:	lda     #$00
 	jsr     _pad_poll
 	sta     _pad1
 ;
@@ -18130,7 +18601,7 @@ L0010:	lda     #$00
 ;
 	ldx     #$00
 	lda     _gameState
-	bne     L0011
+	bne     L0017
 ;
 ; if(pad1 & PAD_START) // Check if the player has pressed start.
 ;
@@ -18159,9 +18630,9 @@ L0007:	jsr     _animatePressStartText
 ; if (gameState == 2)
 ;
 	ldx     #$00
-L0011:	lda     _gameState
+L0017:	lda     _gameState
 	cmp     #$02
-	bne     L0012
+	bne     L0018
 ;
 ; if (!endScreenDrawn)
 ;
@@ -18189,7 +18660,7 @@ L0009:	jsr     _writeEndText
 ; else if(gameState == 1) // If the game has started and is not on the menu.
 ;
 	jmp     L0002
-L0012:	lda     _gameState
+L0018:	lda     _gameState
 	cmp     #$01
 	bne     L0002
 ;
@@ -18197,10 +18668,28 @@ L0012:	lda     _gameState
 ;
 	jsr     _modeToggle
 ;
+; aLatch = (pad1 & PAD_A) && !(pad1Old & PAD_A);
+;
+	lda     _pad1
+	and     #$80
+	beq     L001C
+	lda     _pad1Old
+	and     #$80
+	beq     L001B
+	lda     #$00
+	jmp     L001C
+L001B:	lda     #$01
+L001C:	sta     _aLatch
+;
+; pad1Old = pad1;  
+;
+	lda     _pad1
+	sta     _pad1Old
+;
 ; if(mode == 0) // If the user is in walk mode.
 ;
 	lda     _mode
-	bne     L0013
+	bne     L001D
 ;
 ; walkMode(); // Call the walk mode function.
 ;
@@ -18208,10 +18697,10 @@ L0012:	lda     _gameState
 ;
 ; else if(mode == 1) // If the user is in shoot mode.
 ;
-	jmp     L000E
-L0013:	lda     _mode
+	jmp     L0011
+L001D:	lda     _mode
 	cmp     #$01
-	bne     L000E
+	bne     L0011
 ;
 ; shootMode(); // Call the shoot mode function.
 ;
@@ -18219,7 +18708,7 @@ L0013:	lda     _mode
 ;
 ; applyGravity(); // Applies gravity to the player.
 ;
-L000E:	jsr     _applyGravity
+L0011:	jsr     _applyGravity
 ;
 ; updateBullet(); // Updates bullet location and logic, if any are on the screen.
 ;
@@ -18228,6 +18717,10 @@ L000E:	jsr     _applyGravity
 ; portalPlayerCollision(); // Check if the player is colliding with any portals.
 ;
 	jsr     _portalPlayerCollision
+;
+; handleButtonLogic();
+;
+	jsr     _handleButtonLogic
 ;
 ; doorPlayerCollision();
 ;
@@ -18239,7 +18732,7 @@ L000E:	jsr     _applyGravity
 	ldx     #>(_playerSpriteData)
 	jsr     _disablePortals
 	tax
-	beq     L000F
+	beq     L0012
 ;
 ; orangePortalActive = 0;
 ;
@@ -18252,7 +18745,7 @@ L000E:	jsr     _applyGravity
 ;
 ; oam_clear(); // Clear the OAM buffer/
 ;
-L000F:	jsr     _oam_clear
+L0012:	jsr     _oam_clear
 ;
 ; drawSprite(); // Draws the player sprite.
 ;
@@ -18269,6 +18762,41 @@ L000F:	jsr     _oam_clear
 ; drawOrangePortalSprite(); // Draws the orange portal sprite.
 ;
 	jsr     _drawOrangePortalSprite
+;
+; if (boxEnabled) 
+;
+	lda     _boxEnabled
+	jeq     L0002
+;
+; if (boxHeld) 
+;
+	lda     _boxHeld
+	beq     L0014
+;
+; boxSpriteData.X = playerSpriteData.X;
+;
+	lda     _playerSpriteData
+	sta     _boxSpriteData
+;
+; boxSpriteData.Y = playerSpriteData.Y - 16; // slightly above player
+;
+	lda     _playerSpriteData+1
+	sec
+	sbc     #$10
+	sta     _boxSpriteData+1
+;
+; oam_meta_spr(boxSpriteData.X, boxSpriteData.Y, boxSprite);
+;
+L0014:	jsr     decsp2
+	lda     _boxSpriteData
+	ldy     #$01
+	sta     (sp),y
+	lda     _boxSpriteData+1
+	dey
+	sta     (sp),y
+	lda     #<(_boxSprite)
+	ldx     #>(_boxSprite)
+	jsr     _oam_meta_spr
 ;
 ; while(1) {
 ;

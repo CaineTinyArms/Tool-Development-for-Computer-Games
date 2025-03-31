@@ -5,63 +5,86 @@
 #include "headers/levels.h"
 #include "headers/levelCollisions.h"
 #include "headers/menu.h"
-#pragma bss-name(push, "ZEROPAGE")
 
-
-// GLOBAL VARIABLES.
-// -====================================-
-unsigned char pad1; // Variable for the controller.
-
-// Portal Variables
-// -====================================-
-unsigned char lastPortalUsed = 0; // 0 for none, 1 for orange, 2 for blue.
-unsigned char bluePortalActive = 0; // Tracks if the blue portal is active, 0 = no, 1 = yes.
-unsigned char orangePortalActive = 0; // Tracks if the orange portal is active, 0 = no, 1 = yes.
-unsigned char orangePortalOrientation = 0; // Tracks the orientation of the orange portal, 0 = up, 1 = right, 2 = down and 3 = left.
-unsigned char bluePortalOrientation   = 0; // Tracks the orientation of the blue portal, 0 = up, 1 = right, 2 = down and 3 = left.
 #define PORTAL_WIDTH  20 // Defines the width of the portal sprite.
 #define PORTAL_HEIGHT 16 // Defines the height of the portal sprite.
-
-// Player Variables
-// -====================================-
-unsigned char orangePortalCollision; // Variable for if the player is touching the orange portal.
-unsigned char bluePortalCollision; // Variable for if the player is touching the blue portal.
-unsigned char doorCollision; // Variable for if the player is touching the door.
-unsigned char mode = 0; // 0 for walk mode, 1 for shoot mode.
-signed char aimDirectionX = 0; // Variable for the X direction the player is aiming (left and right)
-signed char aimDirectionY = 0; // Variable for the Y direction the player is aiming (up and down)
-signed char playerVelocity = 0; // Variable for the players velocity, used for making them fall.
-
-// Gravity Variables 
-// -====================================-
 #define GRAVITY 1 // Defines the speed of gravity that is added while the player is falling.
 #define MAX_FALL_SPEED 4 // Defines the max fall speed of the player.
 
-// Game State Variables
-// -====================================-
-unsigned char currentLevel; // Variable to track what level the player is currently on.
-unsigned char gameState; // Variable to track the current game state, 0 = main menu, 1 = in game etc.
-unsigned char song = 0; // 1 is main menu. // 0 is end screen // 2 is in game.
-unsigned char currentSong = 255;
+#pragma bss-name(push, "ZEROPAGE")
 
-// Menu Variables
-// -====================================-
-unsigned char blankTiles[12] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; // Array of 12 blank tiles, used to simulate the flashing "PRESS START!" text.
-unsigned char pressStartTiles[12] = {0x50, 0x52, 0x45, 0x53,0x53, 0x00, 0x53, 0x54,0x41, 0x52, 0x54, 0x21}; // Array of 12 tile addresses, used to display "PRESS START!".
+// --- Frequently accessed game variables (ZEROPAGE) ---
+unsigned char pad1;
+unsigned char pad1Old;
+unsigned char mode;
+unsigned char aLatch;
+unsigned char currentLevel;
+unsigned char gameState;
+unsigned char song;
+unsigned char currentSong;
+unsigned char boxHeld;
+unsigned char doorOpen;
+unsigned char playerVelocity;
+unsigned char orangePortalCollision;
+unsigned char bluePortalCollision;
+unsigned char bluePortalActive;
+unsigned char orangePortalActive;
+unsigned char lastPortalUsed;
+
+#pragma bss-name(push, "LEVELCOLL")
+unsigned char levelCollisionRAM[960];
+
+#pragma bss-name(pop)
+
+// --- Other variables (default memory) ---
+
+// Portal Orientation
+unsigned char orangePortalOrientation;
+unsigned char bluePortalOrientation;
+
+// Portal bullet state
+unsigned char orangeBulletActive;
+unsigned char blueBulletActive;
+signed char orangeBulletDirectionX;
+signed char orangeBulletDirectionY;
+signed char blueBulletDirectionX;
+signed char blueBulletDirectionY;
+
+// Aiming
+signed char aimDirectionX;
+signed char aimDirectionY;
+
+// Menu Animation
+unsigned char blankTiles[12] = {0};
+unsigned char pressStartTiles[12] = {
+  0x50, 0x52, 0x45, 0x53, 0x53, 0x00,
+  0x53, 0x54, 0x41, 0x52, 0x54, 0x21
+};
 unsigned char endScreenDrawn = 0;
 unsigned char cakeTextTimer = 0;
 unsigned char cakeIsALie = 0;
 unsigned char prevCakeisALie = 255;
 
-// Portal Bullet Variables
-// -====================================-
-unsigned char orangeBulletActive = 0; // Tracks if the orange bullet is active, 0 = no, 1 = yes.
-unsigned char blueBulletActive   = 0; // Tracks if the blue bullet is active, 0 = no, 1 = yes.
-signed char orangeBulletDirectionX = 0; // Tracks the X direction of the orange bullet, -1 for left, 1 for right.
-signed char orangeBulletDirectionY = 0; // Tracks the Y direction of the orange bullet, -1 for up, 1 for down.
-signed char blueBulletDirectionX   = 0; // Tracks the X direction of the blue bullet, -1 for left, 1 for right.
-signed char blueBulletDirectionY   = 0; // Tracks the Y direction of the orange bullet, -1 for left, 1 for right.
+// Box Data
+unsigned char boxEnabled = 0;
+unsigned char boxStartX = 0;
+unsigned char boxStartY = 0;
 
+// Door + Button Variables
+unsigned char buttonTileX = 0;
+unsigned char buttonTileY = 0;
+unsigned char buttonEnabled = 0;
+unsigned char doorTileX = 0;
+unsigned char doorTileY = 0;
+unsigned char buttonTileIndexLeft = 0xFC;
+unsigned char buttonTileIndexRight = 0xFD;
+unsigned char buttonTileIndexLeftPressed = 0xFE;
+unsigned char buttonTileIndexRightPressed = 0xFF;
+
+// Collision data
+
+const unsigned char* levelCollisionData;
+unsigned char* levelCollision = levelCollisionRAM;
 
 // COLLISION NUMBERS AND THEIR MEANINGS - 0 MEANS AIR, 1 MEANS NO PORTAL WALL, 2 MEANS PORTAL WALL, 3 MEANS RED GRID, 4 MEANS BLUE GRID, 5 MEANS OPEN DOOR, 6 MEANS BUTTON.
 
@@ -92,6 +115,7 @@ void doorPlayerCollision(void);
 unsigned char disablePortals(struct spriteData *spr);
 void drawEndScreen();
 void writeEndText();
+void handleButtonLogic(void);
 
 // MAIN GAME LOOP
 // -=========================================- 
@@ -147,6 +171,10 @@ void main(void) {
 		{
             modeToggle(); // Call the mode toggle function to check what mode the player is in.
 
+            aLatch = (pad1 & PAD_A) && !(pad1Old & PAD_A);
+            pad1Old = pad1;  
+
+
             if(mode == 0) // If the user is in walk mode.
 			{
                 walkMode(); // Call the walk mode function.
@@ -158,7 +186,8 @@ void main(void) {
 			applyGravity(); // Applies gravity to the player.
 			updateBullet(); // Updates bullet location and logic, if any are on the screen.
             portalPlayerCollision(); // Check if the player is colliding with any portals.
-			doorPlayerCollision();
+            handleButtonLogic();
+            doorPlayerCollision();
             if (disablePortals(&playerSpriteData))
             {
                 orangePortalActive = 0;
@@ -169,6 +198,16 @@ void main(void) {
             drawBullet(); // Draws the bullet sprites.
             drawBluePortalSprite(); // Draws the blue portal sprite.
             drawOrangePortalSprite(); // Draws the orange portal sprite.
+            if (boxEnabled) 
+            {
+                if (boxHeld) 
+                {
+                    boxSpriteData.X = playerSpriteData.X;
+                    boxSpriteData.Y = playerSpriteData.Y - 16; // slightly above player
+                }
+                oam_meta_spr(boxSpriteData.X, boxSpriteData.Y, boxSprite);
+            }
+
         }
     }
 }
@@ -245,35 +284,14 @@ void portalPlayerCollision(void)
     }
 }
 
-unsigned char wallDetection(unsigned char x, unsigned char y)
+unsigned char getCollisionValue(unsigned char x, unsigned char y)
 {
-    if(x >= 32 || y >= 30) // Checks if the tile is out of the screen area
-    {
-        return 1; // Return a 1 to say the player is hitting a wall.
-    }
+    if(x >= 32 || y >= 30)
+        return 1;
 
-    switch(currentLevel) // Changes based on the current level.
-	{
-        case 0:
-            return levelOneCollision[y * 32 + x];
-            break;
-        case 1:
-            return levelTwoCollision[y * 32 + x];
-            break;
-        case 2:
-            return levelThreeCollision[y * 32 + x];
-            break;
-        case 3:
-            return levelFourCollision[y * 32 + x];
-            break;
-        case 4:
-            return levelFiveCollision[y * 32 + x];
-        case 5:
-            return levelSixCollision[y * 32 + x];
-            break;
-
-    }
+    return levelCollision[y * 32 + x];
 }
+
 
 unsigned char playerWallCollision(struct spriteData *spr)
 {
@@ -305,29 +323,7 @@ unsigned char playerWallCollision(struct spriteData *spr)
     return 0;
 }
 
-unsigned char getCollisionValue(unsigned char x, unsigned char y)
-{
-    if(x >= 32 || y >= 30) // If the tile is out of bounds.
-	{
-        return 1; // Return a 1 to say it's a wall.
-    }
 
-    switch(currentLevel) // Changes based on the current level.
-	{
-        case 0:
-            return levelOneCollision[y * 32 + x];
-        case 1:
-            return levelTwoCollision[y * 32 + x];
-        case 2: 
-            return levelThreeCollision[y * 32 + x]; // Returns the collision value for the tile at X and Y of the collision table for the level.
-        case 3:
-            return levelFourCollision[y * 32 + x];
-        case 4:
-            return levelFiveCollision[y * 32 + x];
-        case 5:
-            return levelSixCollision[y * 32 + x];
-    }
-}
 
 void doorPlayerCollision(void)
 {
@@ -566,6 +562,21 @@ void walkMode(void)
             playerSpriteData.X--; // Move the player to the left, so they're not in the wall anymore.
         }
     }
+    if (aLatch && boxEnabled) {
+    if (!boxHeld) {
+        unsigned char dx = playerSpriteData.X > boxSpriteData.X ? playerSpriteData.X - boxSpriteData.X : boxSpriteData.X - playerSpriteData.X;
+        unsigned char dy = playerSpriteData.Y > boxSpriteData.Y ? playerSpriteData.Y - boxSpriteData.Y : boxSpriteData.Y - playerSpriteData.Y;
+
+        if (dx < 16 && dy < 16) {
+            boxHeld = 1;
+        }
+    } else {
+    boxSpriteData.X = playerSpriteData.X;
+    boxSpriteData.Y = playerSpriteData.Y; // dropped just above the ground
+    boxHeld = 0;
+    }
+    }
+
 }
 
 void shootMode(void)
@@ -718,38 +729,65 @@ void loadLevel(unsigned char lvl)
         case 0:
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
             vram_write(levelOneData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+            levelCollisionData = levelOneCollision;
+            doorTileX = 25; 
+            doorTileY = 26;
+            buttonTileX = 19;
+            buttonTileY = 27;
+            buttonEnabled = 1;
             playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
             playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
+            boxEnabled = 1;
+            boxHeld = 0;
+            boxStartX = 64;
+            boxStartY = 208;
+            boxSpriteData.X = boxStartX;
+            boxSpriteData.Y = boxStartY;
             break;
         case 1:
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
             vram_write(levelTwoData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+            levelCollisionData = levelTwoCollision;
             playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
             playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
+            boxEnabled = 0;
+            buttonEnabled = 0;
             break;
         case 2: 
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
             vram_write(levelThreeData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+            levelCollisionData = levelThreeCollision;
             playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
             playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
+            boxEnabled = 0;
+            buttonEnabled = 0;
             break;
         case 3:
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
             vram_write(levelFourData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+            levelCollisionData = levelFourCollision;
             playerSpriteData.X = 16; // Sets the player location to the  starting location for level 1.
             playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
+            boxEnabled = 0;
+            buttonEnabled = 0;
             break;
         case 4:
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
             vram_write(levelFiveData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+            levelCollisionData = levelFiveCollision;
             playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
             playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
+            boxEnabled = 0;
+            buttonEnabled = 0;
             break;
         case 5:
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
             vram_write(levelSixData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+            levelCollisionData = levelSixCollision;
             playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
             playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
+            boxEnabled = 0;
+            buttonEnabled = 0;
             break;
 
         default:
@@ -761,7 +799,7 @@ void loadLevel(unsigned char lvl)
     blueBulletActive   = 0; // Reset the blue bullet being active.
     orangeBulletActive = 0; // Reset the orange bullet being active.
     lastPortalUsed     = 0; // Reset the last portal used.
-
+    memcpy(levelCollisionRAM, levelCollisionData, 960);
     ppu_on_all(); // Turn the screen back on.
 }
 
@@ -923,4 +961,83 @@ unsigned char disablePortals(struct spriteData *spr)
 
     return 0;
 }
+
+void handleButtonLogic(void) {
+    unsigned char playerPressed = 0;
+    unsigned char boxPressed = 0;
+    unsigned char px1, px2, py1, py2;
+    unsigned char bx1, bx2, by1, by2;
+    static unsigned char previousState = 0;
+    unsigned char currentState;
+    unsigned char tileValue;
+
+    if (!buttonEnabled) return;
+
+    // Player bounds
+    px1 = playerSpriteData.X >> 3;
+    px2 = (playerSpriteData.X + playerSpriteData.width) >> 3;
+    py1 = playerSpriteData.Y >> 3;
+    py2 = (playerSpriteData.Y + playerSpriteData.height) >> 3;
+
+    if ((px1 <= buttonTileX + 1 && px2 >= buttonTileX) &&
+        (py1 <= buttonTileY && py2 >= buttonTileY)) {
+        playerPressed = 1;
+    }
+
+    // Box bounds
+    if (boxEnabled && !boxHeld) {
+        bx1 = boxSpriteData.X >> 3;
+        bx2 = (boxSpriteData.X + boxSpriteData.width) >> 3;
+        by1 = boxSpriteData.Y >> 3;
+        by2 = (boxSpriteData.Y + boxSpriteData.height) >> 3;
+
+        if ((bx1 <= buttonTileX + 1 && bx2 >= buttonTileX) &&
+            (by1 <= buttonTileY && by2 >= buttonTileY)) {
+            boxPressed = 1;
+        }
+    }
+
+    currentState = (playerPressed || boxPressed);
+
+    if (currentState != previousState) {
+        ppu_off();
+
+        // Update button graphics
+        vram_adr(NAMETABLE_A + (buttonTileY * 32 + buttonTileX));
+        if (currentState) {
+            vram_put(buttonTileIndexLeftPressed);
+            vram_put(buttonTileIndexRightPressed);
+        } else {
+            vram_put(buttonTileIndexLeft);
+            vram_put(buttonTileIndexRight);
+        }
+
+        // Update door graphics
+        vram_adr(NAMETABLE_A + (doorTileY * 32 + doorTileX));
+        if (currentState) {
+            vram_put(0xE8); vram_put(0xE9); // Open door
+            vram_adr(NAMETABLE_A + ((doorTileY + 1) * 32 + doorTileX));
+            vram_put(0xF8); vram_put(0xF9);
+        } else {
+            vram_put(0xEA); vram_put(0xEB); // Closed door
+            vram_adr(NAMETABLE_A + ((doorTileY + 1) * 32 + doorTileX));
+            vram_put(0xFA); vram_put(0xFB);
+        }
+
+        // Update collision array
+        tileValue = currentState ? 5 : 0;
+        levelCollision[doorTileY * 32 + doorTileX] = tileValue;
+        levelCollision[doorTileY * 32 + doorTileX + 1] = tileValue;
+        levelCollision[(doorTileY + 1) * 32 + doorTileX] = tileValue;
+        levelCollision[(doorTileY + 1) * 32 + doorTileX + 1] = tileValue;
+
+        doorOpen = currentState;
+        previousState = currentState;
+
+        ppu_on_all();
+    }
+}
+
+
+
 
