@@ -62,8 +62,6 @@ signed char orangeBulletDirectionY = 0; // Tracks the Y direction of the orange 
 signed char blueBulletDirectionX   = 0; // Tracks the X direction of the blue bullet, -1 for left, 1 for right.
 signed char blueBulletDirectionY   = 0; // Tracks the Y direction of the orange bullet, -1 for left, 1 for right.
 
-
-
 // FUNCTION PROTOTYPES.
 // -================================-
 void modeToggle(void); 
@@ -327,6 +325,18 @@ unsigned char getCollisionValue(unsigned char x, unsigned char y)
         case 5:
             return levelSixCollision[y * 32 + x];
     }
+}
+
+void doorPlayerCollision(void)
+{
+	 doorCollision = check_collision(&playerSpriteData, &doorSpriteData);
+
+	 if (doorCollision)
+	 {
+        sfx_play(6, 0);
+		currentLevel++;
+		loadLevel(currentLevel);
+	 }
 }
 
 // PORTAL BULLET FUNCTIONS 
@@ -760,6 +770,10 @@ void loadLevel(unsigned char lvl)
     ppu_on_all(); // Turn the screen back on.
 }
 
+
+
+// Menu Functions
+// -=================================-
 void drawMainMenu(void)
 {
     ppu_off(); // Turns the screen off.
@@ -795,54 +809,6 @@ void animatePressStartText(void)
 
         ppu_on_all(); // Turn the screen on.
     }
-}
-
-void drawOrangePortalSprite(void)
-{
-    if(orangePortalActive)
-    {
-        oam_meta_spr(orangePortalSpriteData.X, orangePortalSpriteData.Y, orangePortal);
-    }
-}
-
-void drawBluePortalSprite(void)
-{
-    if(bluePortalActive)
-    {
-        oam_meta_spr(bluePortalSpriteData.X, bluePortalSpriteData.Y, bluePortal);
-    }
-}
-
-void drawDoorSprite(void)
-{
-	oam_meta_spr(doorSpriteData.X, doorSpriteData.Y, doorSprite);
-}
-
-void doorPlayerCollision(void)
-{
-	 doorCollision = check_collision(&playerSpriteData, &doorSpriteData);
-
-	 if (doorCollision)
-	 {
-        sfx_play(6, 0);
-		currentLevel++;
-		loadLevel(currentLevel);
-	 }
-}
-
-unsigned char disablePortals(struct spriteData *spr)
-{
-    unsigned char leftTile   = spr->X >> 3;
-    unsigned char rightTile  = (spr->X + spr->width) >> 3;
-    unsigned char topTile    = spr->Y >> 3;
-    unsigned char bottomTile = (spr->Y + spr->height) >> 3;
-
-    if(getCollisionValue(leftTile, topTile) == 4 || getCollisionValue(rightTile, topTile) == 4 || getCollisionValue(leftTile, bottomTile) == 4 || getCollisionValue(rightTile, bottomTile) == 4)
-    {
-        return 1;
-    }
-
-    return 0;
 }
 
 void drawEndScreen()
@@ -925,3 +891,47 @@ void writeEndText()
         prevCakeisALie = cakeIsALie;
     }
 }
+
+
+
+// Misc Sprite Functions
+// -=====================================-
+void drawOrangePortalSprite(void)
+{
+    if(orangePortalActive)
+    {
+        oam_meta_spr(orangePortalSpriteData.X, orangePortalSpriteData.Y, orangePortal);
+    }
+}
+
+void drawBluePortalSprite(void)
+{
+    if(bluePortalActive)
+    {
+        oam_meta_spr(bluePortalSpriteData.X, bluePortalSpriteData.Y, bluePortal);
+    }
+}
+
+void drawDoorSprite(void)
+{
+	oam_meta_spr(doorSpriteData.X, doorSpriteData.Y, doorSprite);
+}
+
+
+// Misc Portal Functions
+// -==============================-
+unsigned char disablePortals(struct spriteData *spr)
+{
+    unsigned char leftTile   = spr->X >> 3;
+    unsigned char rightTile  = (spr->X + spr->width) >> 3;
+    unsigned char topTile    = spr->Y >> 3;
+    unsigned char bottomTile = (spr->Y + spr->height) >> 3;
+
+    if(getCollisionValue(leftTile, topTile) == 4 || getCollisionValue(rightTile, topTile) == 4 || getCollisionValue(leftTile, bottomTile) == 4 || getCollisionValue(rightTile, bottomTile) == 4)
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
