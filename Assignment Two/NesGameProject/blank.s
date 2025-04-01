@@ -18624,7 +18624,7 @@ L0002:	jsr     _ppu_wait_nmi
 ;
 	lda     _currentSong
 	cmp     _song
-	beq     L0016
+	beq     L0017
 ;
 ; music_play(song);
 ;
@@ -18638,7 +18638,7 @@ L0002:	jsr     _ppu_wait_nmi
 ;
 ; pad1 = pad_poll(0); // read the first controller
 ;
-L0016:	lda     #$00
+L0017:	lda     #$00
 	jsr     _pad_poll
 	sta     _pad1
 ;
@@ -18646,7 +18646,7 @@ L0016:	lda     #$00
 ;
 	ldx     #$00
 	lda     _gameState
-	bne     L0017
+	bne     L0018
 ;
 ; if(pad1 & PAD_START) // Check if the player has pressed start.
 ;
@@ -18675,9 +18675,9 @@ L0007:	jsr     _animatePressStartText
 ; if (gameState == 2)
 ;
 	ldx     #$00
-L0017:	lda     _gameState
+L0018:	lda     _gameState
 	cmp     #$02
-	bne     L0018
+	bne     L0019
 ;
 ; if (!endScreenDrawn)
 ;
@@ -18705,7 +18705,7 @@ L0009:	jsr     _writeEndText
 ; else if(gameState == 1) // If the game has started and is not on the menu.
 ;
 	jmp     L0002
-L0018:	lda     _gameState
+L0019:	lda     _gameState
 	cmp     #$01
 	bne     L0002
 ;
@@ -18717,14 +18717,14 @@ L0018:	lda     _gameState
 ;
 	lda     _pad1
 	and     #$80
-	beq     L001C
+	beq     L001D
 	lda     _pad1Old
 	and     #$80
-	beq     L001B
+	beq     L001C
 	lda     #$00
-	jmp     L001C
-L001B:	lda     #$01
-L001C:	sta     _aLatch
+	jmp     L001D
+L001C:	lda     #$01
+L001D:	sta     _aLatch
 ;
 ; pad1Old = pad1;  
 ;
@@ -18734,7 +18734,7 @@ L001C:	sta     _aLatch
 ; if(mode == 0) // If the user is in walk mode.
 ;
 	lda     _mode
-	bne     L001D
+	bne     L001E
 ;
 ; walkMode(); // Call the walk mode function.
 ;
@@ -18743,7 +18743,7 @@ L001C:	sta     _aLatch
 ; else if(mode == 1) // If the user is in shoot mode.
 ;
 	jmp     L0011
-L001D:	lda     _mode
+L001E:	lda     _mode
 	cmp     #$01
 	bne     L0011
 ;
@@ -18777,20 +18777,49 @@ L0011:	jsr     _applyGravity
 	ldx     #>(_playerSpriteData)
 	jsr     _disablePortals
 	tax
-	beq     L0012
+	beq     L0013
+;
+; orangeBulletActive = 0;
+;
+	lda     #$00
+	sta     _orangeBulletActive
+;
+; blueBulletActive = 0;
+;
+	sta     _blueBulletActive
 ;
 ; orangePortalActive = 0;
 ;
-	lda     #$00
 	sta     _orangePortalActive
 ;
 ; bluePortalActive = 0;
 ;
 	sta     _bluePortalActive
 ;
+; if (boxHeld == 1)
+;
+	lda     _boxHeld
+	cmp     #$01
+	bne     L0013
+;
+; boxHeld = 0;
+;
+	lda     #$00
+	sta     _boxHeld
+;
+; boxSpriteData.X = boxStartX;
+;
+	lda     _boxStartX
+	sta     _boxSpriteData
+;
+; boxSpriteData.Y = boxStartY;
+;
+	lda     _boxStartY
+	sta     _boxSpriteData+1
+;
 ; oam_clear(); // Clear the OAM buffer/
 ;
-L0012:	jsr     _oam_clear
+L0013:	jsr     _oam_clear
 ;
 ; drawSprite(); // Draws the player sprite.
 ;
@@ -18816,7 +18845,7 @@ L0012:	jsr     _oam_clear
 ; if (boxHeld) 
 ;
 	lda     _boxHeld
-	beq     L0014
+	beq     L0015
 ;
 ; boxSpriteData.X = playerSpriteData.X;
 ;
@@ -18832,7 +18861,7 @@ L0012:	jsr     _oam_clear
 ;
 ; oam_meta_spr(boxSpriteData.X, boxSpriteData.Y, boxSprite);
 ;
-L0014:	jsr     decsp2
+L0015:	jsr     decsp2
 	lda     _boxSpriteData
 	ldy     #$01
 	sta     (sp),y

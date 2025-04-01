@@ -190,8 +190,16 @@ void main(void) {
             doorPlayerCollision();
             if (disablePortals(&playerSpriteData))
             {
+                orangeBulletActive = 0;
+                blueBulletActive = 0;
                 orangePortalActive = 0;
                 bluePortalActive = 0;
+                if (boxHeld == 1)
+                {
+                    boxHeld = 0;
+                    boxSpriteData.X = boxStartX;
+                    boxSpriteData.Y = boxStartY;
+                }
             }
             oam_clear(); // Clear the OAM buffer/
             drawSprite(); // Draws the player sprite.
