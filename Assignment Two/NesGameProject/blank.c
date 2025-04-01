@@ -777,8 +777,17 @@ void loadLevel(unsigned char lvl)
             levelCollisionData = levelFiveCollision;
             playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
             playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
-            boxEnabled = 0;
-            buttonEnabled = 0;
+            boxEnabled = 1;
+            buttonEnabled = 1;
+            doorTileX = 24; 
+            doorTileY = 10;
+            buttonTileX = 26;
+            buttonTileY = 27;
+            boxHeld = 0;
+            boxStartX = 32;
+            boxStartY = 80;
+            boxSpriteData.X = boxStartX;
+            boxSpriteData.Y = boxStartY;
             break;
         case 5:
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
