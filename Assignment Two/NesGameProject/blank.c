@@ -803,8 +803,17 @@ void loadLevel(unsigned char lvl)
             levelCollisionData = levelSixCollision;
             playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
             playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
-            boxEnabled = 0;
-            buttonEnabled = 0;
+            boxEnabled = 1;
+            buttonEnabled = 1;
+            doorTileX = 4; 
+            doorTileY = 8;
+            buttonTileX = 24;
+            buttonTileY = 27;
+            boxHeld = 0;
+            boxStartX = 48;
+            boxStartY = 208;
+            boxSpriteData.X = boxStartX;
+            boxSpriteData.Y = boxStartY;
             break;
 
         default:
