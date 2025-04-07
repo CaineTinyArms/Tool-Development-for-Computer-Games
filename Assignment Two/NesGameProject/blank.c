@@ -11,9 +11,7 @@
 #define GRAVITY 1 // Defines the speed of gravity that is added while the player is falling.
 #define MAX_FALL_SPEED 4 // Defines the max fall speed of the player.
 
-#pragma bss-name(push, "ZEROPAGE")
-
-// --- Frequently accessed game variables (ZEROPAGE) ---
+#pragma bss-name(push, "ZEROPAGE") // Most frequently used variables
 unsigned char pad1;
 unsigned char pad1Old;
 unsigned char mode;
@@ -25,19 +23,17 @@ unsigned char currentSong;
 unsigned char boxHeld;
 unsigned char doorOpen;
 unsigned char playerVelocity;
+unsigned char boxVelocity;
 unsigned char orangePortalCollision;
 unsigned char bluePortalCollision;
 unsigned char bluePortalActive;
 unsigned char orangePortalActive;
 unsigned char lastPortalUsed;
 
-#pragma bss-name(push, "LEVELCOLL")
+#pragma bss-name(push, "LEVELCOLL") // Special Ram Allocation for the Level Collision
 unsigned char levelCollisionRAM[960];
 
-#pragma bss-name(pop)
-
-// --- Other variables (default memory) ---
-
+#pragma bss-name(pop) // Other variables (default memory)
 // Portal Orientation
 unsigned char orangePortalOrientation;
 unsigned char bluePortalOrientation;
@@ -55,11 +51,8 @@ signed char aimDirectionX;
 signed char aimDirectionY;
 
 // Menu Animation
-unsigned char blankTiles[12] = {0};
-unsigned char pressStartTiles[12] = {
-  0x50, 0x52, 0x45, 0x53, 0x53, 0x00,
-  0x53, 0x54, 0x41, 0x52, 0x54, 0x21
-};
+unsigned char blankTiles[12] = {0x00};
+unsigned char pressStartTiles[12] = {0x50, 0x52, 0x45, 0x53, 0x53, 0x00, 0x53, 0x54, 0x41, 0x52, 0x54, 0x21};
 unsigned char endScreenDrawn = 0;
 unsigned char cakeTextTimer = 0;
 unsigned char cakeIsALie = 0;
@@ -82,12 +75,9 @@ unsigned char buttonTileIndexLeftPressed = 0xFE;
 unsigned char buttonTileIndexRightPressed = 0xFF;
 
 // Collision data
-
-const unsigned char* levelCollisionData;
-unsigned char* levelCollision = levelCollisionRAM;
-
-// COLLISION NUMBERS AND THEIR MEANINGS - 0 MEANS AIR, 1 MEANS NO PORTAL WALL, 2 MEANS PORTAL WALL, 3 MEANS RED GRID, 4 MEANS BLUE GRID, 5 MEANS OPEN DOOR, 6 MEANS BUTTON.
-
+const unsigned char* levelCollisionData; // Read Only Version of the level collision data, used to load the data into ram.
+unsigned char* levelCollision = levelCollisionRAM; // Dynamic Version of the level collision data, aka the RAM version.
+// COLLISION NUMBERS AND THE MEANINGS - 0 MEANS AIR, 1 MEANS NO PORTAL WALL, 2 MEANS PORTAL WALL, 3 MEANS RED GRID, 4 MEANS BLUE GRID, 5 MEANS OPEN DOOR, 6 MEANS BUTTON.
 
 // FUNCTION PROTOTYPES.
 // -================================-
@@ -125,25 +115,26 @@ void main(void) {
 	pal_bg(paletteBackground); // Sets the Background Palette.
     pal_spr(paletteSprite); // Sets the Sprite Palette.
     set_scroll_y(0xff); // Moves the background down by 1 pixel.
-	gameState = 0; // 0 means main menu.
+	gameState = 2; // 0 means main menu, 1 means in game, 2 means end screen.
     drawMainMenu(); // Displays the main menu.
 	bank_spr(1); // Tells the program that the sprites are located on the 2nd side of the chr file.
     ppu_on_all(); // Turns on the Screen.
 
-    song = 1;
-    currentSong = 1;
-    music_play(song);
+    song = 1; // Song to play.
+    currentSong = 1; // Song that is playing.
+    music_play(song); // Plays song. 
 
     while(1) {
         ppu_wait_nmi();
 
-        if (currentSong != song)
+        if (currentSong != song) // if the current song is not the song to play.
         {
-            music_play(song);
-            currentSong = song;
+            music_play(song); // play the new song.
+            currentSong = song; // set the current song to the new song.
         }
 
         pad1 = pad_poll(0); // read the first controller
+
 	    if(gameState == 0) // If the game is at the main menu.
 		{
             if(pad1 & PAD_START) // Check if the player has pressed start.
@@ -155,19 +146,19 @@ void main(void) {
             animatePressStartText(); // Animates the PRESS START! text if start isn't pressed.
         }
 
-        if (gameState == 2)
+        if (gameState == 2) // If the game is at the end screen.
         {
-            if (!endScreenDrawn)
+            if (!endScreenDrawn) // If the end screen hasn't been drawn.
             {
-                drawEndScreen();
-                endScreenDrawn = 1;
+                drawEndScreen(); // Draws the end screen.
+                endScreenDrawn = 1; // Sets the end screen to been drawn.
             }
 
-            writeEndText();  // ← now called every frame
-            oam_clear();
+            writeEndText(); // Writes the end text.
+            oam_clear(); // Clears sprites.
         }
 
-        else if(gameState == 1) // If the game has started and is not on the menu.
+        else if(gameState == 1) // If the game state is in-game.
 		{
             modeToggle(); // Call the mode toggle function to check what mode the player is in.
 
@@ -186,17 +177,17 @@ void main(void) {
 			applyGravity(); // Applies gravity to the player.
 			updateBullet(); // Updates bullet location and logic, if any are on the screen.
             portalPlayerCollision(); // Check if the player is colliding with any portals.
-            handleButtonLogic();
-            doorPlayerCollision();
-            if (disablePortals(&playerSpriteData))
+            handleButtonLogic(); // Check if the button is pressed
+            doorPlayerCollision(); // Check if the player is touching the door.
+            if (disablePortals(&playerSpriteData)) // Check if the player is touching an emancipation grill
             {
-                orangeBulletActive = 0;
+                orangeBulletActive = 0; 
                 blueBulletActive = 0;
                 orangePortalActive = 0;
                 bluePortalActive = 0;
-                if (boxHeld == 1)
+                if (boxHeld == 1) // If the player is holding a box.
                 {
-                    boxHeld = 0;
+                    boxHeld = 0; // Put it back to the spawn location.
                     boxSpriteData.X = boxStartX;
                     boxSpriteData.Y = boxStartY;
                 }
@@ -206,14 +197,14 @@ void main(void) {
             drawBullet(); // Draws the bullet sprites.
             drawBluePortalSprite(); // Draws the blue portal sprite.
             drawOrangePortalSprite(); // Draws the orange portal sprite.
-            if (boxEnabled) 
+            if (boxEnabled) // If the level has a box.
             {
-                if (boxHeld) 
+                if (boxHeld) // Check if the player is holding the box.
                 {
-                    boxSpriteData.X = playerSpriteData.X;
+                    boxSpriteData.X = playerSpriteData.X; // Update the box location to match the player.
                     boxSpriteData.Y = playerSpriteData.Y - 16; // slightly above player
                 }
-                oam_meta_spr(boxSpriteData.X, boxSpriteData.Y, boxSprite);
+                oam_meta_spr(boxSpriteData.X, boxSpriteData.Y, boxSprite); // Draw the box.
             }
 
         }
@@ -295,9 +286,11 @@ void portalPlayerCollision(void)
 unsigned char getCollisionValue(unsigned char x, unsigned char y)
 {
     if(x >= 32 || y >= 30)
+    {
         return 1;
+    }
 
-    return levelCollision[y * 32 + x];
+    return levelCollision[y * 32 + x]; // Gets the collision value for the tile at X and Y.
 }
 
 
@@ -308,7 +301,8 @@ unsigned char playerWallCollision(struct spriteData *spr)
     unsigned char topTile    = spr->Y >> 3; // Gets the tile above the player.
     unsigned char bottomTile = (spr->Y + spr->height) >> 3; // Gets the tile below the player.
 
-    if(getCollisionValue(leftTile, topTile) == 1 || getCollisionValue(leftTile, topTile) == 2 || getCollisionValue(leftTile, topTile) == 3)
+    // Checks if any of the tiles the player is touching are a wall.
+    if(getCollisionValue(leftTile, topTile) == 1 || getCollisionValue(leftTile, topTile) == 2 || getCollisionValue(leftTile, topTile) == 3) 
     {
         return 1;
     }
@@ -328,6 +322,7 @@ unsigned char playerWallCollision(struct spriteData *spr)
         return 1;
     }
 
+    // If no walls are being touched returns 0.
     return 0;
 }
 
@@ -340,8 +335,8 @@ void doorPlayerCollision(void)
     unsigned char topTile    = playerSpriteData.Y >> 3;
     unsigned char bottomTile = (playerSpriteData.Y + playerSpriteData.height) >> 3;
 
-    if (getCollisionValue(leftTile, topTile) == 5 || getCollisionValue(rightTile, topTile) == 5 ||
-        getCollisionValue(leftTile, bottomTile) == 5 || getCollisionValue(rightTile, bottomTile) == 5)
+    // Checks if any of the tiles the player is touching has the collision value of 5, meaning open door.
+    if (getCollisionValue(leftTile, topTile) == 5 || getCollisionValue(rightTile, topTile) == 5 || getCollisionValue(leftTile, bottomTile) == 5 || getCollisionValue(rightTile, bottomTile) == 5)
     {
         sfx_play(6, 0);           // Play door sound effect
         currentLevel++;           // Advance to next level
@@ -570,21 +565,26 @@ void walkMode(void)
             playerSpriteData.X--; // Move the player to the left, so they're not in the wall anymore.
         }
     }
-    if (aLatch && boxEnabled) {
-    if (!boxHeld) {
-        unsigned char dx = playerSpriteData.X > boxSpriteData.X ? playerSpriteData.X - boxSpriteData.X : boxSpriteData.X - playerSpriteData.X;
-        unsigned char dy = playerSpriteData.Y > boxSpriteData.Y ? playerSpriteData.Y - boxSpriteData.Y : boxSpriteData.Y - playerSpriteData.Y;
 
-        if (dx < 16 && dy < 16) {
-            boxHeld = 1;
+    if (aLatch && boxEnabled) // If A is pressed, and the level has a box.
+    {
+        if (!boxHeld) // If the box is not held.
+            {
+                unsigned char dx = playerSpriteData.X > boxSpriteData.X ? playerSpriteData.X - boxSpriteData.X : boxSpriteData.X - playerSpriteData.X; // Calculates how close the player is to the box on the X axis.
+                unsigned char dy = playerSpriteData.Y > boxSpriteData.Y ? playerSpriteData.Y - boxSpriteData.Y : boxSpriteData.Y - playerSpriteData.Y; // And the Y axis.
+
+                if (dx < 16 && dy < 16) // If the player is close enough to the box.
+                {
+                    boxHeld = 1; // Pick the box up.
+                }
+            } 
+        else // If the box is held.
+        {
+            boxSpriteData.X = playerSpriteData.X; // Set the box location to the players feet.
+            boxSpriteData.Y = playerSpriteData.Y; 
+            boxHeld = 0; // Drop the box.
         }
-    } else {
-    boxSpriteData.X = playerSpriteData.X;
-    boxSpriteData.Y = playerSpriteData.Y; // dropped just above the ground
-    boxHeld = 0;
     }
-    }
-
 }
 
 void shootMode(void)
@@ -639,38 +639,91 @@ unsigned char onGround(void)
     unsigned char footXRight= (playerSpriteData.X + playerSpriteData.width) >> 3; // Gets the tile that the "right foot", AKA the left half of the player sprite is touching.
     unsigned char collisionLeft = getCollisionValue(footXLeft, footY);
     unsigned char collisionRight = getCollisionValue(footXRight, footY);
-    if ((collisionLeft >= 1 && collisionLeft <= 3) || (collisionRight >= 1 && collisionRight <= 3))
+    if ((collisionLeft >= 1 && collisionLeft <= 3) || (collisionRight >= 1 && collisionRight <= 3)) // Checks if the bottom left, or bottom right tile is touching a floor tile.
     {
-        return 1;
+        return 1; 
     }
     return 0;
 }
 
-void applyGravity(void) // 
+void applyGravity(void) 
 {
-    if(!onGround()) // If the player is not on the ground
+    static unsigned char gravityToggle = 0; // Static to keep the value between function calls. 
+    gravityToggle = !gravityToggle; // Flips the toggle.
+    if (!gravityToggle) // If the toggle is not active.
     {
-        playerVelocity += GRAVITY; // Add the gravity value to the player velocity.
-        if (playerVelocity > MAX_FALL_SPEED) // If the player has more velocity than the max fall speed.
-		{
+        return; // Do Nothing - this is so gravity is only applied every 2 frames, instead of every one frame. This helps to prevent clipping when falling.
+    } 
+
+    // === PLAYER GRAVITY ===
+    if (!onGround()) // If the player is not touching the floor.
+    {
+        playerVelocity += GRAVITY; // Add gravity to the players velocity.
+        if (playerVelocity > MAX_FALL_SPEED) // If the player velocity has exceeded the max fall speed.
+        {
             playerVelocity = MAX_FALL_SPEED; // Set the velocity to the max fall speed.
         }
+    } 
+
+    else // If the player is touching the floor, get rid of any extra velocity.
+    {
+        playerVelocity = 0;
     }
 
-    else  // If the player is on the floor.
+    if (playerVelocity > 0) 
     {
-        if (playerVelocity > 0) // Check if the player has an remaining velocity, 
-		{
-            playerVelocity = 0; // Set the velocity to 0.
+        unsigned char i;
+        for (i = 0; i < playerVelocity; ++i) 
+        {
+            playerSpriteData.Y++; // Moves the player down, while they have velocity.
+            if (onGround()) // Checks if the player is now touching the floor.
+            {
+                playerVelocity = 0; // Removes the remaining velocity.
+                break; // Breaks the for loop - helps prevent floor clipping.
+            }
         }
     }
 
-    if(playerVelocity != 0) // If the player has velocity, and is falling. 
-	{
-        playerSpriteData.Y += playerVelocity; // Move the player down.
+    // === BOX GRAVITY ===
+    if (boxEnabled && !boxHeld) // If the level has a box, and the box isn't being held.
+    {
+        unsigned char footXLeft = boxSpriteData.X >> 3; // Get the tile position to the bottom left of the box.
+        unsigned char footXRight = (boxSpriteData.X + boxSpriteData.width) >> 3; // Get the tile position to the bottom right of the box.
+        unsigned char footY = (boxSpriteData.Y + boxSpriteData.height + 1) >> 3; // Get the tile position directly beneath the box.
+        unsigned char i;
+        unsigned char collisionLeft = getCollisionValue(footXLeft, footY); // Collision value for the bottom left tile.
+        unsigned char collisionRight = getCollisionValue(footXRight, footY); // Collision value for the bottom right tile.
+
+        if ((collisionLeft < 1 || collisionLeft > 3) && (collisionRight < 1 || collisionRight > 3)) // If the box is not touching the floor.
+        {
+            boxVelocity += GRAVITY; // Add gravity to the box velocity.
+            if (boxVelocity > MAX_FALL_SPEED)  // If the box more velocity than is allowed.
+            {
+                boxVelocity = MAX_FALL_SPEED; // Set the velocity to the max.
+            }
+            
+            for (i = 0; i < boxVelocity; ++i) 
+            {
+                boxSpriteData.Y++; // Moves the box down.
+                footY = (boxSpriteData.Y + boxSpriteData.height + 1) >> 3;
+                collisionLeft = getCollisionValue(footXLeft, footY); // Gets collision value for the tile bottom left of the box.
+                collisionRight = getCollisionValue(footXRight, footY); // Gets collision value for the tile bottom right of the box.
+
+                if ((collisionLeft >= 1 && collisionLeft <= 3) || (collisionRight >= 1 && collisionRight <= 3)) // If the box is now touching the floor.
+                {
+                    boxVelocity = 0; // Remove any remaining velocity.
+                    break; // Break the loop
+                }
+            }
+        } 
+        else // If the box is already on the floor.
+        {
+            boxVelocity = 0; // Remove any velocity the box may have somehow.
+        }
     }
-    playerVelocity = 0; 
 }
+
+
 
 // PLAYER SPRITE FUNCTIONS 
 // -=======================================================================-
@@ -729,95 +782,95 @@ const unsigned char* getPlayerSprite(void)
 void loadLevel(unsigned char lvl)
 {
     ppu_off(); // Turn the screen off.
-    song = 2;
-	pal_bg(levelPaletteBackground); // Sets the Background Palette.
+    song = 2; // Set song to 2 - meaning in-game track.
+	pal_bg(levelPaletteBackground); // Sets the Background Palette to the level palette.
 
     switch(lvl) // Switch on the current level.
     {
-        case 0:
+        case 0: // Level 1.
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
-            vram_write(levelOneData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
-            levelCollisionData = levelOneCollision;
-            doorTileX = 25; 
-            doorTileY = 26;
-            buttonTileX = 19;
-            buttonTileY = 27;
-            buttonEnabled = 1;
-            playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
-            playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
-            boxEnabled = 1;
-            boxHeld = 0;
-            boxStartX = 64;
-            boxStartY = 208;
-            boxSpriteData.X = boxStartX;
-            boxSpriteData.Y = boxStartY;
+            vram_write(levelOneData, 1024); // Fill NameTableA with all 1024 bytes from the levelOneData array, which includes the attribute table.
+            levelCollisionData = levelOneCollision; // Set the appropriate level collision to the read only version.
+            doorTileX = 25; // Set the X for the top left tile of the door.
+            doorTileY = 26; // Set the Y for the top left tile of the door.
+            buttonTileX = 19; // Set the X for the left tile of the button.
+            buttonTileY = 27; // Set the Y for the left tile of the button.
+            buttonEnabled = 1; // Set this level as having a button.
+            playerSpriteData.X = 16; // Sets the player location to the starting location.
+            playerSpriteData.Y = 208; // Sets the player location to the starting location.
+            boxEnabled = 1; // Set this level as having a box.
+            boxHeld = 0; // Reset box hold.
+            boxStartX = 64; // Set the X for the top left tile of the box.
+            boxStartY = 208; // Set the Y for the top left tile of the box.
+            boxSpriteData.X = boxStartX; // Set the box sprite to the starting pos of the box.
+            boxSpriteData.Y = boxStartY; 
             break;
-        case 1:
+        case 1: // Level 2.
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
-            vram_write(levelTwoData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
-            levelCollisionData = levelTwoCollision;
-            playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
-            playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
-            boxEnabled = 0;
-            buttonEnabled = 0;
+            vram_write(levelTwoData, 1024); // Fill NameTableA with all 1024 bytes from the levelTwoData array, which includes the attribute table.
+            levelCollisionData = levelTwoCollision; // Set the appropriate level collision to the read only version.
+            playerSpriteData.X = 16; // Sets the player location to the starting location.
+            playerSpriteData.Y = 208; // Sets the player location to the starting location.
+            boxEnabled = 0; // Set this level as not having a box.
+            buttonEnabled = 0; // Set this level as not having a button.
             break;
-        case 2: 
+        case 2: // Level 3.
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
             vram_write(levelThreeData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
-            levelCollisionData = levelThreeCollision;
-            playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
-            playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
-            boxEnabled = 0;
-            buttonEnabled = 0;
+            levelCollisionData = levelThreeCollision; // Set the appropriate level collision to the read only version.
+            playerSpriteData.X = 16; // Sets the player location to the starting location.
+            playerSpriteData.Y = 208; // Sets the player location to the starting location.
+            boxEnabled = 0; // Set this level as not having a box.
+            buttonEnabled = 0; // Set this level as not having a button.
             break;
-        case 3:
+        case 3: // Level 4.
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
-            vram_write(levelFourData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+            vram_write(levelFourData, 1024); // Fill NameTableA with all 1024 bytes from the levelFourData array, which includes the attribute table.
             levelCollisionData = levelFourCollision;
-            playerSpriteData.X = 16; // Sets the player location to the  starting location for level 1.
-            playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
-            boxEnabled = 0;
-            buttonEnabled = 0;
+            playerSpriteData.X = 16; // Sets the player location to the  starting location.
+            playerSpriteData.Y = 208; // Sets the player location to the starting location.
+            boxEnabled = 0; // Set this level as not having a box.
+            buttonEnabled = 0; // Set this level as not having a button.
             break;
-        case 4:
+        case 4: // Level 5.
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
-            vram_write(levelFiveData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
-            levelCollisionData = levelFiveCollision;
-            playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
-            playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
-            boxEnabled = 1;
-            buttonEnabled = 1;
-            doorTileX = 24; 
-            doorTileY = 10;
-            buttonTileX = 26;
-            buttonTileY = 27;
-            boxHeld = 0;
-            boxStartX = 32;
-            boxStartY = 80;
-            boxSpriteData.X = boxStartX;
+            vram_write(levelFiveData, 1024); // Fill NameTableA with all 1024 bytes from the levelFiveData array, which includes the attribute table.
+            levelCollisionData = levelFiveCollision; // Set the appropriate level collision to the read only version.
+            playerSpriteData.X = 16; // Sets the player location to the starting location.
+            playerSpriteData.Y = 208; // Sets the player location to the starting location.
+            boxEnabled = 1; // Set this level as having a box.
+            buttonEnabled = 1; // Set this level as having a button.
+            doorTileX = 24; // Set the X for the top left tile of the door.
+            doorTileY = 10; // Set the Y for the top left tile of the door.
+            buttonTileX = 26; // Set the X for the left tile of the button.
+            buttonTileY = 27; // Set the Y for the left tile of the button.
+            boxHeld = 0; // Reset the box held.
+            boxStartX = 32; // Set the X for the top left tile of the box.
+            boxStartY = 80; // Set the Y for the top left tile of the box.
+            boxSpriteData.X = boxStartX; // Set the box sprite to the starting location.
             boxSpriteData.Y = boxStartY;
             break;
-        case 5:
+        case 5: // Level 6
             vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
-            vram_write(levelSixData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
-            levelCollisionData = levelSixCollision;
+            vram_write(levelSixData, 1024); // Fill NameTableA with all 1024 bytes from the levelSixData array, which includes the attribute table.
+            levelCollisionData = levelSixCollision; // Set the appropriate level collision to the read only version.
             playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
             playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
-            boxEnabled = 1;
-            buttonEnabled = 1;
-            doorTileX = 4; 
-            doorTileY = 8;
-            buttonTileX = 24;
-            buttonTileY = 27;
-            boxHeld = 0;
-            boxStartX = 48;
-            boxStartY = 208;
-            boxSpriteData.X = boxStartX;
+            boxEnabled = 1; // Sets this level as having a box.
+            buttonEnabled = 1; // Sets this level as having a button.
+            doorTileX = 4; // Sets the X for the top left tile of the door.
+            doorTileY = 8; // Sets the Y for the top left tile of the door.
+            buttonTileX = 24; // Sets the X for the left tile of the button.
+            buttonTileY = 27; // Sets the Y for the left tile of the button.
+            boxHeld = 0; // Reset teh box held.
+            boxStartX = 48; // Set the X for the top left tile of the box.
+            boxStartY = 208; // Set the Y for the top left tile of the box.
+            boxSpriteData.X = boxStartX; // Set the box sprite to the starting location.
             boxSpriteData.Y = boxStartY;
             break;
 
-        default:
-            gameState = 2;
+        default: 
+            gameState = 2; // Default to gameState 2, which is the end screen. USED SO MORE LEVELS COULD BE ADDED EASILY.
     }
 
     bluePortalActive   = 0; // Reset the blue portal active.
@@ -825,7 +878,7 @@ void loadLevel(unsigned char lvl)
     blueBulletActive   = 0; // Reset the blue bullet being active.
     orangeBulletActive = 0; // Reset the orange bullet being active.
     lastPortalUsed     = 0; // Reset the last portal used.
-    memcpy(levelCollisionRAM, levelCollisionData, 960);
+    memcpy(levelCollisionRAM, levelCollisionData, 960); // Moves the new level collision data into RAM.
     ppu_on_all(); // Turn the screen back on.
 }
 
@@ -843,7 +896,7 @@ void drawMainMenu(void)
 
 void animatePressStartText(void)
 {
-    static unsigned char flashTimer = 0; // Tracks thej flash timer. Static to keep the value between function calls.
+    static unsigned char flashTimer = 0; // Tracks the flash timer. Static to keep the value between function calls.
     static unsigned char showPressStartText = 1; // Tracks if the text is visible. Static to keep the value between function calls.
 
     flashTimer++; // Increments the flash timer.
@@ -873,81 +926,94 @@ void animatePressStartText(void)
 void drawEndScreen()
 {
     ppu_off();
-    song = 0;
-    pal_bg(endingScreenPalette);      // Set end screen palette
-    pal_spr(paletteSprite);        // Use your existing sprite palette if needed
-
-    vram_adr(NAMETABLE_A);         // Set VRAM address to start of screen
-    vram_write(end, 1024);   // Write entire nametable (includes attribute table)
-    ppu_on_all();
+    song = 0; // Set the song to 0, for the end screen song.
+    pal_bg(endingScreenPalette); // Set the background palette to the end screen palette.
+    vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
+    vram_write(end, 1024); // Fill NameTableA with all 1024 bytes from the end array, which includes the attribute table.
+    ppu_on_all(); 
 }
 
 void writeEndText()
 {
     unsigned char i; 
 
-    cakeTextTimer++;
+    cakeTextTimer++; // Increments the frame counter, used to flicker between text.
 
-    // Show glitch 1 frame before toggle
-    if (cakeTextTimer == 119)
-    {
-        ppu_off();
+    if (cakeTextTimer == 119) // when the frame counter reaches 119.
+    { 
+        ppu_off(); // Turns the screen off.
 
-        vram_adr(NAMETABLE_A + (2 * 32) + 3); 
-        vram_write((const unsigned char*)"!@#$%^&*()_+=-[]", 15);
+        vram_adr(NAMETABLE_A + (2 * 32) + 3); // Set the VRAM Address to the location of the CONGRATULATIONS text.
+        vram_write((const unsigned char*)"!@#$%^&*()_+=-[]", 15); // Fills the tiles with a glitchy text string.
 
-        vram_adr(NAMETABLE_A + (4 * 32) + 2);
-        vram_write((const unsigned char*)")(*&^%$#@!~?><:{}]", 18);
+        vram_adr(NAMETABLE_A + (4 * 32) + 2); // Set the VRAM Address to the location of the TESTING COMPLETE text.
+        vram_write((const unsigned char*)")(*&^%$#@!~?><:{}]", 18); // Fills the tiles with a glitchy text string.
 
-        vram_adr(NAMETABLE_A + (6 * 32) + 2);
-        vram_write((const unsigned char*)"/\\/\\/\\/\\/\\/\\/\\/\\", 17);
+        vram_adr(NAMETABLE_A + (6 * 32) + 2); // Set the VRAM Address to the location of the ENJOY YOUR CAKE text.
+        vram_write((const unsigned char*)"/\\/\\/\\/\\/\\/\\/\\/\\", 17); // Fills the tiles with a glitchy text string.
 
-        ppu_on_all();
+        ppu_on_all(); // Turns the screen back on.
     }
 
-    // Toggle between messages every 2 seconds
-    if (cakeTextTimer >= 120)
+    if (cakeTextTimer >= 120) // When the frame counter reaches 120 or above.
     {
-        cakeTextTimer = 0;
-        cakeIsALie = !cakeIsALie;
+        cakeTextTimer = 0; // Reset the frame counter.
+        cakeIsALie = !cakeIsALie; // Toggle the cakeIsALie tracker.
     }
 
-    if (cakeIsALie != prevCakeisALie)
+    if (cakeIsALie != prevCakeisALie) // If the cakeIsALie tracker doesn't match the previous tracker.
     {
-        ppu_off();
+        ppu_off(); // Turn the screen off.
 
-        // Clear top line
-        vram_adr(NAMETABLE_A + (2 * 32) + 3);
-        for (i = 0; i < 20; i++) vram_put(0x00);
-
-        // Clear middle line
-        vram_adr(NAMETABLE_A + (4 * 32) + 2);
-        for (i = 0; i < 20; i++) vram_put(0x00);
-
-        // Clear bottom line
-        vram_adr(NAMETABLE_A + (6 * 32) + 2);
-        for (i = 0; i < 20; i++) vram_put(0x00);
-
-        // Draw final message lines
-        vram_adr(NAMETABLE_A + (2 * 32) + 3); 
-        vram_write((const unsigned char*)"CONGRATULATIONS.", 15);
-
-        vram_adr(NAMETABLE_A + (4 * 32) + 2);
-        vram_write((const unsigned char*)"TESTING COMPLETE.", 18);
-
-        if (cakeIsALie)
+        vram_adr(NAMETABLE_A + (2 * 32) + 3); // Set the VRAM Address to the location of the CONGRATULATIONS text.
+        for (i = 0; i < 20; i++) 
         {
-            vram_adr(NAMETABLE_A + (6 * 32) + 2);
-            vram_write((const unsigned char*)"THE CAKE IS A LIE", 17);
-        }
-        else
-        {
-            vram_adr(NAMETABLE_A + (6 * 32) + 3);
-            vram_write((const unsigned char*)"ENJOY YOUR CAKE.", 17);
+            vram_put(0x00); // Fils the 20 tiles in that row with empty tiles.
         }
 
-        ppu_on_all();
-        prevCakeisALie = cakeIsALie;
+        vram_adr(NAMETABLE_A + (4 * 32) + 2); // Set the VRAM Address to the location of the TESTING COMPLETE text.
+        for (i = 0; i < 20; i++) 
+        {
+            vram_put(0x00); // Fils the 20 tiles in that row with empty tiles.
+        }
+
+        vram_adr(NAMETABLE_A + (6 * 32) + 2); // Set the VRAM Address to the location of the ENJOY YOUR CAKE text.
+        for (i = 0; i < 20; i++)
+        {
+            vram_put(0x00); // Fils the 20 tiles in that row with empty tiles.
+        }
+
+        
+        vram_adr(NAMETABLE_A + (2 * 32) + 3); // Set the VRAM Address to the location of the CONGRATULATIONS text.
+        vram_write((const unsigned char*)"CONGRATULATIONS.", 15); // Puts the CONGRATULATIONS text back onto the screen.
+
+        vram_adr(NAMETABLE_A + (4 * 32) + 2); // Set the VRAM Address to the location of the TESTING COMPLETE text.
+        vram_write((const unsigned char*)"TESTING COMPLETE.", 18); // Puts the TESTING COMPLETE text back onto the screen.
+
+        if (cakeIsALie) // If the cake is a lie.
+        {
+            vram_adr(NAMETABLE_A + (6 * 32) + 2); // Set the VRAM Address to the location of the ENJOY YOUR CAKE text.
+            vram_write((const unsigned char*)"THE CAKE IS A LIE", 17); // Puts the THE CAKE IS A LIE text onto the screen.
+        }
+        else //  If the cake is not a lie.
+        {
+            vram_adr(NAMETABLE_A + (6 * 32) + 3); // Set the VRAM Address to the location of the ENJOY YOUR CAKE text.
+            vram_write((const unsigned char*)"ENJOY YOUR CAKE.", 17); // Puts the ENJOY YOUR CAKE text onto the screen.
+        }
+
+        ppu_on_all(); // Turns the screen back on.
+        prevCakeisALie = cakeIsALie; // Sets the previous tracker to the new status.
+    }
+    
+    if ((pad1 & PAD_START) || (pad1 & PAD_SELECT)) // If start or select has been pressed.
+    {
+        gameState = 0; // Reset back to game state 0, meaning main menu.
+        pal_bg(paletteBackground); // Changes palette back to the menu palette.
+        drawMainMenu(); // Draws the main menu.
+        song = 1; // Changes the song back to the menu song.
+        currentSong = 255; // Changes current song to force menu song to be played.
+        endScreenDrawn = 0; // Resets ending screen being drawn.
+        while (pad_poll(0) & PAD_START); // Prevents start from auto-loading into the game, as it is the button used to move from the main menu into the actual game.
     }
 }
 
@@ -957,17 +1023,17 @@ void writeEndText()
 // -=====================================-
 void drawOrangePortalSprite(void)
 {
-    if(orangePortalActive)
+    if(orangePortalActive) // If the orange portal is active.
     {
-        oam_meta_spr(orangePortalSpriteData.X, orangePortalSpriteData.Y, orangePortal);
+        oam_meta_spr(orangePortalSpriteData.X, orangePortalSpriteData.Y, orangePortal); // Draw the orange portal sprite.
     }
 }
 
 void drawBluePortalSprite(void)
 {
-    if(bluePortalActive)
+    if(bluePortalActive) // If the blue portal is active.
     {
-        oam_meta_spr(bluePortalSpriteData.X, bluePortalSpriteData.Y, bluePortal);
+        oam_meta_spr(bluePortalSpriteData.X, bluePortalSpriteData.Y, bluePortal); // Draw the blue portal sprite.
     }
 }
 
@@ -975,95 +1041,100 @@ void drawBluePortalSprite(void)
 // -==============================-
 unsigned char disablePortals(struct spriteData *spr)
 {
-    unsigned char leftTile   = spr->X >> 3;
-    unsigned char rightTile  = (spr->X + spr->width) >> 3;
-    unsigned char topTile    = spr->Y >> 3;
-    unsigned char bottomTile = (spr->Y + spr->height) >> 3;
+    unsigned char leftTile   = spr->X >> 3; // Get the bottom left tile of the player.
+    unsigned char rightTile  = (spr->X + spr->width) >> 3; // Gets the bottom right tile of the player.
+    unsigned char topTile    = spr->Y >> 3; // Gets the top left tile of the player.
+    unsigned char bottomTile = (spr->Y + spr->height) >> 3; // Gets the top right tile of the player.
 
-    if(getCollisionValue(leftTile, topTile) == 4 || getCollisionValue(rightTile, topTile) == 4 || getCollisionValue(leftTile, bottomTile) == 4 || getCollisionValue(rightTile, bottomTile) == 4)
+    if(getCollisionValue(leftTile, topTile) == 4 || getCollisionValue(rightTile, topTile) == 4 || getCollisionValue(leftTile, bottomTile) == 4 || getCollisionValue(rightTile, bottomTile) == 4) // Checks if any of the player is touching an emancipation grill.
     {
-        return 1;
+        return 1; // Returns a 1 if they are.
     }
 
-    return 0;
+    return 0; // Otherwise returns a 0.
 }
 
+// Button Functions
+// -==============================-
 void handleButtonLogic(void) {
-    unsigned char playerPressed = 0;
-    unsigned char boxPressed = 0;
-    unsigned char px1, px2, py1, py2;
-    unsigned char bx1, bx2, by1, by2;
-    static unsigned char previousState = 0;
-    unsigned char currentState;
-    unsigned char tileValue;
+    unsigned char playerPressed = 0; // Tracks if the player is pressing the button.
+    unsigned char boxPressed = 0; // Tracks if the box is pressing the button.
+    unsigned char px1, px2, py1, py2; // Edges of the player, used for collision checking.
+    unsigned char bx1, bx2, by1, by2; // Edges of the box, used for collision checking.
+    static unsigned char previousState = 0; // Tracks the previous state of the button.
+    unsigned char currentState; // Tracks the current state of the button.
+    unsigned char tileValue; // Used for chaning the collision of the door, 0 being closed, 5 being open.
 
-    if (!buttonEnabled) return;
+    if (!buttonEnabled) // If this level doesn't have a button.
+    {   
+        return; // Do nothing.
+    }
+    
+    px1 = playerSpriteData.X >> 3; // Gets the bottom left tile of the player.
+    px2 = (playerSpriteData.X + playerSpriteData.width) >> 3; // Gets the bottom right tile of the player.
+    py1 = playerSpriteData.Y >> 3; // Gets the top left tile of the player.
+    py2 = (playerSpriteData.Y + playerSpriteData.height) >> 3; // Gets the top right tile of the player.
 
-    // Player bounds
-    px1 = playerSpriteData.X >> 3;
-    px2 = (playerSpriteData.X + playerSpriteData.width) >> 3;
-    py1 = playerSpriteData.Y >> 3;
-    py2 = (playerSpriteData.Y + playerSpriteData.height) >> 3;
-
-    if ((px1 <= buttonTileX + 1 && px2 >= buttonTileX) &&
-        (py1 <= buttonTileY && py2 >= buttonTileY)) {
-        playerPressed = 1;
+    if ((px1 <= buttonTileX + 1 && px2 >= buttonTileX) && (py1 <= buttonTileY && py2 >= buttonTileY)) // If the player is overlapping the tiles the button is made from.
+    {
+        playerPressed = 1; // The player is now pressing the button.
     }
 
-    // Box bounds
-    if (boxEnabled && !boxHeld) {
-        bx1 = boxSpriteData.X >> 3;
-        bx2 = (boxSpriteData.X + boxSpriteData.width) >> 3;
-        by1 = boxSpriteData.Y >> 3;
-        by2 = (boxSpriteData.Y + boxSpriteData.height) >> 3;
+    
+    if (boxEnabled && !boxHeld) // If the box is enabled, and not being held.
+    {
+        bx1 = boxSpriteData.X >> 3; // Get the bottom left tile of the box.
+        bx2 = (boxSpriteData.X + boxSpriteData.width) >> 3; // Get the bottom right tile of the box.
+        by1 = boxSpriteData.Y >> 3; // Get the top left tile of the box.
+        by2 = (boxSpriteData.Y + boxSpriteData.height) >> 3; // Get the top right tile of the box.
 
-        if ((bx1 <= buttonTileX + 1 && bx2 >= buttonTileX) &&
-            (by1 <= buttonTileY && by2 >= buttonTileY)) {
-            boxPressed = 1;
+        if ((bx1 <= buttonTileX + 1 && bx2 >= buttonTileX) && (by1 <= buttonTileY && by2 >= buttonTileY)) // If the box is overlapping with the tiles the button is made from.
+        {
+            boxPressed = 1; // The box is now pressing the button.
         }
     }
 
-    currentState = (playerPressed || boxPressed);
+    currentState = (playerPressed || boxPressed); // Sets the current state to pressed, if the player or the box is pressing the button.
 
-    if (currentState != previousState) {
-        ppu_off();
+    if (currentState != previousState) // If the state has changed since last called.
+    {
+        ppu_off(); // Turn the screen off.
 
-        // Update button graphics
-        vram_adr(NAMETABLE_A + (buttonTileY * 32 + buttonTileX));
-        if (currentState) {
-            vram_put(buttonTileIndexLeftPressed);
-            vram_put(buttonTileIndexRightPressed);
-        } else {
-            vram_put(buttonTileIndexLeft);
-            vram_put(buttonTileIndexRight);
+        vram_adr(NAMETABLE_A + (buttonTileY * 32 + buttonTileX)); // Set the VRAM address to the left tile of the button.
+        if (currentState) // If the button is pressed.
+        {
+            vram_put(buttonTileIndexLeftPressed); // Change the left tile to the pressed variant.
+            vram_put(buttonTileIndexRightPressed); // Change the right tile to the pressed variant.
+        } 
+        else // If the button is not pressed.
+        {
+            vram_put(buttonTileIndexLeft); // Change the left tile to the unpressed variant.
+            vram_put(buttonTileIndexRight); // Change the right tile to the unpressed variant.
         }
 
-        // Update door graphics
-        vram_adr(NAMETABLE_A + (doorTileY * 32 + doorTileX));
-        if (currentState) {
-            vram_put(0xE8); vram_put(0xE9); // Open door
-            vram_adr(NAMETABLE_A + ((doorTileY + 1) * 32 + doorTileX));
-            vram_put(0xF8); vram_put(0xF9);
-        } else {
-            vram_put(0xEA); vram_put(0xEB); // Closed door
-            vram_adr(NAMETABLE_A + ((doorTileY + 1) * 32 + doorTileX));
-            vram_put(0xFA); vram_put(0xFB);
+        vram_adr(NAMETABLE_A + (doorTileY * 32 + doorTileX)); // Set the VRAM address to the top left tile of the door.
+        if (currentState) // If the button is pressed.
+        {
+            vram_put(0xE8); vram_put(0xE9); // Set the top left, and the top right tile, to the open variant of the door tiles.
+            vram_adr(NAMETABLE_A + ((doorTileY + 1) * 32 + doorTileX)); // Set the VRAM address to the bottom left tile of the door.
+            vram_put(0xF8); vram_put(0xF9); // Set the bottom left, and the bottom right tile, to the open variant of the door tiles.
+        } 
+        else // If the button is not pressed.
+        {
+            vram_put(0xEA); vram_put(0xEB); // // Set the top left, and the top right tile, to the closed variant of the door tiles.
+            vram_adr(NAMETABLE_A + ((doorTileY + 1) * 32 + doorTileX)); // Set the VRAM address to the bottom left tile of the door.
+            vram_put(0xFA); vram_put(0xFB); // Set the bottom left, and the bottom right tile, to the closed variant of the door tiles.
         }
 
-        // Update collision array
-        tileValue = currentState ? 5 : 0;
-        levelCollision[doorTileY * 32 + doorTileX] = tileValue;
-        levelCollision[doorTileY * 32 + doorTileX + 1] = tileValue;
-        levelCollision[(doorTileY + 1) * 32 + doorTileX] = tileValue;
-        levelCollision[(doorTileY + 1) * 32 + doorTileX + 1] = tileValue;
+        tileValue = currentState ? 5 : 0; // Sets the tile value depending on if the button is pressed - 5 for button pressed, door open - 0 for button not pressed, door closed.
+        levelCollision[doorTileY * 32 + doorTileX] = tileValue; // Update the level collision array, that is stored in RAM, to the new value, for the top left tile.
+        levelCollision[doorTileY * 32 + doorTileX + 1] = tileValue; // Update the level collision array, that is stored in RAM, to the new value, for the top right tile.
+        levelCollision[(doorTileY + 1) * 32 + doorTileX] = tileValue; // Update the level collision array, that is stored in RAM, to the new value, for the bottom left tile.
+        levelCollision[(doorTileY + 1) * 32 + doorTileX + 1] = tileValue; // Update the level collision array, that is stored in RAM, to the new value, for the bottom right tile.
 
-        doorOpen = currentState;
-        previousState = currentState;
+        doorOpen = currentState; // Sets if the door is open.
+        previousState = currentState; // Sets previous state to the new state.
 
-        ppu_on_all();
+        ppu_on_all(); // Turns the screen back on.
     }
 }
-
-
-
-

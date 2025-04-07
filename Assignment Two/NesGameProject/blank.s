@@ -77,6 +77,7 @@
 	.export		_boxHeld
 	.export		_doorOpen
 	.export		_playerVelocity
+	.export		_boxVelocity
 	.export		_orangePortalCollision
 	.export		_bluePortalCollision
 	.export		_bluePortalActive
@@ -14917,6 +14918,8 @@ _doorOpen:
 	.res	1,$00
 _playerVelocity:
 	.res	1,$00
+_boxVelocity:
+	.res	1,$00
 _orangePortalCollision:
 	.res	1,$00
 _bluePortalCollision:
@@ -15057,7 +15060,7 @@ L0015:	lda     _pad1
 ;
 	dec     _playerSpriteData
 ;
-; if (aLatch && boxEnabled) {
+; if (aLatch && boxEnabled) // If A is pressed, and the level has a box.
 ;
 L0006:	lda     _aLatch
 	beq     L0017
@@ -15065,12 +15068,12 @@ L0006:	lda     _aLatch
 	bne     L0018
 L0017:	rts
 ;
-; if (!boxHeld) {
+; if (!boxHeld) // If the box is not held.
 ;
 L0018:	lda     _boxHeld
 	bne     L001F
 ;
-; unsigned char dx = playerSpriteData.X > boxSpriteData.X ? playerSpriteData.X - boxSpriteData.X : boxSpriteData.X - playerSpriteData.X;
+; unsigned char dx = playerSpriteData.X > boxSpriteData.X ? playerSpriteData.X - boxSpriteData.X : boxSpriteData.X - playerSpriteData.X; // Calculates how close the player is to the box on the X axis.
 ;
 	lda     _playerSpriteData
 	cmp     _boxSpriteData
@@ -15084,7 +15087,7 @@ L0019:	lda     _boxSpriteData
 	sbc     _playerSpriteData
 L001A:	jsr     pusha
 ;
-; unsigned char dy = playerSpriteData.Y > boxSpriteData.Y ? playerSpriteData.Y - boxSpriteData.Y : boxSpriteData.Y - playerSpriteData.Y;
+; unsigned char dy = playerSpriteData.Y > boxSpriteData.Y ? playerSpriteData.Y - boxSpriteData.Y : boxSpriteData.Y - playerSpriteData.Y; // And the Y axis.
 ;
 	lda     _playerSpriteData+1
 	cmp     _boxSpriteData+1
@@ -15098,7 +15101,7 @@ L001B:	lda     _boxSpriteData+1
 	sbc     _playerSpriteData+1
 L001C:	jsr     pusha
 ;
-; if (dx < 16 && dy < 16) {
+; if (dx < 16 && dy < 16) // If the player is close enough to the box.
 ;
 	ldy     #$01
 	lda     (sp),y
@@ -15109,26 +15112,26 @@ L001C:	jsr     pusha
 	cmp     #$10
 	bcs     L0010
 ;
-; boxHeld = 1;
+; boxHeld = 1; // Pick the box up.
 ;
 	lda     #$01
 	sta     _boxHeld
 ;
-; } else {
+; } 
 ;
 L0010:	jmp     incsp2
 ;
-; boxSpriteData.X = playerSpriteData.X;
+; boxSpriteData.X = playerSpriteData.X; // Set the box location to the players feet.
 ;
 L001F:	lda     _playerSpriteData
 	sta     _boxSpriteData
 ;
-; boxSpriteData.Y = playerSpriteData.Y; // dropped just above the ground
+; boxSpriteData.Y = playerSpriteData.Y; 
 ;
 	lda     _playerSpriteData+1
 	sta     _boxSpriteData+1
 ;
-; boxHeld = 0;
+; boxHeld = 0; // Drop the box.
 ;
 	lda     #$00
 	sta     _boxHeld
@@ -15609,7 +15612,7 @@ L001D:	rts
 	lsr     a
 	jsr     pusha
 ;
-; if(getCollisionValue(leftTile, topTile) == 1 || getCollisionValue(leftTile, topTile) == 2 || getCollisionValue(leftTile, topTile) == 3)
+; if(getCollisionValue(leftTile, topTile) == 1 || getCollisionValue(leftTile, topTile) == 2 || getCollisionValue(leftTile, topTile) == 3) 
 ;
 	ldy     #$03
 	lda     (sp),y
@@ -16502,7 +16505,7 @@ L000D:	jsr     asrax3
 	jsr     _getCollisionValue
 	jsr     pusha
 ;
-; if ((collisionLeft >= 1 && collisionLeft <= 3) || (collisionRight >= 1 && collisionRight <= 3))
+; if ((collisionLeft >= 1 && collisionLeft <= 3) || (collisionRight >= 1 && collisionRight <= 3)) // Checks if the bottom left, or bottom right tile is touching a floor tile.
 ;
 	ldy     #$01
 	lda     (sp),y
@@ -16537,59 +16540,285 @@ L0001:	jmp     incsp5
 .segment	"CODE"
 
 ;
-; if(!onGround()) // If the player is not on the ground
+; gravityToggle = !gravityToggle; // Flips the toggle.
 ;
-	jsr     _onGround
+	lda     M0001
+	jsr     bnega
+	sta     M0001
+;
+; if (!gravityToggle) // If the toggle is not active.
+;
+	lda     M0001
+;
+; return; // Do Nothing - this is so gravity is only applied every 2 frames, instead of every one frame. This helps to prevent clipping when falling.
+;
+	bne     L004D
+;
+; }
+;
+	rts
+;
+; if (!onGround()) // If the player is not touching the floor.
+;
+L004D:	jsr     _onGround
 	tax
-	bne     L0002
+	bne     L0003
 ;
-; playerVelocity += GRAVITY; // Add the gravity value to the player velocity.
+; playerVelocity += GRAVITY; // Add gravity to the players velocity.
 ;
 	inc     _playerVelocity
 ;
-; if (playerVelocity > MAX_FALL_SPEED) // If the player has more velocity than the max fall speed.
+; if (playerVelocity > MAX_FALL_SPEED) // If the player velocity has exceeded the max fall speed.
 ;
 	lda     _playerVelocity
 	cmp     #$05
-	bcc     L0008
+	bcc     L0034
 ;
 ; playerVelocity = MAX_FALL_SPEED; // Set the velocity to the max fall speed.
 ;
 	lda     #$04
 ;
-; else  // If the player is on the floor.
+; else // If the player is touching the floor, get rid of any extra velocity.
 ;
-	jmp     L0007
+	jmp     L002E
 ;
-; if (playerVelocity > 0) // Check if the player has an remaining velocity, 
+; playerVelocity = 0;
 ;
-L0002:	lda     _playerVelocity
-	beq     L0008
+L0003:	lda     #$00
+L002E:	sta     _playerVelocity
 ;
-; playerVelocity = 0; // Set the velocity to 0.
+; if (playerVelocity > 0) 
+;
+L0034:	lda     _playerVelocity
+	beq     L0006
+;
+; for (i = 0; i < playerVelocity; ++i) 
+;
+	jsr     decsp1
+	lda     #$00
+	tay
+L002F:	sta     (sp),y
+	cmp     _playerVelocity
+	bcs     L0008
+;
+; playerSpriteData.Y++; // Moves the player down, while they have velocity.
+;
+	inc     _playerSpriteData+1
+;
+; if (onGround()) // Checks if the player is now touching the floor.
+;
+	jsr     _onGround
+	tax
+	beq     L0009
+;
+; playerVelocity = 0; // Removes the remaining velocity.
 ;
 	lda     #$00
-L0007:	sta     _playerVelocity
+	sta     _playerVelocity
 ;
-; if(playerVelocity != 0) // If the player has velocity, and is falling. 
+; break; // Breaks the for loop - helps prevent floor clipping.
 ;
-L0008:	lda     _playerVelocity
-	beq     L000A
+	jmp     L0008
 ;
-; playerSpriteData.Y += playerVelocity; // Move the player down.
+; for (i = 0; i < playerVelocity; ++i) 
 ;
+L0009:	tay
 	clc
-	adc     _playerSpriteData+1
-	sta     _playerSpriteData+1
-;
-; playerVelocity = 0; 
-;
-	lda     #$00
-L000A:	sta     _playerVelocity
+	lda     #$01
+	adc     (sp),y
+	jmp     L002F
 ;
 ; }
 ;
-	rts
+L0008:	jsr     incsp1
+;
+; if (boxEnabled && !boxHeld) // If the level has a box, and the box isn't being held.
+;
+L0006:	lda     _boxEnabled
+	beq     L0036
+	lda     _boxHeld
+	beq     L0037
+L0036:	rts
+;
+; unsigned char footXLeft = boxSpriteData.X >> 3; // Get the tile position to the bottom left of the box.
+;
+L0037:	lda     _boxSpriteData
+	lsr     a
+	lsr     a
+	lsr     a
+	jsr     pusha
+;
+; unsigned char footXRight = (boxSpriteData.X + boxSpriteData.width) >> 3; // Get the tile position to the bottom right of the box.
+;
+	ldx     #$00
+	lda     _boxSpriteData
+	clc
+	adc     _boxSpriteData+3
+	bcc     L0029
+	inx
+L0029:	jsr     asrax3
+	jsr     pusha
+;
+; unsigned char footY = (boxSpriteData.Y + boxSpriteData.height + 1) >> 3; // Get the tile position directly beneath the box.
+;
+	ldx     #$00
+	lda     _boxSpriteData+1
+	clc
+	adc     _boxSpriteData+2
+	bcc     L0032
+	inx
+	clc
+L0032:	adc     #$01
+	bcc     L0010
+	inx
+L0010:	jsr     asrax3
+	jsr     pusha
+;
+; unsigned char collisionLeft = getCollisionValue(footXLeft, footY); // Collision value for the bottom left tile.
+;
+	jsr     decsp1
+	ldy     #$03
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$02
+	lda     (sp),y
+	jsr     _getCollisionValue
+	jsr     pusha
+;
+; unsigned char collisionRight = getCollisionValue(footXRight, footY); // Collision value for the bottom right tile.
+;
+	ldy     #$03
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$03
+	lda     (sp),y
+	jsr     _getCollisionValue
+	jsr     pusha
+;
+; if ((collisionLeft < 1 || collisionLeft > 3) && (collisionRight < 1 || collisionRight > 3)) // If the box is not touching the floor.
+;
+	ldy     #$01
+	lda     (sp),y
+	beq     L0038
+	cmp     #$04
+	bcs     L0038
+	lda     #$00
+	jmp     L0030
+L0038:	dey
+	lda     (sp),y
+	beq     L003E
+	cmp     #$04
+	bcs     L003E
+	tya
+	jmp     L0030
+;
+; boxVelocity += GRAVITY; // Add gravity to the box velocity.
+;
+L003E:	inc     _boxVelocity
+;
+; if (boxVelocity > MAX_FALL_SPEED)  // If the box more velocity than is allowed.
+;
+	lda     _boxVelocity
+	cmp     #$05
+	tya
+	bcc     L0040
+;
+; boxVelocity = MAX_FALL_SPEED; // Set the velocity to the max.
+;
+	lda     #$04
+	sta     _boxVelocity
+;
+; for (i = 0; i < boxVelocity; ++i) 
+;
+	tya
+L0040:	ldy     #$02
+L0031:	sta     (sp),y
+	cmp     _boxVelocity
+	bcs     L0028
+;
+; boxSpriteData.Y++; // Moves the box down.
+;
+	inc     _boxSpriteData+1
+;
+; footY = (boxSpriteData.Y + boxSpriteData.height + 1) >> 3;
+;
+	ldx     #$00
+	lda     _boxSpriteData+1
+	clc
+	adc     _boxSpriteData+2
+	bcc     L0033
+	inx
+	clc
+L0033:	adc     #$01
+	bcc     L001E
+	inx
+L001E:	jsr     asrax3
+	iny
+	sta     (sp),y
+;
+; collisionLeft = getCollisionValue(footXLeft, footY); // Gets collision value for the tile bottom left of the box.
+;
+	ldy     #$05
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$04
+	lda     (sp),y
+	jsr     _getCollisionValue
+	ldy     #$01
+	sta     (sp),y
+;
+; collisionRight = getCollisionValue(footXRight, footY); // Gets collision value for the tile bottom right of the box.
+;
+	ldy     #$04
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$04
+	lda     (sp),y
+	jsr     _getCollisionValue
+	ldy     #$00
+	sta     (sp),y
+;
+; if ((collisionLeft >= 1 && collisionLeft <= 3) || (collisionRight >= 1 && collisionRight <= 3)) // If the box is now touching the floor.
+;
+	iny
+	lda     (sp),y
+	beq     L002C
+	cmp     #$04
+	bcc     L004B
+L002C:	dey
+	lda     (sp),y
+	beq     L001C
+	cmp     #$04
+	bcs     L001C
+;
+; boxVelocity = 0; // Remove any remaining velocity.
+;
+L004B:	lda     #$00
+;
+; break; // Break the loop
+;
+	jmp     L0030
+;
+; for (i = 0; i < boxVelocity; ++i) 
+;
+L001C:	ldy     #$02
+	clc
+	lda     #$01
+	adc     (sp),y
+	jmp     L0031
+;
+; boxVelocity = 0; // Remove any velocity the box may have somehow.
+;
+L0030:	sta     _boxVelocity
+;
+; }
+;
+L0028:	jmp     incsp6
+
+.segment	"DATA"
+
+M0001:
+	.byte	$00
 
 .endproc
 
@@ -16793,12 +17022,12 @@ L002D:	lda     #<(_playerShootUpSprite)
 ;
 	jsr     _ppu_off
 ;
-; song = 2;
+; song = 2; // Set song to 2 - meaning in-game track.
 ;
 	lda     #$02
 	sta     _song
 ;
-; pal_bg(levelPaletteBackground); // Sets the Background Palette.
+; pal_bg(levelPaletteBackground); // Sets the Background Palette to the level palette.
 ;
 	lda     #<(_levelPaletteBackground)
 	ldx     #>(_levelPaletteBackground)
@@ -16829,7 +17058,7 @@ L002D:	lda     #<(_playerShootUpSprite)
 L0004:	ldx     #$20
 	jsr     _vram_adr
 ;
-; vram_write(levelOneData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+; vram_write(levelOneData, 1024); // Fill NameTableA with all 1024 bytes from the levelOneData array, which includes the attribute table.
 ;
 	lda     #<(_levelOneData)
 	ldx     #>(_levelOneData)
@@ -16838,74 +17067,74 @@ L0004:	ldx     #$20
 	lda     #$00
 	jsr     _vram_write
 ;
-; levelCollisionData = levelOneCollision;
+; levelCollisionData = levelOneCollision; // Set the appropriate level collision to the read only version.
 ;
 	lda     #>(_levelOneCollision)
 	sta     _levelCollisionData+1
 	lda     #<(_levelOneCollision)
 	sta     _levelCollisionData
 ;
-; doorTileX = 25; 
+; doorTileX = 25; // Set the X for the top left tile of the door.
 ;
 	lda     #$19
 	sta     _doorTileX
 ;
-; doorTileY = 26;
+; doorTileY = 26; // Set the Y for the top left tile of the door.
 ;
 	lda     #$1A
 	sta     _doorTileY
 ;
-; buttonTileX = 19;
+; buttonTileX = 19; // Set the X for the left tile of the button.
 ;
 	lda     #$13
 	sta     _buttonTileX
 ;
-; buttonTileY = 27;
+; buttonTileY = 27; // Set the Y for the left tile of the button.
 ;
 	lda     #$1B
 	sta     _buttonTileY
 ;
-; buttonEnabled = 1;
+; buttonEnabled = 1; // Set this level as having a button.
 ;
 	lda     #$01
 	sta     _buttonEnabled
 ;
-; playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
+; playerSpriteData.X = 16; // Sets the player location to the starting location.
 ;
 	lda     #$10
 	sta     _playerSpriteData
 ;
-; playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
+; playerSpriteData.Y = 208; // Sets the player location to the starting location.
 ;
 	lda     #$D0
 	sta     _playerSpriteData+1
 ;
-; boxEnabled = 1;
+; boxEnabled = 1; // Set this level as having a box.
 ;
 	lda     #$01
 	sta     _boxEnabled
 ;
-; boxHeld = 0;
+; boxHeld = 0; // Reset box hold.
 ;
 	lda     #$00
 	sta     _boxHeld
 ;
-; boxStartX = 64;
+; boxStartX = 64; // Set the X for the top left tile of the box.
 ;
 	lda     #$40
 	sta     _boxStartX
 ;
-; boxStartY = 208;
+; boxStartY = 208; // Set the Y for the top left tile of the box.
 ;
 	lda     #$D0
 	sta     _boxStartY
 ;
-; boxSpriteData.X = boxStartX;
+; boxSpriteData.X = boxStartX; // Set the box sprite to the starting pos of the box.
 ;
 	lda     _boxStartX
 	sta     _boxSpriteData
 ;
-; boxSpriteData.Y = boxStartY;
+; boxSpriteData.Y = boxStartY; 
 ;
 	lda     _boxStartY
 	sta     _boxSpriteData+1
@@ -16920,7 +17149,7 @@ L0005:	ldx     #$20
 	tya
 	jsr     _vram_adr
 ;
-; vram_write(levelTwoData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+; vram_write(levelTwoData, 1024); // Fill NameTableA with all 1024 bytes from the levelTwoData array, which includes the attribute table.
 ;
 	lda     #<(_levelTwoData)
 	ldx     #>(_levelTwoData)
@@ -16929,29 +17158,29 @@ L0005:	ldx     #$20
 	lda     #$00
 	jsr     _vram_write
 ;
-; levelCollisionData = levelTwoCollision;
+; levelCollisionData = levelTwoCollision; // Set the appropriate level collision to the read only version.
 ;
 	lda     #>(_levelTwoCollision)
 	sta     _levelCollisionData+1
 	lda     #<(_levelTwoCollision)
 	sta     _levelCollisionData
 ;
-; playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
+; playerSpriteData.X = 16; // Sets the player location to the starting location.
 ;
 	lda     #$10
 	sta     _playerSpriteData
 ;
-; playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
+; playerSpriteData.Y = 208; // Sets the player location to the starting location.
 ;
 	lda     #$D0
 	sta     _playerSpriteData+1
 ;
-; boxEnabled = 0;
+; boxEnabled = 0; // Set this level as not having a box.
 ;
 	lda     #$00
 	sta     _boxEnabled
 ;
-; buttonEnabled = 0;
+; buttonEnabled = 0; // Set this level as not having a button.
 ;
 	sta     _buttonEnabled
 ;
@@ -16974,29 +17203,29 @@ L0006:	ldx     #$20
 	lda     #$00
 	jsr     _vram_write
 ;
-; levelCollisionData = levelThreeCollision;
+; levelCollisionData = levelThreeCollision; // Set the appropriate level collision to the read only version.
 ;
 	lda     #>(_levelThreeCollision)
 	sta     _levelCollisionData+1
 	lda     #<(_levelThreeCollision)
 	sta     _levelCollisionData
 ;
-; playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
+; playerSpriteData.X = 16; // Sets the player location to the starting location.
 ;
 	lda     #$10
 	sta     _playerSpriteData
 ;
-; playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
+; playerSpriteData.Y = 208; // Sets the player location to the starting location.
 ;
 	lda     #$D0
 	sta     _playerSpriteData+1
 ;
-; boxEnabled = 0;
+; boxEnabled = 0; // Set this level as not having a box.
 ;
 	lda     #$00
 	sta     _boxEnabled
 ;
-; buttonEnabled = 0;
+; buttonEnabled = 0; // Set this level as not having a button.
 ;
 	sta     _buttonEnabled
 ;
@@ -17010,7 +17239,7 @@ L0007:	ldx     #$20
 	tya
 	jsr     _vram_adr
 ;
-; vram_write(levelFourData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+; vram_write(levelFourData, 1024); // Fill NameTableA with all 1024 bytes from the levelFourData array, which includes the attribute table.
 ;
 	lda     #<(_levelFourData)
 	ldx     #>(_levelFourData)
@@ -17026,22 +17255,22 @@ L0007:	ldx     #$20
 	lda     #<(_levelFourCollision)
 	sta     _levelCollisionData
 ;
-; playerSpriteData.X = 16; // Sets the player location to the  starting location for level 1.
+; playerSpriteData.X = 16; // Sets the player location to the  starting location.
 ;
 	lda     #$10
 	sta     _playerSpriteData
 ;
-; playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
+; playerSpriteData.Y = 208; // Sets the player location to the starting location.
 ;
 	lda     #$D0
 	sta     _playerSpriteData+1
 ;
-; boxEnabled = 0;
+; boxEnabled = 0; // Set this level as not having a box.
 ;
 	lda     #$00
 	sta     _boxEnabled
 ;
-; buttonEnabled = 0;
+; buttonEnabled = 0; // Set this level as not having a button.
 ;
 	sta     _buttonEnabled
 ;
@@ -17055,7 +17284,7 @@ L0008:	ldx     #$20
 	tya
 	jsr     _vram_adr
 ;
-; vram_write(levelFiveData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+; vram_write(levelFiveData, 1024); // Fill NameTableA with all 1024 bytes from the levelFiveData array, which includes the attribute table.
 ;
 	lda     #<(_levelFiveData)
 	ldx     #>(_levelFiveData)
@@ -17064,68 +17293,68 @@ L0008:	ldx     #$20
 	lda     #$00
 	jsr     _vram_write
 ;
-; levelCollisionData = levelFiveCollision;
+; levelCollisionData = levelFiveCollision; // Set the appropriate level collision to the read only version.
 ;
 	lda     #>(_levelFiveCollision)
 	sta     _levelCollisionData+1
 	lda     #<(_levelFiveCollision)
 	sta     _levelCollisionData
 ;
-; playerSpriteData.X = 16; // Sets the player location to the starting location for level 1.
+; playerSpriteData.X = 16; // Sets the player location to the starting location.
 ;
 	lda     #$10
 	sta     _playerSpriteData
 ;
-; playerSpriteData.Y = 208; // Sets the player location to the starting location for level 1.
+; playerSpriteData.Y = 208; // Sets the player location to the starting location.
 ;
 	lda     #$D0
 	sta     _playerSpriteData+1
 ;
-; boxEnabled = 1;
+; boxEnabled = 1; // Set this level as having a box.
 ;
 	lda     #$01
 	sta     _boxEnabled
 ;
-; buttonEnabled = 1;
+; buttonEnabled = 1; // Set this level as having a button.
 ;
 	sta     _buttonEnabled
 ;
-; doorTileX = 24; 
+; doorTileX = 24; // Set the X for the top left tile of the door.
 ;
 	lda     #$18
 	sta     _doorTileX
 ;
-; doorTileY = 10;
+; doorTileY = 10; // Set the Y for the top left tile of the door.
 ;
 	lda     #$0A
 	sta     _doorTileY
 ;
-; buttonTileX = 26;
+; buttonTileX = 26; // Set the X for the left tile of the button.
 ;
 	lda     #$1A
 	sta     _buttonTileX
 ;
-; buttonTileY = 27;
+; buttonTileY = 27; // Set the Y for the left tile of the button.
 ;
 	lda     #$1B
 	sta     _buttonTileY
 ;
-; boxHeld = 0;
+; boxHeld = 0; // Reset the box held.
 ;
 	lda     #$00
 	sta     _boxHeld
 ;
-; boxStartX = 32;
+; boxStartX = 32; // Set the X for the top left tile of the box.
 ;
 	lda     #$20
 	sta     _boxStartX
 ;
-; boxStartY = 80;
+; boxStartY = 80; // Set the Y for the top left tile of the box.
 ;
 	lda     #$50
 	sta     _boxStartY
 ;
-; boxSpriteData.X = boxStartX;
+; boxSpriteData.X = boxStartX; // Set the box sprite to the starting location.
 ;
 	lda     _boxStartX
 	sta     _boxSpriteData
@@ -17145,7 +17374,7 @@ L0009:	ldx     #$20
 	tya
 	jsr     _vram_adr
 ;
-; vram_write(levelSixData, 1024); // Fill NameTableA with all 1024 bytes from the levelThreeData array, which includes the attribute table.
+; vram_write(levelSixData, 1024); // Fill NameTableA with all 1024 bytes from the levelSixData array, which includes the attribute table.
 ;
 	lda     #<(_levelSixData)
 	ldx     #>(_levelSixData)
@@ -17154,7 +17383,7 @@ L0009:	ldx     #$20
 	lda     #$00
 	jsr     _vram_write
 ;
-; levelCollisionData = levelSixCollision;
+; levelCollisionData = levelSixCollision; // Set the appropriate level collision to the read only version.
 ;
 	lda     #>(_levelSixCollision)
 	sta     _levelCollisionData+1
@@ -17171,51 +17400,51 @@ L0009:	ldx     #$20
 	lda     #$D0
 	sta     _playerSpriteData+1
 ;
-; boxEnabled = 1;
+; boxEnabled = 1; // Sets this level as having a box.
 ;
 	lda     #$01
 	sta     _boxEnabled
 ;
-; buttonEnabled = 1;
+; buttonEnabled = 1; // Sets this level as having a button.
 ;
 	sta     _buttonEnabled
 ;
-; doorTileX = 4; 
+; doorTileX = 4; // Sets the X for the top left tile of the door.
 ;
 	lda     #$04
 	sta     _doorTileX
 ;
-; doorTileY = 8;
+; doorTileY = 8; // Sets the Y for the top left tile of the door.
 ;
 	lda     #$08
 	sta     _doorTileY
 ;
-; buttonTileX = 24;
+; buttonTileX = 24; // Sets the X for the left tile of the button.
 ;
 	lda     #$18
 	sta     _buttonTileX
 ;
-; buttonTileY = 27;
+; buttonTileY = 27; // Sets the Y for the left tile of the button.
 ;
 	lda     #$1B
 	sta     _buttonTileY
 ;
-; boxHeld = 0;
+; boxHeld = 0; // Reset teh box held.
 ;
 	lda     #$00
 	sta     _boxHeld
 ;
-; boxStartX = 48;
+; boxStartX = 48; // Set the X for the top left tile of the box.
 ;
 	lda     #$30
 	sta     _boxStartX
 ;
-; boxStartY = 208;
+; boxStartY = 208; // Set the Y for the top left tile of the box.
 ;
 	lda     #$D0
 	sta     _boxStartY
 ;
-; boxSpriteData.X = boxStartX;
+; boxSpriteData.X = boxStartX; // Set the box sprite to the starting location.
 ;
 	lda     _boxStartX
 	sta     _boxSpriteData
@@ -17229,7 +17458,7 @@ L0009:	ldx     #$20
 ;
 	jmp     L000C
 ;
-; gameState = 2;
+; gameState = 2; // Default to gameState 2, which is the end screen. USED SO MORE LEVELS COULD BE ADDED EASILY.
 ;
 L000B:	lda     #$02
 	sta     _gameState
@@ -17255,7 +17484,7 @@ L000D:	sta     _bluePortalActive
 ;
 	sta     _lastPortalUsed
 ;
-; memcpy(levelCollisionRAM, levelCollisionData, 960);
+; memcpy(levelCollisionRAM, levelCollisionData, 960); // Moves the new level collision data into RAM.
 ;
 	lda     #<(_levelCollisionRAM)
 	ldx     #>(_levelCollisionRAM)
@@ -17413,12 +17642,12 @@ M0002:
 .segment	"CODE"
 
 ;
-; if(orangePortalActive)
+; if(orangePortalActive) // If the orange portal is active.
 ;
 	lda     _orangePortalActive
 	beq     L0002
 ;
-; oam_meta_spr(orangePortalSpriteData.X, orangePortalSpriteData.Y, orangePortal);
+; oam_meta_spr(orangePortalSpriteData.X, orangePortalSpriteData.Y, orangePortal); // Draw the orange portal sprite.
 ;
 	jsr     decsp2
 	lda     _orangePortalSpriteData
@@ -17448,12 +17677,12 @@ L0002:	rts
 .segment	"CODE"
 
 ;
-; if(bluePortalActive)
+; if(bluePortalActive) // If the blue portal is active.
 ;
 	lda     _bluePortalActive
 	beq     L0002
 ;
-; oam_meta_spr(bluePortalSpriteData.X, bluePortalSpriteData.Y, bluePortal);
+; oam_meta_spr(bluePortalSpriteData.X, bluePortalSpriteData.Y, bluePortal); // Draw the blue portal sprite.
 ;
 	jsr     decsp2
 	lda     _bluePortalSpriteData
@@ -17504,7 +17733,7 @@ L0007:	ldx     #$00
 	lda     #$01
 	jmp     incsp2
 ;
-; return levelCollision[y * 32 + x];
+; return levelCollision[y * 32 + x]; // Gets the collision value for the tile at X and Y.
 ;
 L0002:	ldx     #$00
 	lda     (sp),y
@@ -17584,7 +17813,7 @@ L0005:	jsr     asrax3
 L0006:	jsr     asrax3
 	jsr     pusha
 ;
-; if (getCollisionValue(leftTile, topTile) == 5 || getCollisionValue(rightTile, topTile) == 5 ||
+; if (getCollisionValue(leftTile, topTile) == 5 || getCollisionValue(rightTile, topTile) == 5 || getCollisionValue(leftTile, bottomTile) == 5 || getCollisionValue(rightTile, bottomTile) == 5)
 ;
 	ldy     #$03
 	lda     (sp),y
@@ -17602,9 +17831,6 @@ L0006:	jsr     asrax3
 	jsr     _getCollisionValue
 	cmp     #$05
 	beq     L0003
-;
-; getCollisionValue(leftTile, bottomTile) == 5 || getCollisionValue(rightTile, bottomTile) == 5)
-;
 	ldy     #$03
 	lda     (sp),y
 	jsr     pusha
@@ -17659,7 +17885,7 @@ L0002:	jmp     incsp4
 ;
 	jsr     pushax
 ;
-; unsigned char leftTile   = spr->X >> 3;
+; unsigned char leftTile   = spr->X >> 3; // Get the bottom left tile of the player.
 ;
 	ldy     #$01
 	lda     (sp),y
@@ -17673,7 +17899,7 @@ L0002:	jmp     incsp4
 	lsr     a
 	jsr     pusha
 ;
-; unsigned char rightTile  = (spr->X + spr->width) >> 3;
+; unsigned char rightTile  = (spr->X + spr->width) >> 3; // Gets the bottom right tile of the player.
 ;
 	ldy     #$02
 	lda     (sp),y
@@ -17699,7 +17925,7 @@ L0002:	jmp     incsp4
 	lsr     a
 	jsr     pusha
 ;
-; unsigned char topTile    = spr->Y >> 3;
+; unsigned char topTile    = spr->Y >> 3; // Gets the top left tile of the player.
 ;
 	ldy     #$03
 	lda     (sp),y
@@ -17714,7 +17940,7 @@ L0002:	jmp     incsp4
 	lsr     a
 	jsr     pusha
 ;
-; unsigned char bottomTile = (spr->Y + spr->height) >> 3;
+; unsigned char bottomTile = (spr->Y + spr->height) >> 3; // Gets the top right tile of the player.
 ;
 	ldy     #$04
 	lda     (sp),y
@@ -17740,7 +17966,7 @@ L0002:	jmp     incsp4
 	lsr     a
 	jsr     pusha
 ;
-; if(getCollisionValue(leftTile, topTile) == 4 || getCollisionValue(rightTile, topTile) == 4 || getCollisionValue(leftTile, bottomTile) == 4 || getCollisionValue(rightTile, bottomTile) == 4)
+; if(getCollisionValue(leftTile, topTile) == 4 || getCollisionValue(rightTile, topTile) == 4 || getCollisionValue(leftTile, bottomTile) == 4 || getCollisionValue(rightTile, bottomTile) == 4) // Checks if any of the player is touching an emancipation grill.
 ;
 	ldy     #$03
 	lda     (sp),y
@@ -17778,7 +18004,7 @@ L0002:	jmp     incsp4
 	txa
 	jmp     incsp6
 ;
-; return 1;
+; return 1; // Returns a 1 if they are.
 ;
 L0003:	ldx     #$00
 	lda     #$01
@@ -17804,30 +18030,24 @@ L0003:	ldx     #$00
 ;
 	jsr     _ppu_off
 ;
-; song = 0;
+; song = 0; // Set the song to 0, for the end screen song.
 ;
 	lda     #$00
 	sta     _song
 ;
-; pal_bg(endingScreenPalette);      // Set end screen palette
+; pal_bg(endingScreenPalette); // Set the background palette to the end screen palette.
 ;
 	lda     #<(_endingScreenPalette)
 	ldx     #>(_endingScreenPalette)
 	jsr     _pal_bg
 ;
-; pal_spr(paletteSprite);        // Use your existing sprite palette if needed
-;
-	lda     #<(_paletteSprite)
-	ldx     #>(_paletteSprite)
-	jsr     _pal_spr
-;
-; vram_adr(NAMETABLE_A);         // Set VRAM address to start of screen
+; vram_adr(NAMETABLE_A); // Set the VRAM address to the start of NameTableA.
 ;
 	ldx     #$20
 	lda     #$00
 	jsr     _vram_adr
 ;
-; vram_write(end, 1024);   // Write entire nametable (includes attribute table)
+; vram_write(end, 1024); // Fill NameTableA with all 1024 bytes from the end array, which includes the attribute table.
 ;
 	lda     #<(_end)
 	ldx     #>(_end)
@@ -17836,7 +18056,7 @@ L0003:	ldx     #$00
 	lda     #$00
 	jsr     _vram_write
 ;
-; ppu_on_all();
+; ppu_on_all(); 
 ;
 	jmp     _ppu_on_all
 
@@ -17853,28 +18073,28 @@ L0003:	ldx     #$00
 .segment	"CODE"
 
 ;
-; cakeTextTimer++;
+; cakeTextTimer++; // Increments the frame counter, used to flicker between text.
 ;
 	jsr     decsp1
 	inc     _cakeTextTimer
 ;
-; if (cakeTextTimer == 119)
+; if (cakeTextTimer == 119) // when the frame counter reaches 119.
 ;
 	lda     _cakeTextTimer
 	cmp     #$77
-	bne     L0017
+	bne     L001D
 ;
-; ppu_off();
+; ppu_off(); // Turns the screen off.
 ;
 	jsr     _ppu_off
 ;
-; vram_adr(NAMETABLE_A + (2 * 32) + 3); 
+; vram_adr(NAMETABLE_A + (2 * 32) + 3); // Set the VRAM Address to the location of the CONGRATULATIONS text.
 ;
 	ldx     #$20
 	lda     #$43
 	jsr     _vram_adr
 ;
-; vram_write((const unsigned char*)"!@#$%^&*()_+=-[]", 15);
+; vram_write((const unsigned char*)"!@#$%^&*()_+=-[]", 15); // Fills the tiles with a glitchy text string.
 ;
 	lda     #<(S0004)
 	ldx     #>(S0004)
@@ -17883,13 +18103,13 @@ L0003:	ldx     #$00
 	lda     #$0F
 	jsr     _vram_write
 ;
-; vram_adr(NAMETABLE_A + (4 * 32) + 2);
+; vram_adr(NAMETABLE_A + (4 * 32) + 2); // Set the VRAM Address to the location of the TESTING COMPLETE text.
 ;
 	ldx     #$20
 	lda     #$82
 	jsr     _vram_adr
 ;
-; vram_write((const unsigned char*)")(*&^%$#@!~?><:{}]", 18);
+; vram_write((const unsigned char*)")(*&^%$#@!~?><:{}]", 18); // Fills the tiles with a glitchy text string.
 ;
 	lda     #<(S0005)
 	ldx     #>(S0005)
@@ -17898,13 +18118,13 @@ L0003:	ldx     #$00
 	lda     #$12
 	jsr     _vram_write
 ;
-; vram_adr(NAMETABLE_A + (6 * 32) + 2);
+; vram_adr(NAMETABLE_A + (6 * 32) + 2); // Set the VRAM Address to the location of the ENJOY YOUR CAKE text.
 ;
 	ldx     #$20
 	lda     #$C2
 	jsr     _vram_adr
 ;
-; vram_write((const unsigned char*)"/\\/\\/\\/\\/\\/\\/\\/\\", 17);
+; vram_write((const unsigned char*)"/\\/\\/\\/\\/\\/\\/\\/\\", 17); // Fills the tiles with a glitchy text string.
 ;
 	lda     #<(S0006)
 	ldx     #>(S0006)
@@ -17913,107 +18133,125 @@ L0003:	ldx     #$00
 	lda     #$11
 	jsr     _vram_write
 ;
-; ppu_on_all();
+; ppu_on_all(); // Turns the screen back on.
 ;
 	jsr     _ppu_on_all
 ;
-; if (cakeTextTimer >= 120)
+; if (cakeTextTimer >= 120) // When the frame counter reaches 120 or above.
 ;
-L0017:	lda     _cakeTextTimer
+L001D:	lda     _cakeTextTimer
 	cmp     #$78
-	bcc     L0018
+	bcc     L001E
 ;
-; cakeTextTimer = 0;
+; cakeTextTimer = 0; // Reset the frame counter.
 ;
 	lda     #$00
 	sta     _cakeTextTimer
 ;
-; cakeIsALie = !cakeIsALie;
+; cakeIsALie = !cakeIsALie; // Toggle the cakeIsALie tracker.
 ;
 	lda     _cakeIsALie
 	jsr     bnega
 	sta     _cakeIsALie
 ;
-; if (cakeIsALie != prevCakeisALie)
+; if (cakeIsALie != prevCakeisALie) // If the cakeIsALie tracker doesn't match the previous tracker.
 ;
-L0018:	lda     _cakeIsALie
+L001E:	lda     _cakeIsALie
 	cmp     _prevCakeisALie
-	jeq     L0004
+	jeq     L001F
 ;
-; ppu_off();
+; ppu_off(); // Turn the screen off.
 ;
 	jsr     _ppu_off
 ;
-; vram_adr(NAMETABLE_A + (2 * 32) + 3);
+; vram_adr(NAMETABLE_A + (2 * 32) + 3); // Set the VRAM Address to the location of the CONGRATULATIONS text.
 ;
 	ldx     #$20
 	lda     #$43
 	jsr     _vram_adr
 ;
-; for (i = 0; i < 20; i++) vram_put(0x00);
+; for (i = 0; i < 20; i++) 
 ;
 	lda     #$00
 	tay
-L0013:	sta     (sp),y
+L0019:	sta     (sp),y
 	cmp     #$14
 	bcs     L0006
+;
+; vram_put(0x00); // Fils the 20 tiles in that row with empty tiles.
+;
 	tya
 	jsr     _vram_put
+;
+; for (i = 0; i < 20; i++) 
+;
 	ldy     #$00
 	clc
 	lda     #$01
 	adc     (sp),y
-	jmp     L0013
+	jmp     L0019
 ;
-; vram_adr(NAMETABLE_A + (4 * 32) + 2);
+; vram_adr(NAMETABLE_A + (4 * 32) + 2); // Set the VRAM Address to the location of the TESTING COMPLETE text.
 ;
 L0006:	ldx     #$20
 	lda     #$82
 	jsr     _vram_adr
 ;
-; for (i = 0; i < 20; i++) vram_put(0x00);
+; for (i = 0; i < 20; i++) 
 ;
 	lda     #$00
 	tay
-L0014:	sta     (sp),y
+L001A:	sta     (sp),y
 	cmp     #$14
 	bcs     L000A
+;
+; vram_put(0x00); // Fils the 20 tiles in that row with empty tiles.
+;
 	tya
 	jsr     _vram_put
+;
+; for (i = 0; i < 20; i++) 
+;
 	ldy     #$00
 	clc
 	lda     #$01
 	adc     (sp),y
-	jmp     L0014
+	jmp     L001A
 ;
-; vram_adr(NAMETABLE_A + (6 * 32) + 2);
+; vram_adr(NAMETABLE_A + (6 * 32) + 2); // Set the VRAM Address to the location of the ENJOY YOUR CAKE text.
 ;
 L000A:	ldx     #$20
 	lda     #$C2
 	jsr     _vram_adr
 ;
-; for (i = 0; i < 20; i++) vram_put(0x00);
+; for (i = 0; i < 20; i++)
 ;
 	lda     #$00
 	tay
-L0015:	sta     (sp),y
+L001B:	sta     (sp),y
 	cmp     #$14
 	bcs     L000E
+;
+; vram_put(0x00); // Fils the 20 tiles in that row with empty tiles.
+;
 	tya
 	jsr     _vram_put
+;
+; for (i = 0; i < 20; i++)
+;
 	ldy     #$00
 	clc
 	lda     #$01
 	adc     (sp),y
-	jmp     L0015
+	jmp     L001B
 ;
-; vram_adr(NAMETABLE_A + (2 * 32) + 3); 
+; vram_adr(NAMETABLE_A + (2 * 32) + 3); // Set the VRAM Address to the location of the CONGRATULATIONS text.
 ;
 L000E:	ldx     #$20
 	lda     #$43
 	jsr     _vram_adr
 ;
-; vram_write((const unsigned char*)"CONGRATULATIONS.", 15);
+; vram_write((const unsigned char*)"CONGRATULATIONS.", 15); // Puts the CONGRATULATIONS text back onto the screen.
 ;
 	lda     #<(S0007)
 	ldx     #>(S0007)
@@ -18022,13 +18260,13 @@ L000E:	ldx     #$20
 	lda     #$0F
 	jsr     _vram_write
 ;
-; vram_adr(NAMETABLE_A + (4 * 32) + 2);
+; vram_adr(NAMETABLE_A + (4 * 32) + 2); // Set the VRAM Address to the location of the TESTING COMPLETE text.
 ;
 	ldx     #$20
 	lda     #$82
 	jsr     _vram_adr
 ;
-; vram_write((const unsigned char*)"TESTING COMPLETE.", 18);
+; vram_write((const unsigned char*)"TESTING COMPLETE.", 18); // Puts the TESTING COMPLETE text back onto the screen.
 ;
 	lda     #<(S0008)
 	ldx     #>(S0008)
@@ -18037,53 +18275,99 @@ L000E:	ldx     #$20
 	lda     #$12
 	jsr     _vram_write
 ;
-; if (cakeIsALie)
+; if (cakeIsALie) // If the cake is a lie.
 ;
 	lda     _cakeIsALie
 	beq     L0011
 ;
-; vram_adr(NAMETABLE_A + (6 * 32) + 2);
+; vram_adr(NAMETABLE_A + (6 * 32) + 2); // Set the VRAM Address to the location of the ENJOY YOUR CAKE text.
 ;
 	ldx     #$20
 	lda     #$C2
 	jsr     _vram_adr
 ;
-; vram_write((const unsigned char*)"THE CAKE IS A LIE", 17);
+; vram_write((const unsigned char*)"THE CAKE IS A LIE", 17); // Puts the THE CAKE IS A LIE text onto the screen.
 ;
 	lda     #<(S0009)
 	ldx     #>(S0009)
 ;
-; else
+; else //  If the cake is not a lie.
 ;
-	jmp     L001B
+	jmp     L0024
 ;
-; vram_adr(NAMETABLE_A + (6 * 32) + 3);
+; vram_adr(NAMETABLE_A + (6 * 32) + 3); // Set the VRAM Address to the location of the ENJOY YOUR CAKE text.
 ;
 L0011:	ldx     #$20
 	lda     #$C3
 	jsr     _vram_adr
 ;
-; vram_write((const unsigned char*)"ENJOY YOUR CAKE.", 17);
+; vram_write((const unsigned char*)"ENJOY YOUR CAKE.", 17); // Puts the ENJOY YOUR CAKE text onto the screen.
 ;
 	lda     #<(S000A)
 	ldx     #>(S000A)
-L001B:	jsr     pushax
+L0024:	jsr     pushax
 	ldx     #$00
 	lda     #$11
 	jsr     _vram_write
 ;
-; ppu_on_all();
+; ppu_on_all(); // Turns the screen back on.
 ;
 	jsr     _ppu_on_all
 ;
-; prevCakeisALie = cakeIsALie;
+; prevCakeisALie = cakeIsALie; // Sets the previous tracker to the new status.
 ;
 	lda     _cakeIsALie
 	sta     _prevCakeisALie
 ;
+; if ((pad1 & PAD_START) || (pad1 & PAD_SELECT)) // If start or select has been pressed.
+;
+L001F:	lda     _pad1
+	and     #$10
+	bne     L0020
+	lda     _pad1
+	and     #$20
+	beq     L0017
+;
+; gameState = 0; // Reset back to game state 0, meaning main menu.
+;
+L0020:	lda     #$00
+	sta     _gameState
+;
+; pal_bg(paletteBackground); // Changes palette back to the menu palette.
+;
+	lda     #<(_paletteBackground)
+	ldx     #>(_paletteBackground)
+	jsr     _pal_bg
+;
+; drawMainMenu(); // Draws the main menu.
+;
+	jsr     _drawMainMenu
+;
+; song = 1; // Changes the song back to the menu song.
+;
+	lda     #$01
+	sta     _song
+;
+; currentSong = 255; // Changes current song to force menu song to be played.
+;
+	lda     #$FF
+	sta     _currentSong
+;
+; endScreenDrawn = 0; // Resets ending screen being drawn.
+;
+	lda     #$00
+	sta     _endScreenDrawn
+;
+; while (pad_poll(0) & PAD_START); // Prevents start from auto-loading into the game, as it is the button used to move from the main menu into the actual game.
+;
+L0021:	lda     #$00
+	jsr     _pad_poll
+	and     #$10
+	bne     L0021
+;
 ; }
 ;
-L0004:	jmp     incsp1
+L0017:	jmp     incsp1
 
 .endproc
 
@@ -18098,23 +18382,26 @@ L0004:	jmp     incsp1
 .segment	"CODE"
 
 ;
-; unsigned char playerPressed = 0;
+; unsigned char playerPressed = 0; // Tracks if the player is pressing the button.
 ;
 	lda     #$00
 	jsr     pusha
 ;
-; unsigned char boxPressed = 0;
+; unsigned char boxPressed = 0; // Tracks if the box is pressing the button.
 ;
 	jsr     pusha
 ;
-; if (!buttonEnabled) return;
+; if (!buttonEnabled) // If this level doesn't have a button.
 ;
 	ldy     #$0A
 	jsr     subysp
 	lda     _buttonEnabled
+;
+; return; // Do nothing.
+;
 	jeq     L001F
 ;
-; px1 = playerSpriteData.X >> 3;
+; px1 = playerSpriteData.X >> 3; // Gets the bottom left tile of the player.
 ;
 	lda     _playerSpriteData
 	lsr     a
@@ -18123,7 +18410,7 @@ L0004:	jmp     incsp1
 	ldy     #$09
 	sta     (sp),y
 ;
-; px2 = (playerSpriteData.X + playerSpriteData.width) >> 3;
+; px2 = (playerSpriteData.X + playerSpriteData.width) >> 3; // Gets the bottom right tile of the player.
 ;
 	ldx     #$00
 	lda     _playerSpriteData
@@ -18135,7 +18422,7 @@ L002C:	jsr     asrax3
 	dey
 	sta     (sp),y
 ;
-; py1 = playerSpriteData.Y >> 3;
+; py1 = playerSpriteData.Y >> 3; // Gets the top left tile of the player.
 ;
 	lda     _playerSpriteData+1
 	lsr     a
@@ -18144,7 +18431,7 @@ L002C:	jsr     asrax3
 	dey
 	sta     (sp),y
 ;
-; py2 = (playerSpriteData.Y + playerSpriteData.height) >> 3;
+; py2 = (playerSpriteData.Y + playerSpriteData.height) >> 3; // Gets the top right tile of the player.
 ;
 	ldx     #$00
 	lda     _playerSpriteData+1
@@ -18156,7 +18443,7 @@ L002D:	jsr     asrax3
 	dey
 	sta     (sp),y
 ;
-; if ((px1 <= buttonTileX + 1 && px2 >= buttonTileX) &&
+; if ((px1 <= buttonTileX + 1 && px2 >= buttonTileX) && (py1 <= buttonTileY && py2 >= buttonTileY)) // If the player is overlapping the tiles the button is made from.
 ;
 	ldy     #$09
 	lda     (sp),y
@@ -18173,9 +18460,6 @@ L0040:	ldy     #$08
 	lda     (sp),y
 	cmp     _buttonTileX
 	bcc     L0003
-;
-; (py1 <= buttonTileY && py2 >= buttonTileY)) {
-;
 	dey
 	lda     (sp),y
 	cmp     _buttonTileY
@@ -18187,19 +18471,19 @@ L0042:	dey
 	bcc     L0003
 	lda     #$01
 ;
-; playerPressed = 1;
+; playerPressed = 1; // The player is now pressing the button.
 ;
 	ldy     #$0B
 	sta     (sp),y
 ;
-; if (boxEnabled && !boxHeld) {
+; if (boxEnabled && !boxHeld) // If the box is enabled, and not being held.
 ;
 L0003:	lda     _boxEnabled
 	beq     L0012
 	lda     _boxHeld
 	bne     L0012
 ;
-; bx1 = boxSpriteData.X >> 3;
+; bx1 = boxSpriteData.X >> 3; // Get the bottom left tile of the box.
 ;
 	lda     _boxSpriteData
 	lsr     a
@@ -18208,7 +18492,7 @@ L0003:	lda     _boxEnabled
 	ldy     #$05
 	sta     (sp),y
 ;
-; bx2 = (boxSpriteData.X + boxSpriteData.width) >> 3;
+; bx2 = (boxSpriteData.X + boxSpriteData.width) >> 3; // Get the bottom right tile of the box.
 ;
 	ldx     #$00
 	lda     _boxSpriteData
@@ -18220,7 +18504,7 @@ L002E:	jsr     asrax3
 	dey
 	sta     (sp),y
 ;
-; by1 = boxSpriteData.Y >> 3;
+; by1 = boxSpriteData.Y >> 3; // Get the top left tile of the box.
 ;
 	lda     _boxSpriteData+1
 	lsr     a
@@ -18229,7 +18513,7 @@ L002E:	jsr     asrax3
 	dey
 	sta     (sp),y
 ;
-; by2 = (boxSpriteData.Y + boxSpriteData.height) >> 3;
+; by2 = (boxSpriteData.Y + boxSpriteData.height) >> 3; // Get the top right tile of the box.
 ;
 	ldx     #$00
 	lda     _boxSpriteData+1
@@ -18241,7 +18525,7 @@ L002F:	jsr     asrax3
 	dey
 	sta     (sp),y
 ;
-; if ((bx1 <= buttonTileX + 1 && bx2 >= buttonTileX) &&
+; if ((bx1 <= buttonTileX + 1 && bx2 >= buttonTileX) && (by1 <= buttonTileY && by2 >= buttonTileY)) // If the box is overlapping with the tiles the button is made from.
 ;
 	ldy     #$05
 	lda     (sp),y
@@ -18258,9 +18542,6 @@ L0041:	ldy     #$04
 	lda     (sp),y
 	cmp     _buttonTileX
 	bcc     L0012
-;
-; (by1 <= buttonTileY && by2 >= buttonTileY)) {
-;
 	dey
 	lda     (sp),y
 	cmp     _buttonTileY
@@ -18272,12 +18553,12 @@ L0043:	dey
 	bcc     L0012
 	lda     #$01
 ;
-; boxPressed = 1;
+; boxPressed = 1; // The box is now pressing the button.
 ;
 	ldy     #$0A
 	sta     (sp),y
 ;
-; currentState = (playerPressed || boxPressed);
+; currentState = (playerPressed || boxPressed); // Sets the current state to pressed, if the player or the box is pressing the button.
 ;
 L0012:	ldy     #$0B
 	lda     (sp),y
@@ -18289,16 +18570,16 @@ L0059:	lda     #$01
 L005A:	ldy     #$01
 	sta     (sp),y
 ;
-; if (currentState != previousState) {
+; if (currentState != previousState) // If the state has changed since last called.
 ;
 	cmp     M0001
 	jeq     L001F
 ;
-; ppu_off();
+; ppu_off(); // Turn the screen off.
 ;
 	jsr     _ppu_off
 ;
-; vram_adr(NAMETABLE_A + (buttonTileY * 32 + buttonTileX));
+; vram_adr(NAMETABLE_A + (buttonTileY * 32 + buttonTileX)); // Set the VRAM address to the left tile of the button.
 ;
 	ldx     #$00
 	lda     _buttonTileY
@@ -18319,36 +18600,36 @@ L0030:	pha
 	pla
 	jsr     _vram_adr
 ;
-; if (currentState) {
+; if (currentState) // If the button is pressed.
 ;
 	ldy     #$01
 	lda     (sp),y
 	beq     L0020
 ;
-; vram_put(buttonTileIndexLeftPressed);
+; vram_put(buttonTileIndexLeftPressed); // Change the left tile to the pressed variant.
 ;
 	lda     _buttonTileIndexLeftPressed
 	jsr     _vram_put
 ;
-; vram_put(buttonTileIndexRightPressed);
+; vram_put(buttonTileIndexRightPressed); // Change the right tile to the pressed variant.
 ;
 	lda     _buttonTileIndexRightPressed
 ;
-; } else {
+; else // If the button is not pressed.
 ;
 	jmp     L0038
 ;
-; vram_put(buttonTileIndexLeft);
+; vram_put(buttonTileIndexLeft); // Change the left tile to the unpressed variant.
 ;
 L0020:	lda     _buttonTileIndexLeft
 	jsr     _vram_put
 ;
-; vram_put(buttonTileIndexRight);
+; vram_put(buttonTileIndexRight); // Change the right tile to the unpressed variant.
 ;
 	lda     _buttonTileIndexRight
 L0038:	jsr     _vram_put
 ;
-; vram_adr(NAMETABLE_A + (doorTileY * 32 + doorTileX));
+; vram_adr(NAMETABLE_A + (doorTileY * 32 + doorTileX)); // Set the VRAM address to the top left tile of the door.
 ;
 	ldx     #$00
 	lda     _doorTileY
@@ -18369,20 +18650,20 @@ L0031:	pha
 	pla
 	jsr     _vram_adr
 ;
-; if (currentState) {
+; if (currentState) // If the button is pressed.
 ;
 	ldy     #$01
 	lda     (sp),y
 	beq     L0022
 ;
-; vram_put(0xE8); vram_put(0xE9); // Open door
+; vram_put(0xE8); vram_put(0xE9); // Set the top left, and the top right tile, to the open variant of the door tiles.
 ;
 	lda     #$E8
 	jsr     _vram_put
 	lda     #$E9
 	jsr     _vram_put
 ;
-; vram_adr(NAMETABLE_A + ((doorTileY + 1) * 32 + doorTileX));
+; vram_adr(NAMETABLE_A + ((doorTileY + 1) * 32 + doorTileX)); // Set the VRAM address to the bottom left tile of the door.
 ;
 	ldx     #$00
 	lda     _doorTileY
@@ -18407,24 +18688,24 @@ L0032:	pha
 	pla
 	jsr     _vram_adr
 ;
-; vram_put(0xF8); vram_put(0xF9);
+; vram_put(0xF8); vram_put(0xF9); // Set the bottom left, and the bottom right tile, to the open variant of the door tiles.
 ;
 	lda     #$F8
 	jsr     _vram_put
 	lda     #$F9
 ;
-; } else {
+; else // If the button is not pressed.
 ;
 	jmp     L0039
 ;
-; vram_put(0xEA); vram_put(0xEB); // Closed door
+; vram_put(0xEA); vram_put(0xEB); // // Set the top left, and the top right tile, to the closed variant of the door tiles.
 ;
 L0022:	lda     #$EA
 	jsr     _vram_put
 	lda     #$EB
 	jsr     _vram_put
 ;
-; vram_adr(NAMETABLE_A + ((doorTileY + 1) * 32 + doorTileX));
+; vram_adr(NAMETABLE_A + ((doorTileY + 1) * 32 + doorTileX)); // Set the VRAM address to the bottom left tile of the door.
 ;
 	ldx     #$00
 	lda     _doorTileY
@@ -18449,14 +18730,14 @@ L0033:	pha
 	pla
 	jsr     _vram_adr
 ;
-; vram_put(0xFA); vram_put(0xFB);
+; vram_put(0xFA); vram_put(0xFB); // Set the bottom left, and the bottom right tile, to the closed variant of the door tiles.
 ;
 	lda     #$FA
 	jsr     _vram_put
 	lda     #$FB
 L0039:	jsr     _vram_put
 ;
-; tileValue = currentState ? 5 : 0;
+; tileValue = currentState ? 5 : 0; // Sets the tile value depending on if the button is pressed - 5 for button pressed, door open - 0 for button not pressed, door closed.
 ;
 	ldy     #$01
 	lda     (sp),y
@@ -18465,7 +18746,7 @@ L0039:	jsr     _vram_put
 L005B:	dey
 	sta     (sp),y
 ;
-; levelCollision[doorTileY * 32 + doorTileX] = tileValue;
+; levelCollision[doorTileY * 32 + doorTileX] = tileValue; // Update the level collision array, that is stored in RAM, to the new value, for the top left tile.
 ;
 	ldx     #$00
 	lda     _doorTileY
@@ -18487,7 +18768,7 @@ L003A:	adc     _levelCollision
 	lda     (sp),y
 	sta     (ptr1),y
 ;
-; levelCollision[doorTileY * 32 + doorTileX + 1] = tileValue;
+; levelCollision[doorTileY * 32 + doorTileX + 1] = tileValue; // Update the level collision array, that is stored in RAM, to the new value, for the top right tile.
 ;
 	ldx     #$00
 	lda     _doorTileY
@@ -18513,7 +18794,7 @@ L003C:	adc     _levelCollision
 	lda     (sp),y
 	sta     (ptr1),y
 ;
-; levelCollision[(doorTileY + 1) * 32 + doorTileX] = tileValue;
+; levelCollision[(doorTileY + 1) * 32 + doorTileX] = tileValue; // Update the level collision array, that is stored in RAM, to the new value, for the bottom left tile.
 ;
 	ldx     #$00
 	lda     _doorTileY
@@ -18539,7 +18820,7 @@ L003D:	adc     _levelCollision
 	lda     (sp),y
 	sta     (ptr1),y
 ;
-; levelCollision[(doorTileY + 1) * 32 + doorTileX + 1] = tileValue;
+; levelCollision[(doorTileY + 1) * 32 + doorTileX + 1] = tileValue; // Update the level collision array, that is stored in RAM, to the new value, for the bottom right tile.
 ;
 	ldx     #$00
 	lda     _doorTileY
@@ -18569,18 +18850,18 @@ L003F:	adc     _levelCollision
 	lda     (sp),y
 	sta     (ptr1),y
 ;
-; doorOpen = currentState;
+; doorOpen = currentState; // Sets if the door is open.
 ;
 	iny
 	lda     (sp),y
 	sta     _doorOpen
 ;
-; previousState = currentState;
+; previousState = currentState; // Sets previous state to the new state.
 ;
 	lda     (sp),y
 	sta     M0001
 ;
-; ppu_on_all();
+; ppu_on_all(); // Turns the screen back on.
 ;
 	jsr     _ppu_on_all
 ;
@@ -18629,9 +18910,9 @@ M0001:
 	lda     #$FF
 	jsr     _set_scroll_y
 ;
-; gameState = 0; // 0 means main menu.
+; gameState = 2; // 0 means main menu, 1 means in game, 2 means end screen.
 ;
-	lda     #$00
+	lda     #$02
 	sta     _gameState
 ;
 ; drawMainMenu(); // Displays the main menu.
@@ -18647,16 +18928,16 @@ M0001:
 ;
 	jsr     _ppu_on_all
 ;
-; song = 1;
+; song = 1; // Song to play.
 ;
 	lda     #$01
 	sta     _song
 ;
-; currentSong = 1;
+; currentSong = 1; // Song that is playing.
 ;
 	sta     _currentSong
 ;
-; music_play(song);
+; music_play(song); // Plays song. 
 ;
 	lda     _song
 	jsr     _music_play
@@ -18665,18 +18946,18 @@ M0001:
 ;
 L0002:	jsr     _ppu_wait_nmi
 ;
-; if (currentSong != song)
+; if (currentSong != song) // if the current song is not the song to play.
 ;
 	lda     _currentSong
 	cmp     _song
 	beq     L0017
 ;
-; music_play(song);
+; music_play(song); // play the new song.
 ;
 	lda     _song
 	jsr     _music_play
 ;
-; currentSong = song;
+; currentSong = song; // set the current song to the new song.
 ;
 	lda     _song
 	sta     _currentSong
@@ -18717,37 +18998,37 @@ L0017:	lda     #$00
 ;
 L0007:	jsr     _animatePressStartText
 ;
-; if (gameState == 2)
+; if (gameState == 2) // If the game is at the end screen.
 ;
 	ldx     #$00
 L0018:	lda     _gameState
 	cmp     #$02
 	bne     L0019
 ;
-; if (!endScreenDrawn)
+; if (!endScreenDrawn) // If the end screen hasn't been drawn.
 ;
 	lda     _endScreenDrawn
 	bne     L0009
 ;
-; drawEndScreen();
+; drawEndScreen(); // Draws the end screen.
 ;
 	jsr     _drawEndScreen
 ;
-; endScreenDrawn = 1;
+; endScreenDrawn = 1; // Sets the end screen to been drawn.
 ;
 	ldx     #$00
 	lda     #$01
 	sta     _endScreenDrawn
 ;
-; writeEndText();  // ← now called every frame
+; writeEndText(); // Writes the end text.
 ;
 L0009:	jsr     _writeEndText
 ;
-; oam_clear();
+; oam_clear(); // Clears sprites.
 ;
 	jsr     _oam_clear
 ;
-; else if(gameState == 1) // If the game has started and is not on the menu.
+; else if(gameState == 1) // If the game state is in-game.
 ;
 	jmp     L0002
 L0019:	lda     _gameState
@@ -18808,15 +19089,15 @@ L0011:	jsr     _applyGravity
 ;
 	jsr     _portalPlayerCollision
 ;
-; handleButtonLogic();
+; handleButtonLogic(); // Check if the button is pressed
 ;
 	jsr     _handleButtonLogic
 ;
-; doorPlayerCollision();
+; doorPlayerCollision(); // Check if the player is touching the door.
 ;
 	jsr     _doorPlayerCollision
 ;
-; if (disablePortals(&playerSpriteData))
+; if (disablePortals(&playerSpriteData)) // Check if the player is touching an emancipation grill
 ;
 	lda     #<(_playerSpriteData)
 	ldx     #>(_playerSpriteData)
@@ -18824,7 +19105,7 @@ L0011:	jsr     _applyGravity
 	tax
 	beq     L0013
 ;
-; orangeBulletActive = 0;
+; orangeBulletActive = 0; 
 ;
 	lda     #$00
 	sta     _orangeBulletActive
@@ -18841,13 +19122,13 @@ L0011:	jsr     _applyGravity
 ;
 	sta     _bluePortalActive
 ;
-; if (boxHeld == 1)
+; if (boxHeld == 1) // If the player is holding a box.
 ;
 	lda     _boxHeld
 	cmp     #$01
 	bne     L0013
 ;
-; boxHeld = 0;
+; boxHeld = 0; // Put it back to the spawn location.
 ;
 	lda     #$00
 	sta     _boxHeld
@@ -18882,17 +19163,17 @@ L0013:	jsr     _oam_clear
 ;
 	jsr     _drawOrangePortalSprite
 ;
-; if (boxEnabled) 
+; if (boxEnabled) // If the level has a box.
 ;
 	lda     _boxEnabled
 	jeq     L0002
 ;
-; if (boxHeld) 
+; if (boxHeld) // Check if the player is holding the box.
 ;
 	lda     _boxHeld
 	beq     L0015
 ;
-; boxSpriteData.X = playerSpriteData.X;
+; boxSpriteData.X = playerSpriteData.X; // Update the box location to match the player.
 ;
 	lda     _playerSpriteData
 	sta     _boxSpriteData
@@ -18904,7 +19185,7 @@ L0013:	jsr     _oam_clear
 	sbc     #$10
 	sta     _boxSpriteData+1
 ;
-; oam_meta_spr(boxSpriteData.X, boxSpriteData.Y, boxSprite);
+; oam_meta_spr(boxSpriteData.X, boxSpriteData.Y, boxSprite); // Draw the box.
 ;
 L0015:	jsr     decsp2
 	lda     _boxSpriteData
