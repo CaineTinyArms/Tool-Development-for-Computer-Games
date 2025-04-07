@@ -1,6 +1,6 @@
 @echo off
 
-set name="blank"
+set name="portal"
 
 set CC65_HOME=..\cc65\
 
