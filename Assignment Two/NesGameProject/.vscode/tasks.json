@@ -51,7 +51,7 @@
                 "showReuseMessage": false,
                 "clear": true
             },
-            "args": ["${workspaceFolder}/BUILD/blank.nes"],
+            "args": ["${workspaceFolder}/BUILD/portal.nes"],
             "group": {
                 "kind": "test",
                 "isDefault": true
